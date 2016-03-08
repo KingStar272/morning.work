@@ -1,4 +1,76 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Thu, 14 Jan 2016 05:37:39 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[利用阿里云 OSS 搭建私有 Docker 仓库]]></title><description><![CDATA[<h2><a id="_2"></a>前言</h2>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Tue, 08 Mar 2016 01:18:46 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[在 Sublime Text 上配置 ES2015 开发环境]]></title><description><![CDATA[<h2><a id="_2"></a>安装</h2>
+<p>首先访问 Sublime Text 的官网 <a href="https://www.sublimetext.com/3">https://www.sublimetext.com/3</a> 下载对应系统版本的安装包：</p>
+<p><img src="../../images/2016-03/1-1.png" alt="图 1-1"></p>
+<p>安装提示安装完毕之后，启动 Sublime Text ，其界面如下：</p>
+<p><img src="../../images/2016-03/1-2.png" alt="图 1-2"></p>
+<p>其中右下角的 <strong>「Tab Size: 4」</strong> 表示当前缩进的长度，默认为 4 个空格。大多数的 JavaScript 编程风格都是使用 2 个空格长度的，点击该处可以在弹出的菜单中选择长度，并勾选 <strong>「Indent Using Spaces」</strong> 来使用空格代替 Tab 缩进，这样就能保证在不同平台下显示一致。</p>
+<h2><a id="_14"></a>配置</h2>
+<p>Sublime Text 的配置通过改配置文件来完成，选择菜单 <strong>Preferences &gt; Settings - User</strong>（OSX 系统下是 <strong>Sublime Text &gt; Preferences &gt; Settings - User</strong>） 即可打开配置文件，然后在打开默认的配置文件 <strong>Preferences &gt; Settings - Default</strong> 作为对照，把需要更改的项目复制到「User」配置文件并修改其值。</p>
+<p>比如以下配置用来修改缩进长度和方式：</p>
+<pre><code class="prettyprint javascript">{
+
+  // The number of spaces a tab is considered equal to
+  &quot;tab_size&quot;: 2,
+
+  // Set to true to insert spaces when tab is pressed
+  &quot;translate_tabs_to_spaces&quot;: true,
+
+}
+</code></pre>
+<p>详细使用方法可参考本章末尾的「相关链接」。</p>
+<h2><a id="_Package_Control_34"></a>安装 Package Control</h2>
+<p>使用 Sublime Text 的一大乐趣就是可以为其安装各种各样的插件，但是 Sublime Text 并没有内置插件管理器，我们需要自己去安装。</p>
+<p>首先打开 Sublime Text 的包管理器安装页面 <a href="https://packagecontrol.io/installation">https://packagecontrol.io/installation</a></p>
+<p><img src="../../images/2016-03/1-3.png" alt="图 1-3"></p>
+<p>由于上文中我们安装的是 Sublime Text 3，所以先复制页面中 <strong>SUBLIME TEXT 3</strong> 下面对应的代码，然后转到 Sublime Text 窗口，选择菜单 <strong>View &gt; Show Console</strong>，这时编辑器窗口下面会显示一个新的窗口，在输入栏中粘贴刚才复制的代码，并按回车执行，稍等片刻即可安装完成（主要取决于当前网络环境）。</p>
+<p>安装完 Package Control 之后，我们就可以随心所欲地安装需要的插件了。下面我们来介绍 Package Control 的一些基本命令：</p>
+<ul>
+<li><strong>Install Package</strong> - 安装插件</li>
+<li><strong>Remove Package</strong> - 删除插件</li>
+<li><strong>Enable Package</strong> - 启用插件</li>
+<li><strong>Disable Package</strong> - 禁用插件</li>
+</ul>
+<p>一般常用的就是 <strong>Install Package</strong> 和 <strong>Remove Package</strong>，要执行以上命令可以在 Sublime Text 界面下按 <strong>Ctrl + Shift + P</strong> 键（在 OSX 系统下是 <strong>Command + Shift + P</strong>），这时会弹出一个下面这样的窗口：</p>
+<p><img src="../../images/2016-03/1-4.png" alt="图 1-4"></p>
+<p>在窗口中输入命令 <strong>Install Package</strong> 并按回车，稍等几秒，便会弹出以下窗口：</p>
+<p><img src="../../images/2016-03/1-5.png" alt="图 1-5"></p>
+<p>可以直接在输入框中输入插件名称来搜索插件，并通过方向键来选择要安装的插件，按回车即可安装。</p>
+<h2><a id="_Sublime_Text__62"></a>常用的 Sublime Text 插件</h2>
+<h3><a id="JavaScriptNext__ES6_Syntax_64"></a>JavaScriptNext - ES6 Syntax</h3>
+<p>默认情况下 Sublime Text 并不支持高亮显示 ES6 语法，由于本书的示例代码主要使用 ES6 来编写，因此需要先安装此插件。</p>
+<p>安装完此插件之后，需要执行以下操作将其设置为 <code>*.js</code> 文件默认的样式：</p>
+<ul>
+<li>打开一个 <code>.js</code> 后缀的 JavaScript 文件</li>
+<li>选择菜单 <strong>View &gt; Syntax &gt; Open all with current extension as... &gt; JavascriptNext - ES6 Syntax &gt; JavascriptNext</strong>。具体使用方法可访问插件的主页查看。</li>
+</ul>
+<p>项目主页：<a href="https://github.com/Benvie/JavaScriptNext.tmLanguage">https://github.com/Benvie/JavaScriptNext.tmLanguage</a></p>
+<h3><a id="GitGutter_75"></a>Git​Gutter</h3>
+<p>如果当前编辑的文件是在一个 Git 项目下面的，安装了 GitGutter 之后可以直接在编辑器中查看到当前文件的改动情况，比如：</p>
+<p><img src="../../images/2016-03/1-6.png" alt="图 1-6"></p>
+<p>项目主页：<a href="https://github.com/jisaacks/GitGutter">https://github.com/jisaacks/GitGutter</a></p>
+<h3><a id="SublimeLinter_83"></a>SublimeLinter</h3>
+<p>SublimeLinter 主要用于在 Sublime Text 下对代码进行语法检查，这个插件安装配置会稍微复杂一些。</p>
+<p>首先执行以下命令安装用于 JavaScript 语法检查的 eslint 和 babel-eslint ：</p>
+<pre><code class="prettyprint bash">$ npm install -g eslint babel-eslint
+</code></pre>
+<p>由于 babel-eslint 依赖的模块比较多，在国内的网络环境下可能会安装失败，可以在安装时指定使用淘宝的 NPM 镜像：</p>
+<pre><code class="prettyprint bash">$ npm install -g eslint babel-eslint --registry=http://registry.npm.taobao.org
+</code></pre>
+<p>安装完成后，我们再通过 Package Control 来安装 SublimeLinter 和 SublimeLinter-contrib-eslint 这两个插件。</p>
+<p>现在我们来打开一个 JavaScript 文件：</p>
+<p><img src="../../images/2016-03/1-7.png" alt="图 1-7"></p>
+<p>如上图所示，由于 <code>hello world</code> 这一行有语法错误，该行前面会有一个红色的圆圈，并且编辑器底部会显示具体的出错信息**「Error: Parsing error: Unexpeced token, line 5, Column 9」**</p>
+<p>要让 SublimeLinter 支持其他编程语言，可以搜索 <code>SublimeLinter-</code> 开头的插件并安装。</p>
+<p>项目主页：<a href="http://www.sublimelinter.com/">http://www.sublimelinter.com/</a></p>
+<h2><a id="_111"></a>相关链接</h2>
+<ul>
+<li><a href="http://blog.jobbole.com/79326/">推荐！Sublime Text 最佳插件列表</a></li>
+<li><a href="http://dengo.org/archives/923">Sublime Text 3 能用支持的插件推荐</a></li>
+<li><a href="http://blog.jobbole.com/82527/">Gif 多图：我常用的 16 个 Sublime Text 快捷键</a></li>
+<li><a href="http://tutorial.jingwentian.com/Sublime-Text-3-Documentation/index.html">Sublime Text 3 文档</a></li>
+<li><a href="https://www.zybuluo.com/king/note/47271">Sublime Text 3 配置和使用方法</a></li>
+</ul>
+]]></description><link>http://morning.work/page/2016-03/sublime-text-for-nodejs-es2015-development.html</link><guid isPermaLink="true">http://morning.work/page/2016-03/sublime-text-for-nodejs-es2015-development.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 08 Mar 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[利用阿里云 OSS 搭建私有 Docker 仓库]]></title><description><![CDATA[<h2><a id="_2"></a>前言</h2>
 <p>最近开始研究 Docker 的应用，于是打算 <strong>搭建一个私有的 Docker 仓库，并使用阿里云的 OSS 作为存储引擎</strong> 。从网上搜索到的资料大都是比较旧的，新版本的 Registry 服务与旧版本的差别比较大，瞎折腾了一天，踩坑无数。突然有感， <strong>网上的过时资料（或者说得不清不楚的）真是坑死人不偿命</strong> ，还是得把这两天摸索出来的门道记录下来，一是好让自己过一段时间后再部署 Docker 仓库时不用重踩一次坑，二来也顺便给后来者提个醒。</p>
 <h2><a id="_7"></a>系统环境</h2>
 <h3><a id="_docker__9"></a>客户端 docker 版本</h3>
