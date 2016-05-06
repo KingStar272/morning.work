@@ -2,7 +2,6 @@
 title: 如果编写一个 Node.js API 客户端
 date: 2016-05-06
 author: 老雷
-draft: true
 ```
 
 
@@ -23,10 +22,10 @@ draft: true
 > Node.js 中的异步问题，应该使用传统的 `callback` 或者 ES6 里面的 `promise`，而不是使用
 > 比较奇葩的 `generator` 来做。`generator` 来做不妥的地方是：
 >
-> 1、`generator` 的出现不是为了解决异步问题
+> 1、`generator` 的出现不是为了解决异步问题；
 >
 > 2、使用 `generator` 是会传染的，当你尝试 `yield` 一下的时候，它要求你也必须在一个
-> `generator function` 内
+> `generator function` 内；
 >
 > 当然，如果这是一个内部项目，使用各种花式都是没问题的，只要定好规范就行。而如果这是要给别人使用
 > 的东西，应该照顾其他人的感受。
@@ -78,3 +77,175 @@ client.getTopics({page: 1}, (err, list) => {
   }
 });
 ```
+
+
+## 开工
+
+### 初始化项目
+
+1、首先新建项目目录：
+
+```bash
+$ mkdir cnodejs_api_client
+$ cd cnodejs_api_client
+$ git init
+```
+
+2、初始化 `package.json`：
+
+```bash
+$ npm init
+```
+
+3、新建文件 `index.js`：
+
+```javascript
+'use strict';
+
+const rawRequest = require('request');
+
+class CNodeJS {
+
+  constructor(options) {
+
+    this.options = options = options || {};
+    options.token = options.token || null;
+    options.url = options.url || 'https://cnodejs.org/api/v1/';
+
+  }
+
+  baseParams(params) {
+
+    params = Object.assign({}, params || {});
+    if (this.options.token) {
+      params.accesstoken = this.options.token;
+    }
+
+    return params;
+
+  }
+
+  request(method, path, params) {
+    return new Promise((resolve, reject) => {
+
+      const opts = {
+        method: method.toUpperCase(),
+        url: this.options.url + path,
+      };
+
+      if (opts.method === 'GET' || opts.method === 'HEAD') {
+        opts.qs = this.baseParams(params);
+      } else {
+        opts.formData = this.baseParams(params);
+      }
+
+      rawRequest(opts, (err, res, body) => {
+
+        if (err) return reject(err);
+        if (res.statusCode !== 200) return reject(new Error(`status ${res.statusCode}`));
+
+        let json;
+        try {
+          json = JSON.parse(body.toString());
+        } catch (err) {
+          return reject(new Error(`parse JSON data error: ${err.message}`));
+        }
+
+        resolve(json);
+
+      });
+
+    });
+  }
+
+}
+
+module.exports = CNodeJS;
+```
+
+说明：
+
++ 使用 `request` 模块来发送 HTTP 请求，需要执行命令来安装该模块：
+  `npm install request --save`
++ 我们实现了一个带有 `request` 方法的 `CNodeJS` 类，可以通过该方法给发送任意 API 请求，
+  比如请求主题首页是 `request('GET', 'topics', {page: 1})`
++ 如果初始化 `CNodeJS` 实例时传入了 `token`，则每次请求都会自动带上 `accesstoken` 参数
++ 服务器响应非 `200` 都表示 API 请求出错
+
+4、新建测试文件 `test.js`：
+
+```javascript
+'use strict';
+
+const CNodeJS = require('./');
+const client = new CNodeJS();
+
+client.request('GET', 'topics', {page: 1})
+  .then(ret => console.log(ret))
+  .catch(err => console.error(err));
+```
+
+5、执行命令 `node test.js` 即可看到类似以下的结果：
+
+```
+{ success: true,
+  data:
+   [ { id: '572afb6b15c24e592c16e1e6',
+       author_id: '504c28a2e2b845157708cb61',
+       tab: 'share',
+       content: '<div class="markdown-text"><p>之前的
+...
+```
+
+至此我们已经完成了一个 API 客户端最基本的功能，接下来根据不同的 API 封装一下 `request` 方法
+即可。
+
+### 支持 callback
+
+前文已经提到，**「作为一个 SDK，应该使用最 common 的技术或规范来实现」**，所以除了 `promise`
+之外还需要提供 `callback` 的支持。
+
+1、修改文件 `index.js` 中 `request(method, path, params) { }` 定义部分：
+
+```javascript
+  request(method, path, params, callback) {
+    return new Promise((_resolve, _reject) => {
+
+      const resolve = ret => {
+        _resolve(ret);
+        callback && callback(null, ret);
+      };
+
+      const reject = err => {
+        _reject(err);
+        callback && callback(err);
+      };
+
+      // 以下部分不变 ...
+```
+
+说明：
+
++ 将 `new Promise()` 中的 `resolve` 和 `reject` 分别改名为 `_resolve` 和 `_reject`
++ 在函数开头新建 `resolve` 和 `reject`，其作用是调用原来的 `_resolve` 和 `_reject`，同时
+  判断如果有 `callback` 参数，则也调用该函数
+
+2、将文件 `test.js` 中 `client.request()` 部分改为 callback 方式调用：
+
+```javascript
+client.request('GET', 'topics', {page: 1}, (err, ret) => {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log(ret);
+  }
+});
+```
+
+3、重新执行 `node test.js` 可以看到结果跟之前是一样的。
+
+通过简单的修改我们就已经实现了同时支持 `promise` 和 `callback` 两种异步回调方式。
+
+
+### 封装 API
+
