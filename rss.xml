@@ -1,4 +1,253 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Tue, 08 Mar 2016 01:18:46 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[在 Sublime Text 上配置 ES2015 开发环境]]></title><description><![CDATA[<h2><a id="_2"></a>安装</h2>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Sat, 07 May 2016 02:40:14 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[如何编写一个 Node.js API 客户端]]></title><description><![CDATA[<h2><a id="_2"></a>说几句无关主题的话</h2>
+<p>尽管这几年来 Node.js 已经得到越来越多的关注，连市场卖菜的老太婆都能分别得出哪个是写 Node.js
+的，哪个是写 PHP 的。然而，终究是不能跟老大哥 Java 比的。我们在使用一些第三方服务时常常会
+碰到一时半会还没有官方的 Node.js SDK 的问题，所以能自己随手撸一个刚好够用的 API 客户端来应急
+成了必备技能。</p>
+<p>说到这里，我忍不住要先吐槽一下：</p>
+<blockquote>
+<p>前几天在 CNodeJS 上看到一个帖子，<a href="https://cnodejs.org/topic/56ab1c0526d02fc6626bb383">拥抱 ES6——阿里云 OSS 推出 JavaScript SDK</a>
+对其中的滥用 <code>generator</code> 还 <strong>洋洋自得</strong> 的行为有点不满，之前也遇到过该厂的 SDK 强行返回
+<code>generator</code> 而放弃使用，我想说我 <strong>已经忍了很久</strong> 了。</p>
+<p><strong>「我自己写得爽，也希望把这种“爽”带给用户」</strong> -- <em>该 SDK 的维护者如是说</em></p>
+<p><strong>作为一个 SDK（尤其是官方出品的），应该使用最 common 的技术或规范来实现</strong>。比如在
+Node.js 中的异步问题，应该使用传统的 <code>callback</code> 或者 ES6 里面的 <code>promise</code>，而不是使用
+比较奇葩的 <code>generator</code> 来做。<code>generator</code> 来做不妥的地方是：</p>
+<ul>
+<li><code>generator</code> 的出现不是为了解决异步问题</li>
+<li>使用 <code>generator</code> 是会传染的，当你尝试 <code>yield</code> 一下的时候，它要求你也必须在一个
+<code>generator function</code> 内</li>
+</ul>
+<p>当然，如果这是一个内部项目，使用各种花式姿势都是没问题的，只要定好规范就行。而如果这是要给别人
+使用的东西，应该照顾其他人的感受。</p>
+<p>所以我们要自己动手写一个 SDK 还有另外一种情况就是 <strong>对官方的 SDK 并不满意</strong>。</p>
+<p>好了，我吐槽完了。</p>
+</blockquote>
+<h2><a id="_33"></a>运行环境</h2>
+<p>最近一年来，Node.js 相继发布了 4.0、5.0、6.0（前几天），7.0 也已经蓄势待发，但目前来看
+<strong>主流还是 4.x 版本</strong>。Node.js 4.x 支持一部分的 ES6 语法，比如箭头函数、<code>let</code> 和 <code>const</code>
+等，解决异步问题也可以直接使用 ES6 的 <code>promise</code>。</p>
+<p>如果没有特殊情况，新写的程序可以不用考虑在 0.12 或者更早的 0.10 上运行，如果以后确实需要在这些
+版本上执行，可以借用 Babel 来编译成 ES5 语法的程序。</p>
+<p>API 接口将同时支持 <code>callback</code> 和 <code>promise</code> 两种回调方式。<code>promise</code> 直接使用 ES6 原生的
+<code>Promise</code> 对象而不是使用 <code>bluebird</code> 模块。尽管使用 <code>bluebird</code> 会有更多的功能和更好的性能，
+但在这样一个需要网络 IO 的场景下，那么一点性能差别基本可以忽略不计，而作为一个极简主义者，觉得
+没太大必要引入这么一个依赖库。</p>
+<h2><a id="_48"></a>功能设计</h2>
+<p>本文将以 <a href="https://cnodejs.org/api">CNodeJS 提供的 API</a> 为例。CNodeJS 的 API 分两种：</p>
+<ul>
+<li>公共接口，比如获取主题列表和详情等</li>
+<li>用户接口，需要提供 <code>accesstoken</code> 参数来验证用户权限（<code>accessToken</code> 可以在个人设置界面中
+得到）</li>
+</ul>
+<p>程序的使用方法如下：</p>
+<pre><code class="prettyprint javascript">'use strict';
+
+const client = new CNodeJS({
+  token: 'xxxxxxx', // accessToken，可为空
+});
+
+// promise 方式调用
+client.getTopics({page: 1})
+  .then(list =&gt; console.log(list))
+  .catch(err =&gt; console.error(err));
+
+// callback 方式调用
+client.getTopics({page: 1}, (err, list) =&gt; {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log(list);
+  }
+});
+</code></pre>
+<h2><a id="_81"></a>初始化项目</h2>
+<p>1、首先新建项目目录：</p>
+<pre><code class="prettyprint bash">$ mkdir cnodejs_api_client
+$ cd cnodejs_api_client
+$ git init
+</code></pre>
+<p>2、初始化 <code>package.json</code>：</p>
+<pre><code class="prettyprint bash">$ npm init
+</code></pre>
+<p>3、新建文件 <code>index.js</code>：</p>
+<pre><code class="prettyprint javascript">'use strict';
+
+const rawRequest = require('request');
+
+class CNodeJS {
+
+  constructor(options) {
+
+    this.options = options = options || {};
+    options.token = options.token || null;
+    options.url = options.url || 'https://cnodejs.org/api/v1/';
+
+  }
+
+  baseParams(params) {
+
+    params = Object.assign({}, params || {});
+    if (this.options.token) {
+      params.accesstoken = this.options.token;
+    }
+
+    return params;
+
+  }
+
+  request(method, path, params, callback) {
+    return new Promise((resolve, reject) =&gt; {
+
+      const opts = {
+        method: method.toUpperCase(),
+        url: this.options.url + path,
+        json: true,
+      };
+
+      if (opts.method === 'GET' || opts.method === 'HEAD') {
+        opts.qs = this.baseParams(params);
+      } else {
+        opts.body = this.baseParams(params);
+      }
+
+      rawRequest(opts, (err, res, body) =&gt; {
+
+        if (err) return reject(err);
+
+        if (body.success) {
+          resolve(body);
+        } else {
+          reject(new Error(body.error_msg));
+        }
+
+      });
+
+    });
+  }
+
+}
+
+module.exports = CNodeJS;
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>使用 <code>request</code> 模块来发送 HTTP 请求，需要执行命令来安装该模块：
+<code>npm install request --save</code></li>
+<li>我们实现了一个带有 <code>request</code> 方法的 <code>CNodeJS</code> 类，可以通过该方法来发送任意 API 请求，
+比如请求主题首页是 <code>request('GET', 'topics', {page: 1})</code></li>
+<li>如果初始化 <code>CNodeJS</code> 实例时传入了 <code>token</code>，则每次请求都会自动带上 <code>accesstoken</code> 参数</li>
+<li>返回的结果 <code>success=true</code> 表示 API 请求成功，则直接回调该结果；如果失败则
+<code>error_msg</code> 表示出错信息</li>
+</ul>
+<p>4、新建测试文件 <code>test.js</code>：</p>
+<pre><code class="prettyprint javascript">'use strict';
+
+const CNodeJS = require('./');
+const client = new CNodeJS();
+
+client.request('GET', 'topics', {page: 1})
+  .then(ret =&gt; console.log(ret))
+  .catch(err =&gt; console.error(err));
+</code></pre>
+<p>5、执行命令 <code>node test.js</code> 即可看到类似以下的结果：</p>
+<pre><code class="prettyprint javascript">{ success: true,
+  data:
+   [ { id: '572afb6b15c24e592c16e1e6',
+       author_id: '504c28a2e2b845157708cb61',
+       tab: 'share',
+       content: '.......'
+...
+</code></pre>
+<p>至此我们已经完成了一个 API 客户端最基本的功能，接下来根据不同的 API 封装一下 <code>request</code> 方法
+即可。</p>
+<h2><a id="_callback_198"></a>支持 callback</h2>
+<p>前文已经提到，<strong>「作为一个 SDK，应该使用最 common 的技术或规范来实现」</strong>，所以除了 <code>promise</code>
+之外还需要提供 <code>callback</code> 的支持。</p>
+<p>1、修改文件 <code>index.js</code> 中 <code>request(method, path, params) { }</code> 定义部分：</p>
+<pre><code class="prettyprint javascript">request(method, path, params, callback) {
+  return new Promise((_resolve, _reject) =&gt; {
+
+    const resolve = ret =&gt; {
+      _resolve(ret);
+      callback &amp;&amp; callback(null, ret);
+    };
+
+    const reject = err =&gt; {
+      _reject(err);
+      callback &amp;&amp; callback(err);
+    };
+
+    // 以下部分不变
+    // ...
+  });
+}
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>将 <code>new Promise()</code> 中的 <code>resolve</code> 和 <code>reject</code> 分别改名为 <code>_resolve</code> 和 <code>_reject</code></li>
+<li>在函数开头新建 <code>resolve</code> 和 <code>reject</code>，其作用是调用原来的 <code>_resolve</code> 和 <code>_reject</code>，同时
+判断如果有 <code>callback</code> 参数，则也调用该函数</li>
+</ul>
+<p>2、将文件 <code>test.js</code> 中 <code>client.request()</code> 部分改为 callback 方式调用：</p>
+<pre><code class="prettyprint javascript">client.request('GET', 'topics', {page: 1}, (err, ret) =&gt; {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log(ret);
+  }
+});
+</code></pre>
+<p>3、重新执行 <code>node test.js</code> 可以看到结果跟之前是一样的。</p>
+<p>通过简单的修改我们就已经实现了同时支持 <code>promise</code> 和 <code>callback</code> 两种异步回调方式。</p>
+<h2><a id="_API_248"></a>封装 API</h2>
+<p>前文我们实现的 <code>request()</code> 方法已经可以调用任意的 API 了，但是为了是方便，一般需要为每个 API
+单独封装一个方法，比如：</p>
+<ul>
+<li><code>getTopics()</code> - 获取主题首页</li>
+<li><code>getTopicDetail()</code> - 获取主题详情</li>
+<li><code>testToken()</code> - 测试 <code>token</code> 是否正确</li>
+</ul>
+<p>对于 <code>getTopics()</code> 可以这样简单地实现：</p>
+<pre><code class="prettyprint javascript">getTopics(params, callback) {
+  return this.request('GET', 'topics', params, callback);
+}
+</code></pre>
+<p>但其返回的结果是这样结构的：</p>
+<pre><code class="prettyprint javascript">{ success: true,
+  data: []
+}
+</code></pre>
+<p>要取得结果还要读取里面的 <code>data</code>，针对这种情况我们可以改成这样：</p>
+<pre><code class="prettyprint javascript">getTopics(params, callback) {
+  return this.request('GET', 'topics', params, callback)
+             .then(ret =&gt; Promise.resolve(ret.data));
+}
+</code></pre>
+<p><code>getTopicDetail()</code> 和 <code>testToken()</code> 可以这样实现：</p>
+<pre><code class="prettyprint javascript">getTopicDetail(params, callback) {
+  return this.request('GET', `topic/${params.id}`, params, callback)
+             .then(ret =&gt; Promise.resolve(ret.data));
+}
+
+testToken(callback) {
+  return this.request('POST', `accesstoken`, {}, callback);
+}
+</code></pre>
+<p>对于其他的 API 也可以采用类似的方法一一实现。</p>
+<h2><a id="_298"></a>结尾</h2>
+<p>由此看来编写一个简单的 API 客户端也不是一件很难的事情，本文介绍的方法已经能适用大多数的情况了。
+当然还有些问题是没提到的，比如阿里云 OSS 这种 SDK 还要考虑 stream 上传问题，还有断点续传。
+对于安全性要求较高的 SDK 可能还需要做数据签名等等。</p>
+<p>在编写本文的时候，通过阅读 <code>request</code> 的 API 文档我才发现原来可以通过 <code>json=true</code> 选项来让
+它自动解析返回的结果，这样确实能少写好几行代码了。</p>
+<p>另外我还是忍不住再吐槽一下，CNodeJS 的 API 接口设计得并不一致，响应成功时并不是所有数据都放在
+<code>data</code> 里面（比如 <code>testToken()</code>）。</p>
+<p>发觉最近有点上火了 ^_^</p>
+]]></description><link>http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</link><guid isPermaLink="true">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Sat, 07 May 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 使用 ES6 语法的一些心得]]></title><description><![CDATA[<h2><a id="_const_3"></a>使用 const</h2>
+<p>在 ES6 之前，声明变量只能使用关键字<code>var</code>，而<code>var</code>有一个神奇的特效，</p>
+<h2><a id="use_strict_8"></a>'use strict'</h2>
+<h2><a id="async__await_10"></a>async 和 await</h2>
+]]></description><link>http://morning.work/page/draft/es6-tips-on-nodejs.html</link><guid isPermaLink="true">http://morning.work/page/draft/es6-tips-on-nodejs.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Mon, 14 Mar 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[在 Sublime Text 上配置 ES2015 开发环境]]></title><description><![CDATA[<h2><a id="_2"></a>安装</h2>
 <p>首先访问 Sublime Text 的官网 <a href="https://www.sublimetext.com/3">https://www.sublimetext.com/3</a> 下载对应系统版本的安装包：</p>
 <p><img src="../../images/2016-03/1-1.png" alt="图 1-1"></p>
 <p>安装提示安装完毕之后，启动 Sublime Text ，其界面如下：</p>
