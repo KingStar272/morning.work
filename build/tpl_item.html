@@ -170,8 +170,6 @@ li > p {
   ga('send', 'pageview');
 </script>
 
-{% if language == "en" %}
-
 <div id="disqus_thread"></div>
 <script>
 var disqus_config = function () {
@@ -185,26 +183,3 @@ var disqus_config = function () {
   (d.head || d.body).appendChild(s);
 })();
 </script>
-
-{% else %}
-
-<!-- 多说评论框 start -->
-<div class="ds-thread" data-thread-key="{{url|escape}}" data-title="{{title|escape}} - 早起搬砖 morning.work" data-url="http://morning.work/page{{url|escape}}"></div>
-<!-- 多说评论框 end -->
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {
-  short_name: "morningwork"
-};
-(function() {
-  var ds = document.createElement('script');
-  ds.type = 'text/javascript';
-  ds.async = true;
-  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-  ds.charset = 'UTF-8';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
-})();
-</script>
-<!-- 多说公共JS代码 end -->
-
-{% endif %}

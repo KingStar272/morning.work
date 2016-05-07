@@ -39,7 +39,7 @@ blockquote {
   font-size: 14px;
   color: #333;
   padding: 8px 0 8px 2.5em;
-  font-style: italic;
+  font-style: normal;
   background-color: #f7f7f8;
   margin: 0;
   border-left: 4px solid #ddd;
@@ -171,14 +171,14 @@ CPython version: 2.7.9
 OpenSSL version: OpenSSL 1.0.1j 15 Oct 2014
 </code></pre>
 <p>如果系统没有<code>docker-compose</code>命令，可以执行以下命令安装：</p>
-<pre><code class="prettyprint bash">$ curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose
-$ chmod +x /usr/local/bin/docker-compose
+<pre><code class="language-bash">$ curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname <span class="hljs-_">-s</span>`-`uname -m` &gt; /usr/<span class="hljs-built_in">local</span>/bin/docker-compose
+$ chmod +x /usr/<span class="hljs-built_in">local</span>/bin/docker-compose
 </code></pre>
 <h2><a id="_Registry__54"></a>启动 Registry 服务</h2>
 <h3><a id="_56"></a>安装</h3>
 <p>为了发挥 Docker 容器技术的优势，我们直接使用 Docker 镜像来部署服务。</p>
 <p>首先在 <strong>服务器端</strong> 新建工作目录并进入该目录：</p>
-<pre><code class="prettyprint bash">$ mkdir my_registry &amp;&amp; cd my_registry
+<pre><code class="language-bash">$ mkdir my_registry &amp;&amp; <span class="hljs-built_in">cd</span> my_registry
 </code></pre>
 <p>在当前目录下新建文件<code>docker-compose.yml</code>：</p>
 <pre><code>registry:
@@ -200,13 +200,13 @@ $ chmod +x /usr/local/bin/docker-compose
 <li><code>data</code>目录用于存放<code>docker push</code>时上传上来的文件</li>
 </ul>
 <p>执行以下命令新建这两个目录：</p>
-<pre><code class="prettyprint bash">$ mkdir auth &amp;&amp; mkdir data
+<pre><code class="language-bash">$ mkdir auth &amp;&amp; mkdir data
 </code></pre>
 <p>接着，创建一个测试账号（用户名：<code>test</code>，密码：<code>123456</code>）并保存到<code>auth/htpasswd</code>中：</p>
-<pre><code class="prettyprint bash">$ htpasswd -Bbn test 123456 &gt; auth/htpasswd
+<pre><code class="language-bash">$ htpasswd -Bbn <span class="hljs-built_in">test</span> 123456 &gt; auth/htpasswd
 </code></pre>
 <p>现在我们来启动 Registry 服务：</p>
-<pre><code class="prettyprint bash">$ docker-compose up -d
+<pre><code class="language-bash">$ docker-compose up <span class="hljs-_">-d</span>
 </code></pre>
 <p>由于本地没有名为<code>registry:2</code>的镜像，控制台可能会打印出如下信息然后暂停一阵：</p>
 <pre><code>Pulling registry (registry:2)...
@@ -223,15 +223,15 @@ registry_1 | time=&quot;2016-01-13T21:57:14Z&quot; level=info msg=&quot;listenin
 <h3><a id="_124"></a>测试</h3>
 <p>现在再打开一个命令行窗口，并进入<code>my_registry</code>目录。</p>
 <p>执行以下命令创建一个新镜像：</p>
-<pre><code class="prettyprint bash">$ docker tag registry:2 127.0.0.1:5000/test/registry
+<pre><code class="language-bash">$ docker tag registry:2 127.0.0.1:5000/<span class="hljs-built_in">test</span>/registry
 </code></pre>
 <p>说明：镜像名为<code>127.0.0.1:5000/test/registry</code>，其中<code>127.0.0.1:5000</code>表示服务器地址，<code>test/registry</code>表示镜像名。</p>
 <p>上传之前要先登录：</p>
-<pre><code class="prettyprint bash">$ docker login 127.0.0.1:5000
+<pre><code class="language-bash">$ docker login 127.0.0.1:5000
 </code></pre>
 <p>说明：按提示输入上文创建的用户名和密码，邮箱可以不用填写。</p>
 <p>登陆成功后，执行以下命令即可上传：</p>
-<pre><code class="prettyprint bash">$ docker push 127.0.0.1:5000/test/registry
+<pre><code class="language-bash">$ docker push 127.0.0.1:5000/<span class="hljs-built_in">test</span>/registry
 </code></pre>
 <h2><a id="_OSS_151"></a>配置阿里云 OSS</h2>
 <p>首先在刚才执行<code>docker-compose up</code>的命令行窗口中按<code>CTRL + C</code>退出服务。</p>
@@ -256,10 +256,10 @@ registry_1 | time=&quot;2016-01-13T21:57:14Z&quot; level=info msg=&quot;listenin
 </code></pre>
 <p>说明：由于使用阿里云 OSS 作为存储引擎，所以不需要再将文件存储到本地，因此将<code>volumes</code>中的<code>data</code>目录配置去掉；<code>environment</code>新增了<code>REGISTRY_STORAGE</code>系列的环境变量配置，需要将该部分的值替换为对应的<code>accesskey_id</code>、<code>accesskey_secret</code>、<code>region</code>、<code>bucket</code>和<code>endpoint</code>等信息。</p>
 <p>删除<code>data</code>目录并重新启动服务：</p>
-<pre><code class="prettyprint bash">$ rm -Rf data &amp;&amp; docker-compose up
+<pre><code class="language-bash">$ rm -Rf data &amp;&amp; docker-compose up
 </code></pre>
 <p>再执行刚才的命令上传镜像：</p>
-<pre><code class="prettyprint bash">$ docker push 127.0.0.1:5000/test/registry
+<pre><code class="language-bash">$ docker push 127.0.0.1:5000/<span class="hljs-built_in">test</span>/registry
 </code></pre>
 <p>可以感觉到这次的上传速度没有第一次的快，因为它还需要上传到阿里云 OSS。待上传完毕，可以打开阿里云 OSS 的控制台界面检查文件是否被正确上传上去了。</p>
 <h2><a id="_SSL__194"></a>配置 SSL 证书</h2>
@@ -361,14 +361,14 @@ registry:
 <p>说明：如果本地不存在名为<code>nginx:1.9</code>的镜像，控制台可能会打印出<code>Pulling nginx (nginx:1.9)...</code>并先下载该镜像。</p>
 <h3><a id="_309"></a>测试</h3>
 <p>假设刚才配置的证书域名为<code>docker.ucdok.com</code>，现在我们 <strong>在客户端执行以下命令</strong> 登录：</p>
-<pre><code class="prettyprint bash">$ docker login docker.ucdok.com
+<pre><code class="language-bash">$ docker login docker.ucdok.com
 </code></pre>
 <p>生成新的镜像：</p>
-<pre><code class="prettyprint bash">$ docker pull ubuntu
-$ docker tag ubuntu docker.ucdok.com/test/ubuntu
+<pre><code class="language-bash">$ docker pull ubuntu
+$ docker tag ubuntu docker.ucdok.com/<span class="hljs-built_in">test</span>/ubuntu
 </code></pre>
 <p>上传新的镜像：</p>
-<pre><code class="prettyprint bash">$ docker push docker.ucdok.com/test/ubuntu
+<pre><code class="language-bash">$ docker push docker.ucdok.com/<span class="hljs-built_in">test</span>/ubuntu
 </code></pre>
 <h2><a id="_331"></a>其他问题</h2>
 <h3><a id="_333"></a>增加用户</h3>
@@ -377,7 +377,7 @@ $ docker tag ubuntu docker.ucdok.com/test/ubuntu
 </code></pre>
 <h3><a id="_341"></a>在后台启动服务</h3>
 <p>启动服务时增加<code>-d</code>参数：</p>
-<pre><code class="prettyprint bash">$ docker-compose up -d
+<pre><code class="language-bash">$ docker-compose up <span class="hljs-_">-d</span>
 </code></pre>
 <h3><a id="_349"></a>停止后台服务</h3>
 <p>在<code>docker-compose.yml</code>文件所在目录执行以下命令：</p>
@@ -405,11 +405,7 @@ $ docker tag ubuntu docker.ucdok.com/test/ubuntu
 </body>
 </html>
 
-<link rel="stylesheet" href="//cdn.staticfile.org/prettify/r298/prettify.min.css">
-<script src="//cdn.staticfile.org/prettify/r298/prettify.min.js"></script>
-<script>
-prettyPrint();
-</script>
+<link rel="stylesheet" href="/styles/github.css" />
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

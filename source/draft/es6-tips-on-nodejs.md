@@ -2,6 +2,7 @@
 title: Node.js 使用 ES6 语法的一些心得
 date: 2016-03-14
 author: 老雷
+draft
 ```
 
 
