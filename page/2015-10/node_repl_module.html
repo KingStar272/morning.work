@@ -39,7 +39,7 @@ blockquote {
   font-size: 14px;
   color: #333;
   padding: 8px 0 8px 2.5em;
-  font-style: italic;
+  font-style: normal;
   background-color: #f7f7f8;
   margin: 0;
   border-left: 4px solid #ddd;
@@ -141,7 +141,7 @@ li > p {
   <article id="content">
     <p>相信在学习 Node.js 的时候，对 Node.js 的 REPL 并不陌生。我们可以在 REPL 里面输入 JavaScript 代码并立刻看到效果，常常用来试用一些新的模块，甚至直接把 REPL 当计算器来用。</p>
 <p>最近在修改以前使用 Node.js 写的<a href="https://github.com/leizongmin/node-segment">中文分词模块</a>时，想要看到代码修改后的效果，但是又不方便马上写测试代码，自然想到使用 REPL 来测试。比如执行以下命令启动 Node.js 的 REPL 界面：</p>
-<pre><code class="prettyprint bash">$ node
+<pre><code class="language-bash">$ node
 </code></pre>
 <p>然后在控制台界面中输入要测试的代码（其中<code>&gt;</code>开头的行是手工输入并按回车的代码，其他部分为 REPL 的输出结果）：</p>
 <pre><code>&gt; var Segment = require('./')
@@ -157,28 +157,28 @@ undefined
 <p>但当我修改了模块的代码后，要看效果时又要重复输入上面的代码，这种<strong>做重复无意义工作的行为绝非是一名有理想的程序员想要的</strong>。于是，我决定自己<strong>定制一个 REPL</strong>，这样就可以预先执行一些初始化代码，一启动程序就可以进入主题了。</p>
 <p>看了一下<a href="https://nodejs.org/api/repl.html">REPL 模块的文档</a>之后，大概搞清了怎么个用法，接下来开始写代码了。</p>
 <p>首先在项目的根目录下新建名为<code>repl</code>的文件，代码如下：</p>
-<pre><code class="prettyprint javascript">#!/usr/bin/env node
+<pre><code class="language-javascript"><span class="hljs-meta">#!/usr/bin/env node</span>
 
-var repl = require('repl');
+<span class="hljs-keyword">var</span> repl = <span class="hljs-built_in">require</span>(<span class="hljs-string">'repl'</span>);
 
-// 创建一个 REPL
-var r = repl.start('&gt; ');
-// context 即为 REPL 中的上下文环境
-var c = r.context;
+<span class="hljs-comment">// 创建一个 REPL</span>
+<span class="hljs-keyword">var</span> r = repl.start(<span class="hljs-string">'&gt; '</span>);
+<span class="hljs-comment">// context 即为 REPL 中的上下文环境</span>
+<span class="hljs-keyword">var</span> c = r.context;
 
-// 测试用的初始化代码
-// 在 REPL 中可以通过 Segment 和 segment 来访问以下两个变量
-c.Segment = require('./');
-c.segment = new c.Segment();
+<span class="hljs-comment">// 测试用的初始化代码</span>
+<span class="hljs-comment">// 在 REPL 中可以通过 Segment 和 segment 来访问以下两个变量</span>
+c.Segment = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./'</span>);
+c.segment = <span class="hljs-keyword">new</span> c.Segment();
 c.segment.useDefault();
 
-// 精简函数名，方便手工输入，在 REPL 中可以通过 s 来访问此函数
-c.s = function () {
-  return c.segment.doSegment.apply(c.segment, arguments);
+<span class="hljs-comment">// 精简函数名，方便手工输入，在 REPL 中可以通过 s 来访问此函数</span>
+c.s = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">return</span> c.segment.doSegment.apply(c.segment, <span class="hljs-built_in">arguments</span>);
 };
 </code></pre>
 <p>文件第一行的<code>#!/usr/bin/env node</code>表示这是一个脚本文件，使用<code>node</code>命令来执行它，所以还要给这个文件加上可执行权限：</p>
-<pre><code class="prettyprint bash">$ chmod +x repl
+<pre><code class="language-bash">$ chmod +x repl
 </code></pre>
 <p>现在就可以试试这个定制的 REPL 了：</p>
 <pre><code>$ ./repl
@@ -191,41 +191,41 @@ c.s = function () {
 <p>当我修改了模块代码，为什么要重启 REPL 呢，难道不能重新加载一次这个模块，然后该干嘛还干嘛？</p>
 <p>从<a href="https://nodejs.org/api/modules.html#modules_caching">Node.js 的模块系统文档</a>可知，在使用<code>require()</code>来加载模块后，相关的文件内容会被缓存到<code>require.cache[filename]</code>中，当再次<code>require()</code>此文件的时候并不会重新加载。所以要想在不重启进程的情况下重新加载模块，我们就要清理这个模块相关的所有缓存。</p>
 <p>把<code>repl</code>文件改成以下代码：</p>
-<pre><code class="prettyprint javascript">#!/usr/bin/env node
+<pre><code class="language-javascript"><span class="hljs-meta">#!/usr/bin/env node</span>
 
-var fs = require('fs');
-var path = require('path');
-var repl = require('repl');
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+<span class="hljs-keyword">var</span> repl = <span class="hljs-built_in">require</span>(<span class="hljs-string">'repl'</span>);
 
 
-var r = repl.start('&gt; ');
-var c = r.context;
+<span class="hljs-keyword">var</span> r = repl.start(<span class="hljs-string">'&gt; '</span>);
+<span class="hljs-keyword">var</span> c = r.context;
 
-// 原来的初始化代码放到此函数内
-c._load = function () {
-  c.Segment = require('./');
-  c.segment = new c.Segment();
+<span class="hljs-comment">// 原来的初始化代码放到此函数内</span>
+c._load = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  c.Segment = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./'</span>);
+  c.segment = <span class="hljs-keyword">new</span> c.Segment();
   c.segment.useDefault();
-  c.s = function () {
-    return c.segment.doSegment.apply(c.segment, arguments);
+  c.s = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> c.segment.doSegment.apply(c.segment, <span class="hljs-built_in">arguments</span>);
   };
 };
 
-// 在 REPL 中执行 reload()可重新加载模块
-c.reload = function () {
-  var t = Date.now();
+<span class="hljs-comment">// 在 REPL 中执行 reload()可重新加载模块</span>
+c.reload = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> t = <span class="hljs-built_in">Date</span>.now();
 
-  // 清空当前项目根目录下所有文件的缓存
-  var dir = path.resolve(__dirname) + path.sep;
-  for (var i in require.cache) {
-    if (i.indexOf(dir) === 0) {
-      delete require.cache[i];
+  <span class="hljs-comment">// 清空当前项目根目录下所有文件的缓存</span>
+  <span class="hljs-keyword">var</span> dir = path.resolve(__dirname) + path.sep;
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">require</span>.cache) {
+    <span class="hljs-keyword">if</span> (i.indexOf(dir) === <span class="hljs-number">0</span>) {
+      <span class="hljs-keyword">delete</span> <span class="hljs-built_in">require</span>.cache[i];
     }
   }
 
-  // 重新执行初始化
+  <span class="hljs-comment">// 重新执行初始化</span>
   c._load();
-  console.log('OK. (spent %sms)', Date.now() - t);
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'OK. (spent %sms)'</span>, <span class="hljs-built_in">Date</span>.now() - t);
 }
 
 c._load();
@@ -262,11 +262,7 @@ undefined
 </body>
 </html>
 
-<link rel="stylesheet" href="//cdn.staticfile.org/prettify/r298/prettify.min.css">
-<script src="//cdn.staticfile.org/prettify/r298/prettify.min.js"></script>
-<script>
-prettyPrint();
-</script>
+<link rel="stylesheet" href="/styles/github.css" />
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -277,23 +273,16 @@ prettyPrint();
   ga('send', 'pageview');
 </script>
 
-
-<!-- 多说评论框 start -->
-<div class="ds-thread" data-thread-key="/2015-10/node_repl_module.html" data-title="Node.js 定制 REPL 的妙用 - 早起搬砖 morning.work" data-url="http://morning.work/page/2015-10/node_repl_module.html"></div>
-<!-- 多说评论框 end -->
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {
-  short_name: "morningwork"
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+  this.page.url = 'http://morning.work/page/2015-10/node_repl_module.html';
+  this.page.identifier = '/2015-10/node_repl_module.html';
 };
-(function() {
-  var ds = document.createElement('script');
-  ds.type = 'text/javascript';
-  ds.async = true;
-  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-  ds.charset = 'UTF-8';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+(function() {  // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  s.src = '//leizongmin-writings.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
 })();
 </script>
-<!-- 多说公共JS代码 end -->
-

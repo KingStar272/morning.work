@@ -39,7 +39,7 @@ blockquote {
   font-size: 14px;
   color: #333;
   padding: 8px 0 8px 2.5em;
-  font-style: italic;
+  font-style: normal;
   background-color: #f7f7f8;
   margin: 0;
   border-left: 4px solid #ddd;
@@ -151,16 +151,16 @@ li > p {
 <p>由于要操作的是文本文件，并且文件中的内容每一行记录均使用换行符<code>\n</code>来分隔，我编写了一个模块用来按行从一个<code>stream</code>中读取内容，以及按行往一个<code>stream</code>中写入内容，下面将介绍这个模块的简单使用方法。</p>
 <h3><a id="_19"></a>安装模块</h3>
 <p>执行以下命令安装</p>
-<pre><code class="prettyprint bash">$ npm install lei-stream --save
+<pre><code class="language-bash">$ npm install lei-stream --save
 </code></pre>
 <h3><a id="_27"></a>按行读取流</h3>
-<pre><code class="prettyprint javascript">var readLine = require('lei-stream').readLine;
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> readLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).readLine;
 
-readLine('./myfile.txt').go(function (data, next) {
-  console.log(data);
+readLine(<span class="hljs-string">'./myfile.txt'</span>).go(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data, next</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(data);
   next();
-}, function () {
-  console.log('end');
+}, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
 });
 </code></pre>
 <p>说明：</p>
@@ -170,30 +170,30 @@ readLine('./myfile.txt').go(function (data, next) {
 <li><code>readLine()</code>的第三个参数为整个流读取完毕后的回调函数</li>
 </ul>
 <p>另外，我们也可以指定各个选项来达到更个性化的控制：</p>
-<pre><code class="prettyprint javascript">var fs = require('fs');
-var readLine = require('lei-stream').readLine;
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> readLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).readLine;
 
-// readLineStream 第一个参数为 ReadStream 实例，也可以为文件名
-var s = readLine(fs.createReadStream('./myfile.txt'), {
-  // 换行符，默认\n
-  newline: '\n',
-  // 是否自动读取下一行，默认 false
-  autoNext: false,
-  // 编码器，可以为函数或字符串（内置编码器：json，base64），默认 null
-  encoding: function (data) {
-    return JSON.parse(data);
+<span class="hljs-comment">// readLineStream 第一个参数为 ReadStream 实例，也可以为文件名</span>
+<span class="hljs-keyword">var</span> s = readLine(fs.createReadStream(<span class="hljs-string">'./myfile.txt'</span>), {
+  <span class="hljs-comment">// 换行符，默认\n</span>
+  newline: <span class="hljs-string">'\n'</span>,
+  <span class="hljs-comment">// 是否自动读取下一行，默认 false</span>
+  autoNext: <span class="hljs-literal">false</span>,
+  <span class="hljs-comment">// 编码器，可以为函数或字符串（内置编码器：json，base64），默认 null</span>
+  encoding: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.parse(data);
   }
 });
 
-// 读取到一行数据时触发 data 事件
-s.on('data', function (data) {
-  console.log(data);
+<span class="hljs-comment">// 读取到一行数据时触发 data 事件</span>
+s.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(data);
   s.next();
 });
 
-// 流结束时触发 end 事件
-s.on('end', function () {
-  console.log('end');
+<span class="hljs-comment">// 流结束时触发 end 事件</span>
+s.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
 });
 </code></pre>
 <p>以下是关于<code>readLine()</code>的第二个参数的说明：</p>
@@ -209,31 +209,31 @@ s.on('end', function () {
 <li>当到达流末尾时，所有数据已读取完毕，会触发<code>end</code>事件</li>
 </ul>
 <h3><a id="_88"></a>按行写流</h3>
-<pre><code class="prettyprint javascript">var fs = require('fs');
-var writeLineStream = require('lei-stream').writeLine;
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> writeLineStream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).writeLine;
 
-// writeLineStream 第一个参数为 ReadStream 实例，也可以为文件名
-var s = writeLineStream(fs.createWriteStream('./myfile.txt'), {
-  // 换行符，默认\n
-  newline: '\n',
-  // 编码器，可以为函数或字符串（内置编码器：json，base64），默认 null
-  encoding: function (data) {
-    return JSON.stringify(data);
+<span class="hljs-comment">// writeLineStream 第一个参数为 ReadStream 实例，也可以为文件名</span>
+<span class="hljs-keyword">var</span> s = writeLineStream(fs.createWriteStream(<span class="hljs-string">'./myfile.txt'</span>), {
+  <span class="hljs-comment">// 换行符，默认\n</span>
+  newline: <span class="hljs-string">'\n'</span>,
+  <span class="hljs-comment">// 编码器，可以为函数或字符串（内置编码器：json，base64），默认 null</span>
+  encoding: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.stringify(data);
   },
-  // 缓存的行数，默认为 0（表示不缓存），此选项主要用于优化写文件性能，当数量缓存的内容超过该数量时再一次性写入到流中，可以提高写速度
-  cacheLines: 0
+  <span class="hljs-comment">// 缓存的行数，默认为 0（表示不缓存），此选项主要用于优化写文件性能，当数量缓存的内容超过该数量时再一次性写入到流中，可以提高写速度</span>
+  cacheLines: <span class="hljs-number">0</span>
 });
 
-// 写一行
-s.write(data, function () {
-  // 回调函数可选
-  console.log('wrote');
+<span class="hljs-comment">// 写一行</span>
+s.write(data, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 回调函数可选</span>
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'wrote'</span>);
 });
 
-// 结束
-s.end(function () {
-  // 回调函数可选
-  console.log('end');
+<span class="hljs-comment">// 结束</span>
+s.end(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 回调函数可选</span>
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
 });
 </code></pre>
 <p>说明：</p>
@@ -247,58 +247,58 @@ s.end(function () {
 <h3><a id="_129"></a>实验</h3>
 <p>我们在使用<code>fs.createReadStream()</code>创建一个读文件流后，文件内容便源源不断地被读取出来，不断地触发<code>data</code>事件。然后在<code>ReadStream</code>的<code>data</code>事件里面处理，并写入到<code>WriteStream</code>中。然而，大多数情况下读文件的速度总比写文件的速度快，这样便导致大量的数据被积压在内存中，当要读取的文件很大时，甚至会导致因占用内存太多而导致整个 Node.js 进程崩溃。</p>
 <p>以下是我通过<code>lei-stream</code>编写的一个例子，按行读取数据并写入到另一个文件中（在写入文件时不等待写入完成即刻执行<code>next()</code>来读取下一行，用于模拟不限制读取速度）：</p>
-<pre><code class="prettyprint javascript">var readLine = require('lei-stream').readLine;
-var writeLine = require('lei-stream').writeLine;
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> readLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).readLine;
+<span class="hljs-keyword">var</span> writeLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).writeLine;
 
-// 一个几百 M 的文本文件
-var inputFile = '/Volumes/Works/data/xh.txt';
-var outputFile = '/Volumes/Works/tmp/output.txt';
+<span class="hljs-comment">// 一个几百 M 的文本文件</span>
+<span class="hljs-keyword">var</span> inputFile = <span class="hljs-string">'/Volumes/Works/data/xh.txt'</span>;
+<span class="hljs-keyword">var</span> outputFile = <span class="hljs-string">'/Volumes/Works/tmp/output.txt'</span>;
 
-var output = writeLine(outputFile);
-var counter = 0;
-var startTime = Date.now();
+<span class="hljs-keyword">var</span> output = writeLine(outputFile);
+<span class="hljs-keyword">var</span> counter = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">var</span> startTime = <span class="hljs-built_in">Date</span>.now();
 
-function msToS (v) {
-  return parseInt(v / 1000, 10);
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">msToS</span> (<span class="hljs-params">v</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">parseInt</span>(v / <span class="hljs-number">1000</span>, <span class="hljs-number">10</span>);
 }
 
-function getSpentTime () {
-  return Date.now() - startTime;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getSpentTime</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">Date</span>.now() - startTime;
 }
 
-readLine(inputFile).go(function (data, next) {
+readLine(inputFile).go(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data, next</span>) </span>{
   counter++;
   output.write(data);
-  if (counter % 10000 === 0) {
+  <span class="hljs-keyword">if</span> (counter % <span class="hljs-number">10000</span> === <span class="hljs-number">0</span>) {
     printSpeedInfo();
   }
   next();
-}, function () {
-  console.log('end');
-  output.end(function () {
-    console.log('done. total %s lines, spent %sS', counter, msToS(getSpentTime()));
+}, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
+  output.end(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done. total %s lines, spent %sS'</span>, counter, msToS(getSpentTime()));
     printMemoryUsage();
     process.exit();
   });
 });
 
-// 打印进度
-function printSpeedInfo () {
-  var t = msToS(getSpentTime());
-  var s = counter / t;
-  if (!isFinite(s)) s = counter;
-  console.log('read %s lines, speed: %sL/S', counter, s.toFixed(0));
+<span class="hljs-comment">// 打印进度</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printSpeedInfo</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> t = msToS(getSpentTime());
+  <span class="hljs-keyword">var</span> s = counter / t;
+  <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">isFinite</span>(s)) s = counter;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'read %s lines, speed: %sL/S'</span>, counter, s.toFixed(<span class="hljs-number">0</span>));
 }
 
-// 打印内存占用情况
-function printMemoryUsage () {
-  var info = process.memoryUsage();
-  function mb (v) {
-    return (v / 1024 / 1024).toFixed(2) + 'MB';
+<span class="hljs-comment">// 打印内存占用情况</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printMemoryUsage</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> info = process.memoryUsage();
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mb</span> (<span class="hljs-params">v</span>) </span>{
+    <span class="hljs-keyword">return</span> (v / <span class="hljs-number">1024</span> / <span class="hljs-number">1024</span>).toFixed(<span class="hljs-number">2</span>) + <span class="hljs-string">'MB'</span>;
   }
-  console.log('rss=%s, heapTotal=%s, heapUsed=%s', mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'rss=%s, heapTotal=%s, heapUsed=%s'</span>, mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
 }
-setInterval(printMemoryUsage, 1000);
+setInterval(printMemoryUsage, <span class="hljs-number">1000</span>);
 </code></pre>
 <p>执行这个程序后，打印出来的结果如下：</p>
 <pre><code>read 210000 lines, speed: 210000L/S
@@ -314,16 +314,16 @@ rss=709.11MB, heapTotal=726.18MB, heapUsed=695.46MB
 </code></pre>
 <p>从输出的结果中可以看出，程序启动一秒后内存占用即达到<code>77.64MB</code>，而在程序结束时内存占用已达到<code>726.18MB</code>，如果文件体积再增加一倍，估计整个程序是无法执行完成的。</p>
 <p>为了验证限制读取速度是否有效，我将读取内容部分的程序改为这样：</p>
-<pre><code class="prettyprint javascript">readLine(inputFile).go(function (data, next) {
+<pre><code class="language-javascript">readLine(inputFile).go(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data, next</span>) </span>{
   counter++;
   output.write(data, next);
-  if (counter % 10000 === 0) {
+  <span class="hljs-keyword">if</span> (counter % <span class="hljs-number">10000</span> === <span class="hljs-number">0</span>) {
     printSpeedInfo();
   }
-}, function () {
-  console.log('end');
-  output.end(function () {
-    console.log('done. total %s lines, spent %sS', counter, msToS(getSpentTime()));
+}, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
+  output.end(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done. total %s lines, spent %sS'</span>, counter, msToS(getSpentTime()));
     printMemoryUsage();
     process.exit();
   });
@@ -350,85 +350,85 @@ rss=62.54MB, heapTotal=45.16MB, heapUsed=16.80MB
 <li><code>ReadStream.resume()</code>重新开始读取 <a href="https://nodejs.org/api/stream.html#stream_readable_resume">参考文档</a></li>
 </ul>
 <p>当读取速度超出我们期望的值时，可以执行<code>pause()</code>先暂停，待时机符合时再执行<code>resume()</code>重新开始。以下是用来限制读取速度的实例：</p>
-<pre><code class="prettyprint javascript">var util = require('util');
-var events = require('events');
-var fs = require('fs');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>);
+<span class="hljs-keyword">var</span> events = <span class="hljs-built_in">require</span>(<span class="hljs-string">'events'</span>);
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
 
-// 一个几百 M 的文本文件
-var inputFile = '/Volumes/Works/data/xh.txt';
+<span class="hljs-comment">// 一个几百 M 的文本文件</span>
+<span class="hljs-keyword">var</span> inputFile = <span class="hljs-string">'/Volumes/Works/data/xh.txt'</span>;
 
 
-function ReadStreamThrottle (stream, speed) {
-  this._stream = stream;
-  this._readBytes = 0;
-  this._speed = speed;
-  this._ended = false;
-  this._readBytesSecond = 0;
-  this._lastTimestamp = Date.now();
-  this._paused = false;
-  var self = this;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ReadStreamThrottle</span> (<span class="hljs-params">stream, speed</span>) </span>{
+  <span class="hljs-keyword">this</span>._stream = stream;
+  <span class="hljs-keyword">this</span>._readBytes = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">this</span>._speed = speed;
+  <span class="hljs-keyword">this</span>._ended = <span class="hljs-literal">false</span>;
+  <span class="hljs-keyword">this</span>._readBytesSecond = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">this</span>._lastTimestamp = <span class="hljs-built_in">Date</span>.now();
+  <span class="hljs-keyword">this</span>._paused = <span class="hljs-literal">false</span>;
+  <span class="hljs-keyword">var</span> self = <span class="hljs-keyword">this</span>;
 
-  // 检查速度是否太快
-  function isTooFast () {
-    var t = (Date.now() - self._lastTimestamp) / 1000;
-    var bps = self._readBytesSecond / t;
-    return bps &gt; speed;
+  <span class="hljs-comment">// 检查速度是否太快</span>
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isTooFast</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> t = (<span class="hljs-built_in">Date</span>.now() - self._lastTimestamp) / <span class="hljs-number">1000</span>;
+    <span class="hljs-keyword">var</span> bps = self._readBytesSecond / t;
+    <span class="hljs-keyword">return</span> bps &gt; speed;
   }
 
-  // 每隔一段时间检查速度
-  function checkSpeed () {
-    if (isTooFast()) {
+  <span class="hljs-comment">// 每隔一段时间检查速度</span>
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkSpeed</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">if</span> (isTooFast()) {
       self.pause();
-      // 直到平均速度放缓到预设的值时继续读流
-      var tid = setInterval(function () {
-        if (!isTooFast()) {
+      <span class="hljs-comment">// 直到平均速度放缓到预设的值时继续读流</span>
+      <span class="hljs-keyword">var</span> tid = setInterval(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (!isTooFast()) {
           clearInterval(tid);
           self.resume();
         }
-      }, 100);
-    } else {
+      }, <span class="hljs-number">100</span>);
+    } <span class="hljs-keyword">else</span> {
       self.resume();
     }
   }
 
-  stream.on('data', function (chunk) {
+  stream.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunk</span>) </span>{
     self._readBytes += chunk.length;
     self._readBytesSecond += chunk.length;
-    self.emit('data', chunk);
+    self.emit(<span class="hljs-string">'data'</span>, chunk);
     checkSpeed();
   });
 
-  stream.on('end', function () {
-    self._ended = true;
-    self.emit('end');
+  stream.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    self._ended = <span class="hljs-literal">true</span>;
+    self.emit(<span class="hljs-string">'end'</span>);
   });
 }
 
 util.inherits(ReadStreamThrottle, events.EventEmitter);
 
-ReadStreamThrottle.prototype.pause = function () {
-  this._paused = true;
-  this._stream.pause();
+ReadStreamThrottle.prototype.pause = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">this</span>._paused = <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">this</span>._stream.pause();
 };
 
-ReadStreamThrottle.prototype.resume = function () {
-  this._paused = false;
-  this._stream.resume();
+ReadStreamThrottle.prototype.resume = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">this</span>._paused = <span class="hljs-literal">false</span>;
+  <span class="hljs-keyword">this</span>._stream.resume();
 };
 
 
-// 读取文件，限制速度不大于 10MB/S
-var MB = 1024 * 1024;
-var s = new ReadStreamThrottle(fs.createReadStream(inputFile), MB * 10);
-var bytes = 0;
-var t = Date.now();
-s.on('data', function (c) {
+<span class="hljs-comment">// 读取文件，限制速度不大于 10MB/S</span>
+<span class="hljs-keyword">var</span> MB = <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span>;
+<span class="hljs-keyword">var</span> s = <span class="hljs-keyword">new</span> ReadStreamThrottle(fs.createReadStream(inputFile), MB * <span class="hljs-number">10</span>);
+<span class="hljs-keyword">var</span> bytes = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">var</span> t = <span class="hljs-built_in">Date</span>.now();
+s.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">c</span>) </span>{
   bytes += c.length;
-  var spent = (Date.now() - t) / 1000;
-  console.log('read %s bytes, speed: %sMB/S', bytes, (bytes / MB / spent).toFixed(2));
+  <span class="hljs-keyword">var</span> spent = (<span class="hljs-built_in">Date</span>.now() - t) / <span class="hljs-number">1000</span>;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'read %s bytes, speed: %sMB/S'</span>, bytes, (bytes / MB / spent).toFixed(<span class="hljs-number">2</span>));
 });
-s.on('end', function () {
-  console.log('end. total %s bytes', bytes);
+s.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end. total %s bytes'</span>, bytes);
 });
 </code></pre>
 <p>运行程序可以看到打印出以下结果：</p>
@@ -458,35 +458,35 @@ end. total 134742016 bytes
 <h3><a id="_367"></a>实验</h3>
 <p>前文中提到，『大多数情况下读文件的速度总比写文件的速度快，这样便导致大量的数据被积压在内存中，当要读取的文件很大时，甚至会导致因占用内存太多而导致整个 Node.js 进程崩溃』，那为什么我们在复制超大文件时程序又没问题呢？</p>
 <p>于是我编写了以下程序：</p>
-<pre><code class="prettyprint javascript">var fs = require('fs');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
 
-var inputFile = '/Volumes/Works/data/xh.txt';
-var outputFile = '/Volumes/Works/tmp/output.txt';
+<span class="hljs-keyword">var</span> inputFile = <span class="hljs-string">'/Volumes/Works/data/xh.txt'</span>;
+<span class="hljs-keyword">var</span> outputFile = <span class="hljs-string">'/Volumes/Works/tmp/output.txt'</span>;
 
-var input = fs.createReadStream(inputFile);
-var output = fs.createWriteStream(outputFile);
+<span class="hljs-keyword">var</span> input = fs.createReadStream(inputFile);
+<span class="hljs-keyword">var</span> output = fs.createWriteStream(outputFile);
 
-input.on('data', function (chunk) {
+input.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunk</span>) </span>{
   output.write(chunk);
 });
 
-input.on('end', function () {
-  console.log('end');
-  output.end(function () {
+input.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
+  output.end(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
     printMemoryUsage();
     process.exit();
   });
 });
 
-// 打印内存占用情况
-function printMemoryUsage () {
-  var info = process.memoryUsage();
-  function mb (v) {
-    return (v / 1024 / 1024).toFixed(2) + 'MB';
+<span class="hljs-comment">// 打印内存占用情况</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printMemoryUsage</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> info = process.memoryUsage();
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mb</span> (<span class="hljs-params">v</span>) </span>{
+    <span class="hljs-keyword">return</span> (v / <span class="hljs-number">1024</span> / <span class="hljs-number">1024</span>).toFixed(<span class="hljs-number">2</span>) + <span class="hljs-string">'MB'</span>;
   }
-  console.log('rss=%s, heapTotal=%s, heapUsed=%s', mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'rss=%s, heapTotal=%s, heapUsed=%s'</span>, mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
 }
-setInterval(printMemoryUsage, 1000);
+setInterval(printMemoryUsage, <span class="hljs-number">1000</span>);
 </code></pre>
 <p>说明：在读取文件的<code>data</code>事件中，直接将数据原样写入到另一个文件中，用于模拟简单的复制文件操作。</p>
 <p>程序执行结果如下：</p>
@@ -497,11 +497,11 @@ rss=83.86MB, heapTotal=11.26MB, heapUsed=5.21MB
 </code></pre>
 <p>从结果中可以看出，在读取文件结束后，写文件操作也很快完成，而内存占用并没有太大起伏。</p>
 <p>于是我将<code>data</code>事件部分改为以下代码：</p>
-<pre><code class="prettyprint javascript">input.on('data', function (chunk) {
+<pre><code class="language-javascript">input.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunk</span>) </span>{
   chunk = chunk.toString();
-  var lines = chunk.split('\n');
-  lines.forEach(function (line) {
-    output.write(line + '\n');
+  <span class="hljs-keyword">var</span> lines = chunk.split(<span class="hljs-string">'\n'</span>);
+  lines.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">line</span>) </span>{
+    output.write(line + <span class="hljs-string">'\n'</span>);
   });
 });
 </code></pre>
@@ -535,10 +535,10 @@ rss=762.20MB, heapTotal=749.80MB, heapUsed=725.75MB
 </code></pre>
 <p>由结果可以看出，在读取文件结束后，程序还运行了很长时间才完成了写文件操作，在此过程中内存占用不断地增加，并且很明显感觉到打印内存占用的速度越来越慢（本来应该是 1 秒作用的时间打印一次）。</p>
 <p>是不是因为频繁的<code>write()</code>操作导致的呢？于是我又将<code>data</code>事件部分的代码改为这样：</p>
-<pre><code class="prettyprint javascript">input.on('data', function (chunk) {
+<pre><code class="language-javascript">input.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunk</span>) </span>{
   chunk = chunk.toString();
-  var lines = chunk.split('\n');
-  output.write(lines.join('\n') + '\n');
+  <span class="hljs-keyword">var</span> lines = chunk.split(<span class="hljs-string">'\n'</span>);
+  output.write(lines.join(<span class="hljs-string">'\n'</span>) + <span class="hljs-string">'\n'</span>);
 });
 </code></pre>
 <p>说明：考虑到有可能是因为<code>data</code>事件中对数据的处理导致写入缓慢，于是同样将读取出来的数据拆分成多行，但是写入时又将这些数据合并起来，只执行一次<code>write()</code>。</p>
@@ -571,27 +571,27 @@ rss=64.83MB, heapTotal=45.16MB, heapUsed=15.29MB
 <p>由结果可以看出，程序执行时间从原来的 90S 下降到 13S，并且内存占用仍然保持在 45.16MB。</p>
 <h3><a id="_516"></a>原理</h3>
 <p>首先看看 Node.js 源码中<code>fs.ReadStream</code>的<code>write()</code>里面是怎样的（<a href="https://github.com/joyent/node/blob/master/lib/fs.js#L1789">源码</a>）：</p>
-<pre><code class="prettyprint javascript">WriteStream.prototype._write = function(data, encoding, cb) {
-  if (!util.isBuffer(data))
-    return this.emit('error', new Error('Invalid data'));
+<pre><code class="language-javascript">WriteStream.prototype._write = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data, encoding, cb</span>) </span>{
+  <span class="hljs-keyword">if</span> (!util.isBuffer(data))
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'Invalid data'</span>));
 
-  if (!util.isNumber(this.fd))
-    return this.once('open', function() {
-      this._write(data, encoding, cb);
+  <span class="hljs-keyword">if</span> (!util.isNumber(<span class="hljs-keyword">this</span>.fd))
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.once(<span class="hljs-string">'open'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-keyword">this</span>._write(data, encoding, cb);
     });
 
-  var self = this;
-  fs.write(this.fd, data, 0, data.length, this.pos, function(er, bytes) {
-    if (er) {
+  <span class="hljs-keyword">var</span> self = <span class="hljs-keyword">this</span>;
+  fs.write(<span class="hljs-keyword">this</span>.fd, data, <span class="hljs-number">0</span>, data.length, <span class="hljs-keyword">this</span>.pos, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">er, bytes</span>) </span>{
+    <span class="hljs-keyword">if</span> (er) {
       self.destroy();
-      return cb(er);
+      <span class="hljs-keyword">return</span> cb(er);
     }
     self.bytesWritten += bytes;
     cb();
   });
 
-  if (!util.isUndefined(this.pos))
-    this.pos += data.length;
+  <span class="hljs-keyword">if</span> (!util.isUndefined(<span class="hljs-keyword">this</span>.pos))
+    <span class="hljs-keyword">this</span>.pos += data.length;
 };
 </code></pre>
 <p>由源码可以看出，每一次的<code>write()</code>实际上是直接调用<code>fs.write()</code>来写入文件的（<code>WriteStream</code>记录了当前文件的偏移量），当频繁调用<code>write()</code>来写入数据时，每一次都会创建用于<code>fs.write()</code>的回调函数，因此内存占用急剧升高和性能下降也就很合情合理了。</p>
@@ -614,11 +614,7 @@ rss=64.83MB, heapTotal=45.16MB, heapUsed=15.29MB
 </body>
 </html>
 
-<link rel="stylesheet" href="//cdn.staticfile.org/prettify/r298/prettify.min.css">
-<script src="//cdn.staticfile.org/prettify/r298/prettify.min.js"></script>
-<script>
-prettyPrint();
-</script>
+<link rel="stylesheet" href="/styles/github.css" />
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -629,23 +625,16 @@ prettyPrint();
   ga('send', 'pageview');
 </script>
 
-
-<!-- 多说评论框 start -->
-<div class="ds-thread" data-thread-key="/2015-07/read_and_write_big_file_in_nodejs.html" data-title="在 Node.js 中读写大文件 - 早起搬砖 morning.work" data-url="http://morning.work/page/2015-07/read_and_write_big_file_in_nodejs.html"></div>
-<!-- 多说评论框 end -->
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {
-  short_name: "morningwork"
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+  this.page.url = 'http://morning.work/page/2015-07/read_and_write_big_file_in_nodejs.html';
+  this.page.identifier = '/2015-07/read_and_write_big_file_in_nodejs.html';
 };
-(function() {
-  var ds = document.createElement('script');
-  ds.type = 'text/javascript';
-  ds.async = true;
-  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-  ds.charset = 'UTF-8';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+(function() {  // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  s.src = '//leizongmin-writings.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
 })();
 </script>
-<!-- 多说公共JS代码 end -->
-

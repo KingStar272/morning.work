@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Sat, 07 May 2016 02:40:14 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[如何编写一个 Node.js API 客户端]]></title><description><![CDATA[<h2><a id="_2"></a>说几句无关主题的话</h2>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Sat, 07 May 2016 03:05:52 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[如何编写一个 Node.js API 客户端]]></title><description><![CDATA[<h2><a id="_2"></a>说几句无关主题的话</h2>
 <p>尽管这几年来 Node.js 已经得到越来越多的关注，连市场卖菜的老太婆都能分别得出哪个是写 Node.js
 的，哪个是写 PHP 的。然而，终究是不能跟老大哥 Java 比的。我们在使用一些第三方服务时常常会
 碰到一时半会还没有官方的 Node.js SDK 的问题，所以能自己随手撸一个刚好够用的 API 客户端来应急
@@ -40,84 +40,84 @@ Node.js 中的异步问题，应该使用传统的 <code>callback</code> 或者 
 得到）</li>
 </ul>
 <p>程序的使用方法如下：</p>
-<pre><code class="prettyprint javascript">'use strict';
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
-const client = new CNodeJS({
-  token: 'xxxxxxx', // accessToken，可为空
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> CNodeJS({
+  token: <span class="hljs-string">'xxxxxxx'</span>, <span class="hljs-comment">// accessToken，可为空</span>
 });
 
-// promise 方式调用
-client.getTopics({page: 1})
-  .then(list =&gt; console.log(list))
-  .catch(err =&gt; console.error(err));
+<span class="hljs-comment">// promise 方式调用</span>
+client.getTopics({page: <span class="hljs-number">1</span>})
+  .then(list =&gt; <span class="hljs-built_in">console</span>.log(list))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(err));
 
-// callback 方式调用
-client.getTopics({page: 1}, (err, list) =&gt; {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(list);
+<span class="hljs-comment">// callback 方式调用</span>
+client.getTopics({page: <span class="hljs-number">1</span>}, (err, list) =&gt; {
+  <span class="hljs-keyword">if</span> (err) {
+    <span class="hljs-built_in">console</span>.error(err);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-built_in">console</span>.log(list);
   }
 });
 </code></pre>
 <h2><a id="_81"></a>初始化项目</h2>
 <p>1、首先新建项目目录：</p>
-<pre><code class="prettyprint bash">$ mkdir cnodejs_api_client
-$ cd cnodejs_api_client
+<pre><code class="language-bash">$ mkdir cnodejs_api_client
+$ <span class="hljs-built_in">cd</span> cnodejs_api_client
 $ git init
 </code></pre>
 <p>2、初始化 <code>package.json</code>：</p>
-<pre><code class="prettyprint bash">$ npm init
+<pre><code class="language-bash">$ npm init
 </code></pre>
 <p>3、新建文件 <code>index.js</code>：</p>
-<pre><code class="prettyprint javascript">'use strict';
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
-const rawRequest = require('request');
+<span class="hljs-keyword">const</span> rawRequest = <span class="hljs-built_in">require</span>(<span class="hljs-string">'request'</span>);
 
-class CNodeJS {
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">CNodeJS</span> </span>{
 
-  constructor(options) {
+  <span class="hljs-keyword">constructor</span>(options) {
 
-    this.options = options = options || {};
-    options.token = options.token || null;
-    options.url = options.url || 'https://cnodejs.org/api/v1/';
+    <span class="hljs-keyword">this</span>.options = options = options || {};
+    options.token = options.token || <span class="hljs-literal">null</span>;
+    options.url = options.url || <span class="hljs-string">'https://cnodejs.org/api/v1/'</span>;
 
   }
 
   baseParams(params) {
 
-    params = Object.assign({}, params || {});
-    if (this.options.token) {
-      params.accesstoken = this.options.token;
+    params = <span class="hljs-built_in">Object</span>.assign({}, params || {});
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.options.token) {
+      params.accesstoken = <span class="hljs-keyword">this</span>.options.token;
     }
 
-    return params;
+    <span class="hljs-keyword">return</span> params;
 
   }
 
   request(method, path, params, callback) {
-    return new Promise((resolve, reject) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
 
-      const opts = {
+      <span class="hljs-keyword">const</span> opts = {
         method: method.toUpperCase(),
-        url: this.options.url + path,
-        json: true,
+        url: <span class="hljs-keyword">this</span>.options.url + path,
+        json: <span class="hljs-literal">true</span>,
       };
 
-      if (opts.method === 'GET' || opts.method === 'HEAD') {
-        opts.qs = this.baseParams(params);
-      } else {
-        opts.body = this.baseParams(params);
+      <span class="hljs-keyword">if</span> (opts.method === <span class="hljs-string">'GET'</span> || opts.method === <span class="hljs-string">'HEAD'</span>) {
+        opts.qs = <span class="hljs-keyword">this</span>.baseParams(params);
+      } <span class="hljs-keyword">else</span> {
+        opts.body = <span class="hljs-keyword">this</span>.baseParams(params);
       }
 
       rawRequest(opts, (err, res, body) =&gt; {
 
-        if (err) return reject(err);
+        <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> reject(err);
 
-        if (body.success) {
+        <span class="hljs-keyword">if</span> (body.success) {
           resolve(body);
-        } else {
-          reject(new Error(body.error_msg));
+        } <span class="hljs-keyword">else</span> {
+          reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(body.error_msg));
         }
 
       });
@@ -127,7 +127,7 @@ class CNodeJS {
 
 }
 
-module.exports = CNodeJS;
+<span class="hljs-built_in">module</span>.exports = CNodeJS;
 </code></pre>
 <p>说明：</p>
 <ul>
@@ -140,22 +140,22 @@ module.exports = CNodeJS;
 <code>error_msg</code> 表示出错信息</li>
 </ul>
 <p>4、新建测试文件 <code>test.js</code>：</p>
-<pre><code class="prettyprint javascript">'use strict';
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
-const CNodeJS = require('./');
-const client = new CNodeJS();
+<span class="hljs-keyword">const</span> CNodeJS = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./'</span>);
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> CNodeJS();
 
-client.request('GET', 'topics', {page: 1})
-  .then(ret =&gt; console.log(ret))
-  .catch(err =&gt; console.error(err));
+client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, {page: <span class="hljs-number">1</span>})
+  .then(ret =&gt; <span class="hljs-built_in">console</span>.log(ret))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(err));
 </code></pre>
 <p>5、执行命令 <code>node test.js</code> 即可看到类似以下的结果：</p>
-<pre><code class="prettyprint javascript">{ success: true,
+<pre><code class="language-javascript">{ success: <span class="hljs-literal">true</span>,
   data:
-   [ { id: '572afb6b15c24e592c16e1e6',
-       author_id: '504c28a2e2b845157708cb61',
-       tab: 'share',
-       content: '.......'
+   [ { id: <span class="hljs-string">'572afb6b15c24e592c16e1e6'</span>,
+       author_id: <span class="hljs-string">'504c28a2e2b845157708cb61'</span>,
+       tab: <span class="hljs-string">'share'</span>,
+       content: <span class="hljs-string">'.......'</span>
 ...
 </code></pre>
 <p>至此我们已经完成了一个 API 客户端最基本的功能，接下来根据不同的 API 封装一下 <code>request</code> 方法
@@ -164,21 +164,21 @@ client.request('GET', 'topics', {page: 1})
 <p>前文已经提到，<strong>「作为一个 SDK，应该使用最 common 的技术或规范来实现」</strong>，所以除了 <code>promise</code>
 之外还需要提供 <code>callback</code> 的支持。</p>
 <p>1、修改文件 <code>index.js</code> 中 <code>request(method, path, params) { }</code> 定义部分：</p>
-<pre><code class="prettyprint javascript">request(method, path, params, callback) {
-  return new Promise((_resolve, _reject) =&gt; {
+<pre><code class="language-javascript">request(method, path, params, callback) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((_resolve, _reject) =&gt; {
 
-    const resolve = ret =&gt; {
+    <span class="hljs-keyword">const</span> resolve = ret =&gt; {
       _resolve(ret);
-      callback &amp;&amp; callback(null, ret);
+      callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
     };
 
-    const reject = err =&gt; {
+    <span class="hljs-keyword">const</span> reject = err =&gt; {
       _reject(err);
       callback &amp;&amp; callback(err);
     };
 
-    // 以下部分不变
-    // ...
+    <span class="hljs-comment">// 以下部分不变</span>
+    <span class="hljs-comment">// ...</span>
   });
 }
 </code></pre>
@@ -189,11 +189,11 @@ client.request('GET', 'topics', {page: 1})
 判断如果有 <code>callback</code> 参数，则也调用该函数</li>
 </ul>
 <p>2、将文件 <code>test.js</code> 中 <code>client.request()</code> 部分改为 callback 方式调用：</p>
-<pre><code class="prettyprint javascript">client.request('GET', 'topics', {page: 1}, (err, ret) =&gt; {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(ret);
+<pre><code class="language-javascript">client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, {page: <span class="hljs-number">1</span>}, (err, ret) =&gt; {
+  <span class="hljs-keyword">if</span> (err) {
+    <span class="hljs-built_in">console</span>.error(err);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-built_in">console</span>.log(ret);
   }
 });
 </code></pre>
@@ -208,29 +208,29 @@ client.request('GET', 'topics', {page: 1})
 <li><code>testToken()</code> - 测试 <code>token</code> 是否正确</li>
 </ul>
 <p>对于 <code>getTopics()</code> 可以这样简单地实现：</p>
-<pre><code class="prettyprint javascript">getTopics(params, callback) {
-  return this.request('GET', 'topics', params, callback);
+<pre><code class="language-javascript">getTopics(params, callback) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, params, callback);
 }
 </code></pre>
 <p>但其返回的结果是这样结构的：</p>
-<pre><code class="prettyprint javascript">{ success: true,
+<pre><code class="language-javascript">{ success: <span class="hljs-literal">true</span>,
   data: []
 }
 </code></pre>
 <p>要取得结果还要读取里面的 <code>data</code>，针对这种情况我们可以改成这样：</p>
-<pre><code class="prettyprint javascript">getTopics(params, callback) {
-  return this.request('GET', 'topics', params, callback)
-             .then(ret =&gt; Promise.resolve(ret.data));
+<pre><code class="language-javascript">getTopics(params, callback) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, params, callback)
+             .then(ret =&gt; <span class="hljs-built_in">Promise</span>.resolve(ret.data));
 }
 </code></pre>
 <p><code>getTopicDetail()</code> 和 <code>testToken()</code> 可以这样实现：</p>
-<pre><code class="prettyprint javascript">getTopicDetail(params, callback) {
-  return this.request('GET', `topic/${params.id}`, params, callback)
-             .then(ret =&gt; Promise.resolve(ret.data));
+<pre><code class="language-javascript">getTopicDetail(params, callback) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">`topic/<span class="hljs-subst">${params.id}</span>`</span>, params, callback)
+             .then(ret =&gt; <span class="hljs-built_in">Promise</span>.resolve(ret.data));
 }
 
 testToken(callback) {
-  return this.request('POST', `accesstoken`, {}, callback);
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.request(<span class="hljs-string">'POST'</span>, <span class="hljs-string">`accesstoken`</span>, {}, callback);
 }
 </code></pre>
 <p>对于其他的 API 也可以采用类似的方法一一实现。</p>
@@ -243,11 +243,7 @@ testToken(callback) {
 <p>另外我还是忍不住再吐槽一下，CNodeJS 的 API 接口设计得并不一致，响应成功时并不是所有数据都放在
 <code>data</code> 里面（比如 <code>testToken()</code>）。</p>
 <p>发觉最近有点上火了 ^_^</p>
-]]></description><link>http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</link><guid isPermaLink="true">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Sat, 07 May 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 使用 ES6 语法的一些心得]]></title><description><![CDATA[<h2><a id="_const_3"></a>使用 const</h2>
-<p>在 ES6 之前，声明变量只能使用关键字<code>var</code>，而<code>var</code>有一个神奇的特效，</p>
-<h2><a id="use_strict_8"></a>'use strict'</h2>
-<h2><a id="async__await_10"></a>async 和 await</h2>
-]]></description><link>http://morning.work/page/draft/es6-tips-on-nodejs.html</link><guid isPermaLink="true">http://morning.work/page/draft/es6-tips-on-nodejs.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Mon, 14 Mar 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[在 Sublime Text 上配置 ES2015 开发环境]]></title><description><![CDATA[<h2><a id="_2"></a>安装</h2>
+]]></description><link>http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</link><guid isPermaLink="true">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Sat, 07 May 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[在 Sublime Text 上配置 ES2015 开发环境]]></title><description><![CDATA[<h2><a id="_2"></a>安装</h2>
 <p>首先访问 Sublime Text 的官网 <a href="https://www.sublimetext.com/3">https://www.sublimetext.com/3</a> 下载对应系统版本的安装包：</p>
 <p><img src="../../images/2016-03/1-1.png" alt="图 1-1"></p>
 <p>安装提示安装完毕之后，启动 Sublime Text ，其界面如下：</p>
@@ -256,13 +252,13 @@ testToken(callback) {
 <h2><a id="_14"></a>配置</h2>
 <p>Sublime Text 的配置通过改配置文件来完成，选择菜单 <strong>Preferences &gt; Settings - User</strong>（OSX 系统下是 <strong>Sublime Text &gt; Preferences &gt; Settings - User</strong>） 即可打开配置文件，然后在打开默认的配置文件 <strong>Preferences &gt; Settings - Default</strong> 作为对照，把需要更改的项目复制到「User」配置文件并修改其值。</p>
 <p>比如以下配置用来修改缩进长度和方式：</p>
-<pre><code class="prettyprint javascript">{
+<pre><code class="language-javascript">{
 
-  // The number of spaces a tab is considered equal to
-  &quot;tab_size&quot;: 2,
+  <span class="hljs-comment">// The number of spaces a tab is considered equal to</span>
+  <span class="hljs-string">"tab_size"</span>: <span class="hljs-number">2</span>,
 
-  // Set to true to insert spaces when tab is pressed
-  &quot;translate_tabs_to_spaces&quot;: true,
+  <span class="hljs-comment">// Set to true to insert spaces when tab is pressed</span>
+  <span class="hljs-string">"translate_tabs_to_spaces"</span>: <span class="hljs-literal">true</span>,
 
 }
 </code></pre>
@@ -300,10 +296,10 @@ testToken(callback) {
 <h3><a id="SublimeLinter_83"></a>SublimeLinter</h3>
 <p>SublimeLinter 主要用于在 Sublime Text 下对代码进行语法检查，这个插件安装配置会稍微复杂一些。</p>
 <p>首先执行以下命令安装用于 JavaScript 语法检查的 eslint 和 babel-eslint ：</p>
-<pre><code class="prettyprint bash">$ npm install -g eslint babel-eslint
+<pre><code class="language-bash">$ npm install -g eslint babel-eslint
 </code></pre>
 <p>由于 babel-eslint 依赖的模块比较多，在国内的网络环境下可能会安装失败，可以在安装时指定使用淘宝的 NPM 镜像：</p>
-<pre><code class="prettyprint bash">$ npm install -g eslint babel-eslint --registry=http://registry.npm.taobao.org
+<pre><code class="language-bash">$ npm install -g eslint babel-eslint --registry=http://registry.npm.taobao.org
 </code></pre>
 <p>安装完成后，我们再通过 Package Control 来安装 SublimeLinter 和 SublimeLinter-contrib-eslint 这两个插件。</p>
 <p>现在我们来打开一个 JavaScript 文件：</p>
@@ -351,14 +347,14 @@ CPython version: 2.7.9
 OpenSSL version: OpenSSL 1.0.1j 15 Oct 2014
 </code></pre>
 <p>如果系统没有<code>docker-compose</code>命令，可以执行以下命令安装：</p>
-<pre><code class="prettyprint bash">$ curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname -s`-`uname -m` &gt; /usr/local/bin/docker-compose
-$ chmod +x /usr/local/bin/docker-compose
+<pre><code class="language-bash">$ curl -L https://github.com/docker/compose/releases/download/1.5.2/docker-compose-`uname <span class="hljs-_">-s</span>`-`uname -m` &gt; /usr/<span class="hljs-built_in">local</span>/bin/docker-compose
+$ chmod +x /usr/<span class="hljs-built_in">local</span>/bin/docker-compose
 </code></pre>
 <h2><a id="_Registry__54"></a>启动 Registry 服务</h2>
 <h3><a id="_56"></a>安装</h3>
 <p>为了发挥 Docker 容器技术的优势，我们直接使用 Docker 镜像来部署服务。</p>
 <p>首先在 <strong>服务器端</strong> 新建工作目录并进入该目录：</p>
-<pre><code class="prettyprint bash">$ mkdir my_registry &amp;&amp; cd my_registry
+<pre><code class="language-bash">$ mkdir my_registry &amp;&amp; <span class="hljs-built_in">cd</span> my_registry
 </code></pre>
 <p>在当前目录下新建文件<code>docker-compose.yml</code>：</p>
 <pre><code>registry:
@@ -380,13 +376,13 @@ $ chmod +x /usr/local/bin/docker-compose
 <li><code>data</code>目录用于存放<code>docker push</code>时上传上来的文件</li>
 </ul>
 <p>执行以下命令新建这两个目录：</p>
-<pre><code class="prettyprint bash">$ mkdir auth &amp;&amp; mkdir data
+<pre><code class="language-bash">$ mkdir auth &amp;&amp; mkdir data
 </code></pre>
 <p>接着，创建一个测试账号（用户名：<code>test</code>，密码：<code>123456</code>）并保存到<code>auth/htpasswd</code>中：</p>
-<pre><code class="prettyprint bash">$ htpasswd -Bbn test 123456 &gt; auth/htpasswd
+<pre><code class="language-bash">$ htpasswd -Bbn <span class="hljs-built_in">test</span> 123456 &gt; auth/htpasswd
 </code></pre>
 <p>现在我们来启动 Registry 服务：</p>
-<pre><code class="prettyprint bash">$ docker-compose up -d
+<pre><code class="language-bash">$ docker-compose up <span class="hljs-_">-d</span>
 </code></pre>
 <p>由于本地没有名为<code>registry:2</code>的镜像，控制台可能会打印出如下信息然后暂停一阵：</p>
 <pre><code>Pulling registry (registry:2)...
@@ -403,15 +399,15 @@ registry_1 | time=&quot;2016-01-13T21:57:14Z&quot; level=info msg=&quot;listenin
 <h3><a id="_124"></a>测试</h3>
 <p>现在再打开一个命令行窗口，并进入<code>my_registry</code>目录。</p>
 <p>执行以下命令创建一个新镜像：</p>
-<pre><code class="prettyprint bash">$ docker tag registry:2 127.0.0.1:5000/test/registry
+<pre><code class="language-bash">$ docker tag registry:2 127.0.0.1:5000/<span class="hljs-built_in">test</span>/registry
 </code></pre>
 <p>说明：镜像名为<code>127.0.0.1:5000/test/registry</code>，其中<code>127.0.0.1:5000</code>表示服务器地址，<code>test/registry</code>表示镜像名。</p>
 <p>上传之前要先登录：</p>
-<pre><code class="prettyprint bash">$ docker login 127.0.0.1:5000
+<pre><code class="language-bash">$ docker login 127.0.0.1:5000
 </code></pre>
 <p>说明：按提示输入上文创建的用户名和密码，邮箱可以不用填写。</p>
 <p>登陆成功后，执行以下命令即可上传：</p>
-<pre><code class="prettyprint bash">$ docker push 127.0.0.1:5000/test/registry
+<pre><code class="language-bash">$ docker push 127.0.0.1:5000/<span class="hljs-built_in">test</span>/registry
 </code></pre>
 <h2><a id="_OSS_151"></a>配置阿里云 OSS</h2>
 <p>首先在刚才执行<code>docker-compose up</code>的命令行窗口中按<code>CTRL + C</code>退出服务。</p>
@@ -436,10 +432,10 @@ registry_1 | time=&quot;2016-01-13T21:57:14Z&quot; level=info msg=&quot;listenin
 </code></pre>
 <p>说明：由于使用阿里云 OSS 作为存储引擎，所以不需要再将文件存储到本地，因此将<code>volumes</code>中的<code>data</code>目录配置去掉；<code>environment</code>新增了<code>REGISTRY_STORAGE</code>系列的环境变量配置，需要将该部分的值替换为对应的<code>accesskey_id</code>、<code>accesskey_secret</code>、<code>region</code>、<code>bucket</code>和<code>endpoint</code>等信息。</p>
 <p>删除<code>data</code>目录并重新启动服务：</p>
-<pre><code class="prettyprint bash">$ rm -Rf data &amp;&amp; docker-compose up
+<pre><code class="language-bash">$ rm -Rf data &amp;&amp; docker-compose up
 </code></pre>
 <p>再执行刚才的命令上传镜像：</p>
-<pre><code class="prettyprint bash">$ docker push 127.0.0.1:5000/test/registry
+<pre><code class="language-bash">$ docker push 127.0.0.1:5000/<span class="hljs-built_in">test</span>/registry
 </code></pre>
 <p>可以感觉到这次的上传速度没有第一次的快，因为它还需要上传到阿里云 OSS。待上传完毕，可以打开阿里云 OSS 的控制台界面检查文件是否被正确上传上去了。</p>
 <h2><a id="_SSL__194"></a>配置 SSL 证书</h2>
@@ -541,14 +537,14 @@ registry:
 <p>说明：如果本地不存在名为<code>nginx:1.9</code>的镜像，控制台可能会打印出<code>Pulling nginx (nginx:1.9)...</code>并先下载该镜像。</p>
 <h3><a id="_309"></a>测试</h3>
 <p>假设刚才配置的证书域名为<code>docker.ucdok.com</code>，现在我们 <strong>在客户端执行以下命令</strong> 登录：</p>
-<pre><code class="prettyprint bash">$ docker login docker.ucdok.com
+<pre><code class="language-bash">$ docker login docker.ucdok.com
 </code></pre>
 <p>生成新的镜像：</p>
-<pre><code class="prettyprint bash">$ docker pull ubuntu
-$ docker tag ubuntu docker.ucdok.com/test/ubuntu
+<pre><code class="language-bash">$ docker pull ubuntu
+$ docker tag ubuntu docker.ucdok.com/<span class="hljs-built_in">test</span>/ubuntu
 </code></pre>
 <p>上传新的镜像：</p>
-<pre><code class="prettyprint bash">$ docker push docker.ucdok.com/test/ubuntu
+<pre><code class="language-bash">$ docker push docker.ucdok.com/<span class="hljs-built_in">test</span>/ubuntu
 </code></pre>
 <h2><a id="_331"></a>其他问题</h2>
 <h3><a id="_333"></a>增加用户</h3>
@@ -557,7 +553,7 @@ $ docker tag ubuntu docker.ucdok.com/test/ubuntu
 </code></pre>
 <h3><a id="_341"></a>在后台启动服务</h3>
 <p>启动服务时增加<code>-d</code>参数：</p>
-<pre><code class="prettyprint bash">$ docker-compose up -d
+<pre><code class="language-bash">$ docker-compose up <span class="hljs-_">-d</span>
 </code></pre>
 <h3><a id="_349"></a>停止后台服务</h3>
 <p>在<code>docker-compose.yml</code>文件所在目录执行以下命令：</p>
@@ -579,20 +575,20 @@ $ docker tag ubuntu docker.ucdok.com/test/ubuntu
 <h2><a id="_pip_4"></a>安装 pip</h2>
 <p><a href="https://pip.pypa.io/en/stable/installing/">pip</a>是 python 的包管理工具。在本文中将使用 python 版本的 shadowsocks，此版本的 shadowsocks 已发布到 pip 上，因此我们需要通过 pip 命令来安装。</p>
 <p>在控制台执行以下命令安装 pip：</p>
-<pre><code class="prettyprint bash">$ curl &quot;https://bootstrap.pypa.io/get-pip.py&quot; -o &quot;get-pip.py&quot;
+<pre><code class="language-bash">$ curl <span class="hljs-string">"https://bootstrap.pypa.io/get-pip.py"</span> -o <span class="hljs-string">"get-pip.py"</span>
 $ python get-pip.py
 </code></pre>
 <h2><a id="_shadowsocks_15"></a>安装配置 shadowsocks</h2>
 <p>在控制台执行以下命令安装 shadowsocks：</p>
-<pre><code class="prettyprint bash">$ pip install --upgrade pip
+<pre><code class="language-bash">$ pip install --upgrade pip
 $ pip install shadowsocks
 </code></pre>
 <p>安装完成后，需要创建配置文件<code>/etc/shadowsocks.json</code>，内容如下：</p>
-<pre><code class="prettyprint json">{
-  &quot;server&quot;: &quot;0.0.0.0&quot;,
-  &quot;server_port&quot;: 8388,
-  &quot;password&quot;: &quot;uzon57jd0v869t7w&quot;,
-  &quot;method&quot;: &quot;aes-256-cfb&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"server"</span>: <span class="hljs-string">"0.0.0.0"</span>,
+  <span class="hljs-attr">"server_port"</span>: <span class="hljs-number">8388</span>,
+  <span class="hljs-attr">"password"</span>: <span class="hljs-string">"uzon57jd0v869t7w"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"aes-256-cfb"</span>
 }
 </code></pre>
 <p>说明：</p>
@@ -615,11 +611,11 @@ ExecStart=/usr/bin/ssserver -c /etc/shadowsocks.json
 WantedBy=multi-user.target
 </code></pre>
 <p>执行以下命令启动 shadowsocks 服务：</p>
-<pre><code class="prettyprint bash">$ systemctl enable shadowsocks
+<pre><code class="language-bash">$ systemctl <span class="hljs-built_in">enable</span> shadowsocks
 $ systemctl start shadowsocks
 </code></pre>
 <p>为了检查 shadowsocks 服务是否已成功启动，可以执行以下命令查看服务的状态：</p>
-<pre><code class="prettyprint bash">$ systemctl status shadowsocks -l
+<pre><code class="language-bash">$ systemctl status shadowsocks <span class="hljs-_">-l</span>
 </code></pre>
 <p>如果服务启动成功，则控制台显示的信息可能类似这样：</p>
 <pre><code>● shadowsocks.service - Shadowsocks
@@ -637,14 +633,14 @@ Dec 21 23:51:48 morning.work ssserver[19334]: 2015-12-21 23:51:48 INFO     start
 </code></pre>
 <h2><a id="_89"></a>一键安装脚本</h2>
 <p>新建文件<code>install-shadowsocks.sh</code>，内容如下：</p>
-<pre><code class="prettyprint bash">#!/bin/bash
-# Install Shadowsocks on CentOS 7
+<pre><code class="language-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-comment"># Install Shadowsocks on CentOS 7</span>
 
-echo &quot;Installing Shadowsocks...&quot;
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Installing Shadowsocks..."</span>
 
-random-string()
+random-<span class="hljs-function"><span class="hljs-title">string</span></span>()
 {
-    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
+    cat /dev/urandom | tr -dc <span class="hljs-string">'a-zA-Z0-9'</span> | fold -w <span class="hljs-variable">${1:-32}</span> | head -n 1
 }
 
 CONFIG_FILE=/etc/shadowsocks.json
@@ -652,65 +648,65 @@ SERVICE_FILE=/etc/systemd/system/shadowsocks.service
 SS_PASSWORD=$(random-string 32)
 SS_PORT=8388
 SS_METHOD=aes-256-cfb
-SS_IP=`ip route get 1 | awk '{print $NF;exit}'`
+SS_IP=`ip route get 1 | awk <span class="hljs-string">'{print $NF;exit}'</span>`
 GET_PIP_FILE=/tmp/get-pip.py
 
-# install pip
-curl &quot;https://bootstrap.pypa.io/get-pip.py&quot; -o &quot;${GET_PIP_FILE}&quot;
-python ${GET_PIP_FILE}
+<span class="hljs-comment"># install pip</span>
+curl <span class="hljs-string">"https://bootstrap.pypa.io/get-pip.py"</span> -o <span class="hljs-string">"<span class="hljs-variable">${GET_PIP_FILE}</span>"</span>
+python <span class="hljs-variable">${GET_PIP_FILE}</span>
 
-# install shadowsocks
+<span class="hljs-comment"># install shadowsocks</span>
 pip install --upgrade pip
 pip install shadowsocks
 
-# create shadowsocls config
-cat &lt;&lt;EOF | sudo tee ${CONFIG_FILE}
+<span class="hljs-comment"># create shadowsocls config</span>
+cat &lt;&lt;EOF | sudo tee <span class="hljs-variable">${CONFIG_FILE}</span>
 {
-  &quot;server&quot;: &quot;0.0.0.0&quot;,
-  &quot;server_port&quot;: ${SS_PORT},
-  &quot;password&quot;: &quot;${SS_PASSWORD}&quot;,
-  &quot;method&quot;: &quot;${SS_METHOD}&quot;
+  <span class="hljs-string">"server"</span>: <span class="hljs-string">"0.0.0.0"</span>,
+  <span class="hljs-string">"server_port"</span>: <span class="hljs-variable">${SS_PORT}</span>,
+  <span class="hljs-string">"password"</span>: <span class="hljs-string">"<span class="hljs-variable">${SS_PASSWORD}</span>"</span>,
+  <span class="hljs-string">"method"</span>: <span class="hljs-string">"<span class="hljs-variable">${SS_METHOD}</span>"</span>
 }
 EOF
 
-# create service
-cat &lt;&lt;EOF | sudo tee ${SERVICE_FILE}
+<span class="hljs-comment"># create service</span>
+cat &lt;&lt;EOF | sudo tee <span class="hljs-variable">${SERVICE_FILE}</span>
 [Unit]
 Description=Shadowsocks
 
 [Service]
 TimeoutStartSec=0
-ExecStart=/usr/bin/ssserver -c ${CONFIG_FILE}
+ExecStart=/usr/bin/ssserver -c <span class="hljs-variable">${CONFIG_FILE}</span>
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# start service
-systemctl enable shadowsocks
+<span class="hljs-comment"># start service</span>
+systemctl <span class="hljs-built_in">enable</span> shadowsocks
 systemctl start shadowsocks
 
-# view service status
+<span class="hljs-comment"># view service status</span>
 sleep 5
-systemctl status shadowsocks -l
+systemctl status shadowsocks <span class="hljs-_">-l</span>
 
-echo &quot;================================&quot;
-echo &quot;&quot;
-echo &quot;Congratulations! Shadowsocks has been installed on your system.&quot;
-echo &quot;You shadowsocks connection info:&quot;
-echo &quot;--------------------------------&quot;
-echo &quot;server:      ${SS_IP}&quot;
-echo &quot;server_port: ${SS_PORT}&quot;
-echo &quot;password:    ${SS_PASSWORD}&quot;
-echo &quot;method:      ${SS_METHOD}&quot;
-echo &quot;--------------------------------&quot;
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"================================"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">""</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Congratulations! Shadowsocks has been installed on your system."</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"You shadowsocks connection info:"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"--------------------------------"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"server:      <span class="hljs-variable">${SS_IP}</span>"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"server_port: <span class="hljs-variable">${SS_PORT}</span>"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"password:    <span class="hljs-variable">${SS_PASSWORD}</span>"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"method:      <span class="hljs-variable">${SS_METHOD}</span>"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"--------------------------------"</span>
 </code></pre>
 <p>执行以下命令一键安装：</p>
-<pre><code class="prettyprint bash">$ chmod +x install-shadowsocks.sh
+<pre><code class="language-bash">$ chmod +x install-shadowsocks.sh
 $ ./install-shadowsocks.sh
 </code></pre>
 <p>也可以直接执行以下命令从 GitHub 下载安装脚本并执行：</p>
-<pre><code class="prettyprint bash">$ bash &lt;(curl -s http://morning.work/examples/2015-12/install-shadowsocks.sh)
+<pre><code class="language-bash">$ bash &lt;(curl <span class="hljs-_">-s</span> http://morning.work/examples/2015-12/install-shadowsocks.sh)
 </code></pre>
 <p>安装完成后会自动打印出 Shadowsocks 的连接配置信息。比如：</p>
 <pre><code>Congratulations! Shadowsocks has been installed on your system.
@@ -761,10 +757,10 @@ method:      aes-256-cfb
 </blockquote>
 <p>目前最新版的 Node.js（v5.1.0）还未完全支持 ES2015 的新语法特性，而且我们编写的模块可能要在 Node v0.12.x 或更低版本下运行，因此需要借助 babel 将 ES2015 标准的 JavaScript 程序转换成 ES5 标准的。</p>
 <p>执行以下命令安装 babel：</p>
-<pre><code class="prettyprint bash">$ npm i -g babel-cli
+<pre><code class="language-bash">$ npm i -g babel-cli
 </code></pre>
 <p>由于 babel 依赖的模块比较多，可能会花费比较长的时间甚至安装不成功，可以尝试使用 cnpmjs 的 NPM 镜像，比如（简单在安装命令末尾添加<code>--registry=http://registry.npm.taobao.org</code>）：</p>
-<pre><code class="prettyprint bash">$ npm i -g babel-cli --registry=http://registry.npm.taobao.org
+<pre><code class="language-bash">$ npm i -g babel-cli --registry=http://registry.npm.taobao.org
 </code></pre>
 <p><a href="http://cnpmjs.org/">cnpmjs</a>镜像的详细介绍可访问其官网：<a href="http://cnpmjs.org/">http://cnpmjs.org/</a></p>
 <p>安装完成后，系统将获得以下两个命令：</p>
@@ -775,24 +771,24 @@ method:      aes-256-cfb
 <p><code>babel-cli</code>的详细用法可以参考其文档：<a href="https://babeljs.io/docs/usage/cli/">https://babeljs.io/docs/usage/cli/</a></p>
 <h3><a id="2_63"></a>2、初始化项目</h3>
 <p>执行以下命令初始化项目（执行<code>npm init</code>时需要按提示输入相应信息，可直接按回车跳过）：</p>
-<pre><code class="prettyprint bash">$ mkdir es2015_demo &amp;&amp; cd es2015_demo &amp;&amp; git init &amp;&amp; npm init
+<pre><code class="language-bash">$ mkdir es2015_demo &amp;&amp; <span class="hljs-built_in">cd</span> es2015_demo &amp;&amp; git init &amp;&amp; npm init
 </code></pre>
 <p>现在我们新建一个文件<code>test.js</code>试试是否能正常运行：</p>
-<pre><code class="prettyprint javascript">function sleep(ms = 0) {
-  return new Promise((resolve, reject) =&gt; setTimeout(resolve, ms));
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms = 0</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; setTimeout(resolve, ms));
 }
 
-async function test() {
-  for (let i = 0; i &lt; 10; i++) {
-    await sleep(500);
-    console.log(`i=${i}`);
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {
+    <span class="hljs-keyword">await</span> sleep(<span class="hljs-number">500</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`i=<span class="hljs-subst">${i}</span>`</span>);
   }
 }
 
-test().then(() =&gt; console.log('done'));
+test().then(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>));
 </code></pre>
 <p>执行以下命令运行<code>test.js</code>：</p>
-<pre><code class="prettyprint bash">$ babel-node test.js
+<pre><code class="language-bash">$ babel-node test.js
 </code></pre>
 <p>在我本机的环境下显示以下错误信息：</p>
 <pre><code>/usr/local/lib/node_modules/babel-cli/node_modules/babel-core/lib/transformation/file/index.js:540
@@ -812,16 +808,16 @@ SyntaxError: /private/tmp/es2015_demo/test.js: Unexpected token (5:6)
 </code></pre>
 <p>由提示信息可判断出，应该是不支持<code>async function</code>导致的，因为这是 ES7 标准中定义的新语法，需要配置相应的 babel 插件才能支持它。本文为了方面使用最新的 JavaScript 语法，暂时不考虑 babel 的编译性能，直接开启所有可能用到的插件，具体可以自行研究 babel 的官方文档。</p>
 <p>新建文件<code>.babelrc</code>：</p>
-<pre><code class="prettyprint json">{
-  &quot;presets&quot;: [&quot;es2015&quot;, &quot;stage-0&quot;]
+<pre><code class="language-json">{
+  <span class="hljs-attr">"presets"</span>: [<span class="hljs-string">"es2015"</span>, <span class="hljs-string">"stage-0"</span>]
 }
 </code></pre>
 <p><code>.babelrc</code>为 babel 的配置文件，保存在项目的根目录下，其中<code>presets</code>用于设置开启的语法特性集合，详细介绍可参考官方文档：<a href="https://babeljs.io/docs/usage/babelrc/">https://babeljs.io/docs/usage/babelrc/</a> 和 <a href="http://babeljs.io/docs/plugins/#presets">http://babeljs.io/docs/plugins/#presets</a></p>
 <p>接下来我们还需要安装插件依赖的模块，执行以下命令安装并保存到<code>package.json</code>的<code>devDependencies</code>中：</p>
-<pre><code class="prettyprint bash">$ npm i babel-preset-es2015 babel-preset-stage-0 --save-dev
+<pre><code class="language-bash">$ npm i babel-preset-es2015 babel-preset-stage-0 --save-dev
 </code></pre>
 <p>现在再重新执行<code>test.js</code>，可看到控制台每隔 500ms 打印出一行，直到输出<code>done</code>时结束：</p>
-<pre><code class="prettyprint bash">$ babel-node test.js
+<pre><code class="language-bash">$ babel-node test.js
 
 i=0
 i=1
@@ -833,14 +829,14 @@ i=6
 i=7
 i=8
 i=9
-done
+<span class="hljs-keyword">done</span>
 </code></pre>
 <h3><a id="3_149"></a>3、编译程序</h3>
 <p>在发布项目时，要求可以在不依赖 babel 编译器的环境下运行，因此我们需要将 ES2015 的程序编译成 ES5 的：</p>
-<pre><code class="prettyprint bash">$ babel test.js --out-file test.compiled.js
+<pre><code class="language-bash">$ babel test.js --out-file test.compiled.js
 </code></pre>
 <p>执行上面的命令后，生成了编译后的文件<code>test.compiled.js</code>，我们尝试执行它看看：</p>
-<pre><code class="prettyprint bash">$ node test.compiled.js
+<pre><code class="language-bash">$ node test.compiled.js
 </code></pre>
 <p>在我的系统环境下提示以下出错信息：</p>
 <pre><code>/private/tmp/es2015_demo/test.compiled.js:4
@@ -853,10 +849,10 @@ ReferenceError: regeneratorRuntime is not defined
 ...
 </code></pre>
 <p>经阅读官方文档可知，编译后的 JavaScript 程序有时候需要依赖一些运行时<code>polyfill</code>，通过安装<code>babel-polyfill</code>模块来获得：</p>
-<pre><code class="prettyprint bash">$ npm i babel-polyfill --save
+<pre><code class="language-bash">$ npm i babel-polyfill --save
 </code></pre>
 <p>然后，我们需要修改编译后的文件<code>test.compiled.js</code>，在其首行加上以下代码来载入<code>babel-polyfill</code>：</p>
-<pre><code class="prettyprint javascript">require('babel-polyfill');
+<pre><code class="language-javascript"><span class="hljs-built_in">require</span>(<span class="hljs-string">'babel-polyfill'</span>);
 </code></pre>
 <p>再次执行<code>test.compiled.js</code>便可看到与<code>$ babel-node test.js</code>一样的结果。</p>
 <p><code>polyfill</code>的详细介绍可参考官方文档：<a href="http://babeljs.io/docs/usage/polyfill/">http://babeljs.io/docs/usage/polyfill/</a></p>
@@ -864,21 +860,21 @@ ReferenceError: regeneratorRuntime is not defined
 <h2><a id="_195"></a>编写模块</h2>
 <h3><a id="1_197"></a>1、功能描述</h3>
 <p>本文以<a href="https://github.com/leizongmin/node-lei-download">lei-download</a>模块为例，该模块是一个主要功能是根据一个 URL 来下载文件到本地，或者本地直接文件的复制，同时提供下载/复制进度信息。其使用方法如下：</p>
-<pre><code class="prettyprint javascript">let download = require('lei-download');
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> download = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-download'</span>);
 
-let source = '一个 URL 或者本地文件名';
-let target = '要存储到的本地位置，null|false|undefined 表示自动生成一个临时文件';
-// 用于获取进度通知的函数，可以省略
-let progress = (size, total) =&gt; console.log(`进度：${size}/${total}`);
+<span class="hljs-keyword">let</span> source = <span class="hljs-string">'一个 URL 或者本地文件名'</span>;
+<span class="hljs-keyword">let</span> target = <span class="hljs-string">'要存储到的本地位置，null|false|undefined 表示自动生成一个临时文件'</span>;
+<span class="hljs-comment">// 用于获取进度通知的函数，可以省略</span>
+<span class="hljs-keyword">let</span> progress = (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度：<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>);
 
 download(source, target, progress)
-  .then(filename =&gt; console.log(`已保存到：${filename}`))
-  .catch(err =&gt; console.log(`出错：${err}`));
+  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到：<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 
-// 也可以使用 callback 模式
+<span class="hljs-comment">// 也可以使用 callback 模式</span>
 download(source, target, progress, (err, filename) =&gt; {
-  if (err) console.log(`出错：${err}`);
-  else console.log(`已保存到：${filename}`);
+  <span class="hljs-keyword">if</span> (err) <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>);
+  <span class="hljs-keyword">else</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到：<span class="hljs-subst">${filename}</span>`</span>);
 });
 </code></pre>
 <p>在编写模块时，我们首先要实现以下两个函数的功能：</p>
@@ -890,26 +886,26 @@ download(source, target, progress, (err, filename) =&gt; {
 <h3><a id="2_227"></a>2、编写程序</h3>
 <p>在本项目中，所有的 ES2015 源程序均保存在<code>src</code>目录下，发布项目时会执行相应的命令将其编译并输出到<code>lib</code>目录，具体方法在 <strong>「发布模块」</strong> 小节中介绍。</p>
 <p>实现<code>copyFile()</code>函数，新建文件<code>src/copy.js</code>：</p>
-<pre><code class="prettyprint javascript">import fs from 'fs';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
 
-export default function copyFile(source, target, progress) {
-  return new Promise((resolve, reject) =&gt; {
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">copyFile</span>(<span class="hljs-params">source, target, progress</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
 
     fs.stat(source, (err, stats) =&gt; {
-      if (err) return reject(err);
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> reject(err);
 
-      let ss = fs.createReadStream(source);
-      let ts = fs.createWriteStream(target);
-      ss.on('error', reject);
-      ts.on('error', reject);
+      <span class="hljs-keyword">let</span> ss = fs.createReadStream(source);
+      <span class="hljs-keyword">let</span> ts = fs.createWriteStream(target);
+      ss.on(<span class="hljs-string">'error'</span>, reject);
+      ts.on(<span class="hljs-string">'error'</span>, reject);
 
-      let copySize = 0;
-      ss.on('data', data =&gt; {
+      <span class="hljs-keyword">let</span> copySize = <span class="hljs-number">0</span>;
+      ss.on(<span class="hljs-string">'data'</span>, data =&gt; {
         copySize += data.length;
         progress &amp;&amp; progress(copySize, stats.size);
       });
 
-      ss.on('end', () =&gt; resolve(target));
+      ss.on(<span class="hljs-string">'end'</span>, () =&gt; resolve(target));
 
       ss.pipe(ts);
     });
@@ -925,44 +921,44 @@ export default function copyFile(source, target, progress) {
 <li>函数执行后返回一个<code>Promise</code>对象，通过其<code>.then()</code>和<code>.catch()</code>来获取执行结果，关于 Promise 的详细介绍可阅读<a href="http://www.ruanyifeng.com">阮一峰</a>所著的<a href="http://es6.ruanyifeng.com/">「ECMAScript 6 入门 」</a>中<a href="http://es6.ruanyifeng.com/#docs/promise">「 Promise 对象」</a>一章。</li>
 </ul>
 <p>为了测试该代码能否正常工作，可在文件末尾增加以下测试程序（在编写单元测试时将删除）：</p>
-<pre><code class="prettyprint javascript">copyFile(__filename, '/tmp/copy.js', (size, total) =&gt; console.log(`进度${size}/${total}`))
-  .then(filename =&gt; console.log(`已保存到${filename}`))
-  .catch(err =&gt; console.log(`出错：${err}`));
+<pre><code class="language-javascript">copyFile(__filename, <span class="hljs-string">'/tmp/copy.js'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
+  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 </code></pre>
 <p>以上程序的作用是将当前 JavaScript 文件复制到<code>/tmp/copy.js</code>，使用<code>babel-node</code>执行该文件将得到以下结果：</p>
-<pre><code class="prettyprint bash">$ babel-node src/copy.js
+<pre><code class="language-bash">$ babel-node src/copy.js
 
 进度 749/749
 已保存到/tmp/copy.js
 </code></pre>
 <p>实现<code>downloadFile()</code>函数，新建文件<code>src/download.js</code>：</p>
-<pre><code class="prettyprint javascript">import fs from 'fs';
-import request from 'request';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
+<span class="hljs-keyword">import</span> request <span class="hljs-keyword">from</span> <span class="hljs-string">'request'</span>;
 
-export default function downloadFile(url, target, progress) {
-  return new Promise((resolve, reject) =&gt; {
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">downloadFile</span>(<span class="hljs-params">url, target, progress</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
 
-    let s = fs.createWriteStream(target);
-    s.on('error', reject);
+    <span class="hljs-keyword">let</span> s = fs.createWriteStream(target);
+    s.on(<span class="hljs-string">'error'</span>, reject);
 
-    let totalSize = 0;
-    let downloadSize = 0;
-    let req = request
+    <span class="hljs-keyword">let</span> totalSize = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">let</span> downloadSize = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">let</span> req = request
       .get({
         url: url,
-        encoding: null
+        encoding: <span class="hljs-literal">null</span>
       })
-      .on('response', res =&gt; {
-        if (res.statusCode !== 200) {
-          return reject(new Error('status #' + res.statusCode));
+      .on(<span class="hljs-string">'response'</span>, res =&gt; {
+        <span class="hljs-keyword">if</span> (res.statusCode !== <span class="hljs-number">200</span>) {
+          <span class="hljs-keyword">return</span> reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'status #'</span> + res.statusCode));
         }
-        totalSize = Number(res.headers['content-length']) || null;
+        totalSize = <span class="hljs-built_in">Number</span>(res.headers[<span class="hljs-string">'content-length'</span>]) || <span class="hljs-literal">null</span>;
 
-        res.on('data', data =&gt; {
+        res.on(<span class="hljs-string">'data'</span>, data =&gt; {
           downloadSize += data.length;
           progress &amp;&amp; progress(downloadSize, totalSize);
         });
-        res.on('end', () =&gt; resolve(target));
+        res.on(<span class="hljs-string">'end'</span>, () =&gt; resolve(target));
       })
       .pipe(s);
 
@@ -975,31 +971,31 @@ export default function downloadFile(url, target, progress) {
 <li>通过<code>request</code>模块的<code>pipe()</code>方法将收到的数据写入到<code>fs.createWriteStream(target)</code>创建的写入文件流中，<code>request</code>模块的详细使用方法可参考其文档：<a href="https://www.npmjs.com/package/request">https://www.npmjs.com/package/request</a></li>
 </ul>
 <p>为了测试该代码能否正常工作，可在文件末尾增加以下测试程序（在编写单元测试时将删除）：</p>
-<pre><code class="prettyprint javascript">let url = 'http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg';
-downloadFile(url, '/tmp/avatar.jpg', (size, total) =&gt; console.log(`进度${size}/${total}`))
-  .then(filename =&gt; console.log(`已保存到${filename}`))
-  .catch(err =&gt; console.log(`出错：${err}`));
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> url = <span class="hljs-string">'http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg'</span>;
+downloadFile(url, <span class="hljs-string">'/tmp/avatar.jpg'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
+  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 </code></pre>
 <p>以上程序的作用是将 URL 为<code>http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg</code>的文件复制到<code>/tmp/avatar.jpg</code>，使用<code>babel-node</code>执行该文件将得到以下结果：</p>
-<pre><code class="prettyprint bash">$ babel-node src/download.js
+<pre><code class="language-bash">$ babel-node src/download.js
 
 进度 5944/5944
 已保存到/tmp/avatar.jpg
 </code></pre>
 <p>实现<code>download()</code>函数，新建文件<code>src/index.js</code>：</p>
-<pre><code class="prettyprint javascript">import os from 'os';
-import path from 'path';
-import mkdirp from 'mkdirp';
-import copyFile from './copy';
-import downloadFile from './download';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> os <span class="hljs-keyword">from</span> <span class="hljs-string">'os'</span>;
+<span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> mkdirp <span class="hljs-keyword">from</span> <span class="hljs-string">'mkdirp'</span>;
+<span class="hljs-keyword">import</span> copyFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./copy'</span>;
+<span class="hljs-keyword">import</span> downloadFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./download'</span>;
 
-export default function download(source, target, progress) {
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">source, target, progress</span>) </span>{
   target = target || randomFilename(download.tmpDir);
   progress = progress || noop;
-  return new Promise((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
 
     mkdirp(path.dirname(target), err =&gt; {
-      if (err) return callback(err);
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> callback(err);
 
       resolve((isURL(source) ? downloadFile : copyFile)
         (source, target, progress));
@@ -1008,29 +1004,29 @@ export default function download(source, target, progress) {
   });
 }
 
-let getTmpDir = os.tmpdir || os.tmpDir;
+<span class="hljs-keyword">let</span> getTmpDir = os.tmpdir || os.tmpDir;
 
-function randomString(size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789') {
-  let max = chars.length + 1;
-  let str = '';
-  while (size &gt; 0) {
-    str += chars.charAt(Math.floor(Math.random() * max));
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789'</span>) </span>{
+  <span class="hljs-keyword">let</span> max = chars.length + <span class="hljs-number">1</span>;
+  <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>;
+  <span class="hljs-keyword">while</span> (size &gt; <span class="hljs-number">0</span>) {
+    str += chars.charAt(<span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * max));
     size--;
   }
-  return str;
+  <span class="hljs-keyword">return</span> str;
 }
 
-function randomFilename(tmpDir = getTmpDir()) {
-  return path.resolve(tmpDir, randomString(20));
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomFilename</span>(<span class="hljs-params">tmpDir = getTmpDir(</span>)) </span>{
+  <span class="hljs-keyword">return</span> path.resolve(tmpDir, randomString(<span class="hljs-number">20</span>));
 }
 
-function isURL (url) {
-  if (url.substr(0, 7) === 'http://') return true;
-  if (url.substr(0, 8) === 'https://') return true;
-  return false;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isURL</span> (<span class="hljs-params">url</span>) </span>{
+  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">7</span>) === <span class="hljs-string">'http://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>) === <span class="hljs-string">'https://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
 }
 
-export function noop() { }
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">noop</span>(<span class="hljs-params"></span>) </span>{ }
 </code></pre>
 <p>说明：</p>
 <ul>
@@ -1043,56 +1039,56 @@ export function noop() { }
 <li><code>isURL(url)</code>函数用于判断参数是否为一个 URL。</li>
 </ul>
 <p>为了验证程序是否正确，我们可以将上文的<code>src/copy.js</code>和<code>src/download.js</code>中的测试程序放到<code>src/index.js</code>文件的末尾并执行（需要将旧的程序程序删除），比如：</p>
-<pre><code class="prettyprint javascript">download(__filename, '/tmp/copy.js', (size, total) =&gt; console.log(`进度${size}/${total}`))
-  .then(filename =&gt; console.log(`已保存到${filename}`))
-  .catch(err =&gt; console.log(`出错：${err}`));
+<pre><code class="language-javascript">download(__filename, <span class="hljs-string">'/tmp/copy.js'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
+  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 </code></pre>
 <p>正常情况下，其执行结果应该跟上文中的结果是一致的。</p>
 <h3><a id="3_415"></a>3、模块系统</h3>
 <p>Node.js 使用的是 CommonJS 模块系统，模块的输出我们一般通过给<code>exports</code>对象设置属性来做：</p>
-<pre><code class="prettyprint javascript">// 输出变量或函数
-exports.x = 123;
-exports.y = function () {
-  console.log('hello');
+<pre><code class="language-javascript"><span class="hljs-comment">// 输出变量或函数</span>
+exports.x = <span class="hljs-number">123</span>;
+exports.y = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'hello'</span>);
 };
 </code></pre>
 <p>可以通过以下方式来操作：</p>
-<pre><code class="prettyprint javascript">var mod = require('./my_module');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> mod = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
 
-console.log(mod.x);
+<span class="hljs-built_in">console</span>.log(mod.x);
 mod.y();
 </code></pre>
 <p>也可以通过覆盖<code>module.exports</code>来输出一个函数或者其他数据类型：</p>
-<pre><code class="prettyprint javascript">module.exports = function () {
-  console.log('hello');
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'hello'</span>);
 };
 </code></pre>
 <p>通过以下方式来操作：</p>
-<pre><code class="prettyprint javascript">var fn = require('./my_module');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
 
 fn();
 </code></pre>
 <p>而在 ES2015 中，模块通过<code>export</code>语句来输出：</p>
-<pre><code class="prettyprint javascript">// 普通输出，相当于 exports.x = y;
-export const a = 123;
-export var b = 456;
-export function c() { }
-export class d { }
+<pre><code class="language-javascript"><span class="hljs-comment">// 普通输出，相当于 exports.x = y;</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> a = <span class="hljs-number">123</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{ }
+<span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">d</span> </span>{ }
 
-// 默认输出，相当于 module.exports = z;
-export default function y() { }
+<span class="hljs-comment">// 默认输出，相当于 module.exports = z;</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{ }
 </code></pre>
 <p>通过<code>import</code>语句来引入模块，不同的引入方式其含义是不一样的，比如：</p>
-<pre><code class="prettyprint javascript">// 操作 export var x = y 方式的输出
-import {a, b, c, d} from './my_module';
-// 通过相应的变量名称 a, b, c, d 来操作
+<pre><code class="language-javascript"><span class="hljs-comment">// 操作 export var x = y 方式的输出</span>
+<span class="hljs-keyword">import</span> {a, b, c, d} <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+<span class="hljs-comment">// 通过相应的变量名称 a, b, c, d 来操作</span>
 
-// 或者将所有输出指向一个对象
-import * as mod from './my_module';
-// 通过 mod.a, mod.b, mod.c, mod.d 来操作
+<span class="hljs-comment">// 或者将所有输出指向一个对象</span>
+<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> mod <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+<span class="hljs-comment">// 通过 mod.a, mod.b, mod.c, mod.d 来操作</span>
 
-// 操作 export default x 方式的输出
-import y from './my_module';
+<span class="hljs-comment">// 操作 export default x 方式的输出</span>
+<span class="hljs-keyword">import</span> y <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
 </code></pre>
 <p>对于非 ES2015 程序输出的模块，<code>import * as mod</code>和<code>import mod</code>其结果是一样的，比如：</p>
 <pre><code>import * as fs1 from 'fs';
@@ -1102,87 +1098,87 @@ import fs2 from 'fs';
 </code></pre>
 <p>为了更容易理解 ES2015 的模块系统原理，我们可以通过阅读编译后的 JavaScript 程序来了解。访问<a href="http://babeljs.io/repl/">babel 的在线 REPL</a>或将程序保存到本地，并执行<code>babel file.js</code>来查看编译后的程序。</p>
 <p>以下 ES2015 代码：</p>
-<pre><code class="prettyprint javascript">export const a = 123;
-export var b = 456;
-export function c() { }
-export class d { }
+<pre><code class="language-javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> a = <span class="hljs-number">123</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{ }
+<span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">d</span> </span>{ }
 
-export default function y() { }
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{ }
 </code></pre>
 <p>编译后结果如下：</p>
-<pre><code class="prettyprint javascript">&quot;use strict&quot;;
+<pre><code class="language-javascript"><span class="hljs-meta">"use strict"</span>;
 
-Object.defineProperty(exports, &quot;__esModule&quot;, {
-  value: true
+<span class="hljs-built_in">Object</span>.defineProperty(exports, <span class="hljs-string">"__esModule"</span>, {
+  value: <span class="hljs-literal">true</span>
 });
 exports.c = c;
-exports[&quot;default&quot;] = y;
+exports[<span class="hljs-string">"default"</span>] = y;
 
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError(&quot;Cannot call a class as a function&quot;);
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_classCallCheck</span>(<span class="hljs-params">instance, Constructor</span>) </span>{
+  <span class="hljs-keyword">if</span> (!(instance <span class="hljs-keyword">instanceof</span> Constructor)) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>(<span class="hljs-string">"Cannot call a class as a function"</span>);
   }
 }
 
-var a = 123;
+<span class="hljs-keyword">var</span> a = <span class="hljs-number">123</span>;
 exports.a = a;
-var b = 456;
+<span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
 exports.b = b;
 
-function c() {}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{}
 
-var d = function d() {
-  _classCallCheck(this, d);
+<span class="hljs-keyword">var</span> d = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">d</span>(<span class="hljs-params"></span>) </span>{
+  _classCallCheck(<span class="hljs-keyword">this</span>, d);
 };
 
 exports.d = d;
 
-function y() {}
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{}
 </code></pre>
 <p>由上面的代码可以看出，<code>export var b = 456</code>这样的输出方式，实际上相当于<code>var b = exports.b = 456</code>，即直接设置<code>exports</code>对象的属性来完成。而<code>export default y</code>则是设置<code>exports</code>对象的<code>default</code>属性。</p>
 <p>另外，还设置了<code>exports.__esModule = true</code>来标记这是一个 ES2015 输出的模块，在通过<code>import</code>来引入模块时会判断此属性来执行相应的规则，下文将详细介绍。</p>
 <p>再看看以下的 ES2015 代码：</p>
-<pre><code class="prettyprint javascript">import {a, b, c, d} from './my_module';
-import * as mod from './my_module';
-import y from './my_module';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {a, b, c, d} <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> mod <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+<span class="hljs-keyword">import</span> y <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
 
 a;
 mod.a;
 y;
 </code></pre>
 <p>其编译后的 JavaScript 代码如下：</p>
-<pre><code class="prettyprint javascript">'use strict';
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
-function _interopRequireDefault(obj) {
-  return obj &amp;&amp; obj.__esModule ? obj : {
-    'default': obj
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_interopRequireDefault</span>(<span class="hljs-params">obj</span>) </span>{
+  <span class="hljs-keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : {
+    <span class="hljs-string">'default'</span>: obj
   };
 }
 
-function _interopRequireWildcard(obj) {
-  if (obj &amp;&amp; obj.__esModule) {
-    return obj;
-  } else {
-    var newObj = {};
-    if (obj != null) {
-      for (var key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_interopRequireWildcard</span>(<span class="hljs-params">obj</span>) </span>{
+  <span class="hljs-keyword">if</span> (obj &amp;&amp; obj.__esModule) {
+    <span class="hljs-keyword">return</span> obj;
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">var</span> newObj = {};
+    <span class="hljs-keyword">if</span> (obj != <span class="hljs-literal">null</span>) {
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> key <span class="hljs-keyword">in</span> obj) {
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
       }
     }
-    newObj['default'] = obj;
-    return newObj;
+    newObj[<span class="hljs-string">'default'</span>] = obj;
+    <span class="hljs-keyword">return</span> newObj;
   }
 }
 
-var _my_module = require('./my_module');
+<span class="hljs-keyword">var</span> _my_module = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
 
-var mod = _interopRequireWildcard(_my_module);
+<span class="hljs-keyword">var</span> mod = _interopRequireWildcard(_my_module);
 
-var _my_module2 = _interopRequireDefault(_my_module);
+<span class="hljs-keyword">var</span> _my_module2 = _interopRequireDefault(_my_module);
 
 _my_module.a;
 mod.a;
-_my_module2['default'];
+_my_module2[<span class="hljs-string">'default'</span>];
 </code></pre>
 <p>首先，<code>a</code>是通过<code>import {a} from './my_module'</code>来引入的，编译后的代码中访问<code>a</code>使用的是<code>_my_module.a</code>，而<code>_my_module = require('./my_module')</code>，所以其对应的是<code>export var a = 123</code>这样的输出。</p>
 <p><code>mod</code>是通过<code>import * as mod from './my_module'</code>来引入的，其编译后的代码为<code>_interopRequireWildcard(require('./my_module'))</code>。在<code>_interopRequireWildcard()</code>函数中，如果载入的模块是由 ES2015 输出的，那么不做任何处理，否则会生成一个输入模块的拷贝，并且设置其<code>default</code>属性为自身。</p>
@@ -1191,41 +1187,41 @@ _my_module2['default'];
 <h3><a id="4_596"></a>4、封装模块</h3>
 <p>上文例子中的<code>download()</code>函数所在的文件<code>src/index.js</code>中用到<code>randomFilename()</code>和<code>isURL()</code>这两个函数，为了使得代码结构更清晰，我们尝试把这些工具函数转移到<code>src/utils.js</code>中。</p>
 <p>新建文件<code>src/utils.js</code>：</p>
-<pre><code class="prettyprint javascript">import path from 'path';
-import os from 'os';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> os <span class="hljs-keyword">from</span> <span class="hljs-string">'os'</span>;
 
-let getTmpDir = os.tmpdir || os.tmpDir;
+<span class="hljs-keyword">let</span> getTmpDir = os.tmpdir || os.tmpDir;
 
-function randomString(size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789') {
-  let max = chars.length + 1;
-  let str = '';
-  while (size &gt; 0) {
-    str += chars.charAt(Math.floor(Math.random() * max));
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789'</span>) </span>{
+  <span class="hljs-keyword">let</span> max = chars.length + <span class="hljs-number">1</span>;
+  <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>;
+  <span class="hljs-keyword">while</span> (size &gt; <span class="hljs-number">0</span>) {
+    str += chars.charAt(<span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * max));
     size--;
   }
-  return str;
+  <span class="hljs-keyword">return</span> str;
 }
 
-export function randomFilename(tmpDir = getTmpDir()) {
-  return path.resolve(tmpDir, randomString(20));
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomFilename</span>(<span class="hljs-params">tmpDir = getTmpDir(</span>)) </span>{
+  <span class="hljs-keyword">return</span> path.resolve(tmpDir, randomString(<span class="hljs-number">20</span>));
 }
 
-export function isURL (url) {
-  if (url.substr(0, 7) === 'http://') return true;
-  if (url.substr(0, 8) === 'https://') return true;
-  return false;
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isURL</span> (<span class="hljs-params">url</span>) </span>{
+  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">7</span>) === <span class="hljs-string">'http://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>) === <span class="hljs-string">'https://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
 }
 
-export function noop() { }
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">noop</span>(<span class="hljs-params"></span>) </span>{ }
 </code></pre>
 <p>说明：<code>getTmpDir()</code>和<code>randomString()</code>仅在函数<code>randomFilename()</code>函数中用到，所以不需要使用<code>export</code>输出。</p>
 <p>修改文件<code>src/index.js</code>，将相应的代码删掉，并在文件首部<code>import</code>语句后面增加以下代码：</p>
-<pre><code class="prettyprint javascript">import {randomFilename, isURL, noop} from './utils';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {randomFilename, isURL, noop} <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>;
 </code></pre>
 <h2><a id="_640"></a>单元测试</h2>
 <p>本文将以<code>mocha</code>测试框架为例，单元测试程序也将使用 ES2015 来写。</p>
 <p>首先执行以下命令安装<code>mocha</code>：</p>
-<pre><code class="prettyprint bash">$ npm i -g mocha
+<pre><code class="language-bash">$ npm i -g mocha
 </code></pre>
 <p>安装完成后可执行以下命令验证是否安装成功：</p>
 <pre><code>$ mocha --version
@@ -1233,50 +1229,50 @@ export function noop() { }
 2.3.4
 </code></pre>
 <p>通过阅读<code>babel</code>的官方文档（访问 <a href="http://babeljs.io/docs/setup/#mocha">http://babeljs.io/docs/setup/#mocha</a> ）可知，为了让 Node.js 中的<code>require()</code>函数能直接载入 ES2015 程序，需要依赖<code>babel-core</code>模块，执行以下命令安装：</p>
-<pre><code class="prettyprint bash">$ npm i babel-core mocha --save-dev
+<pre><code class="language-bash">$ npm i babel-core mocha --save-dev
 </code></pre>
 <p>运行<code>mocha</code>命令的时候，需要增加额外的参数<code>--compilers js:babel-core/register</code>让其使用<code>babel</code>来载入 JavaScript 程序。为了方便，我们可以修改<code>package.json</code>文件，增加以下内容：</p>
-<pre><code class="prettyprint json">{
-  &quot;scripts&quot;: {
-    &quot;test&quot;: &quot;mocha --compilers js:babel-core/register&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"mocha --compilers js:babel-core/register"</span>
   }
 }
 </code></pre>
 <p>说明：我们通过<code>npm init</code>命令生成<code>package.json</code>文件时，已经自动生成了<code>test</code>命令，其默认值为<code>echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1</code>，直接将其改为<code>mocha --compilers js:babel-core/register</code>即可。</p>
 <p>以上准备工作完成后，便可以开始写单元测试程序了。新建文件<code>test/test.js</code>：</p>
-<pre><code class="prettyprint javascript">import assert from 'assert';
-import path from 'path';
-import fs from 'fs';
-import download from '../src';
-import {randomFilename} from '../src/utils';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> assert <span class="hljs-keyword">from</span> <span class="hljs-string">'assert'</span>;
+<span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
+<span class="hljs-keyword">import</span> download <span class="hljs-keyword">from</span> <span class="hljs-string">'../src'</span>;
+<span class="hljs-keyword">import</span> {randomFilename} <span class="hljs-keyword">from</span> <span class="hljs-string">'../src/utils'</span>;
 
-let readFile = f =&gt; fs.readFileSync(f).toString();
-let getFileSize = f =&gt; fs.statSync(f).size;
+<span class="hljs-keyword">let</span> readFile = f =&gt; fs.readFileSync(f).toString();
+<span class="hljs-keyword">let</span> getFileSize = f =&gt; fs.statSync(f).size;
 
-describe('es2015_demo', () =&gt; {
+describe(<span class="hljs-string">'es2015_demo'</span>, () =&gt; {
 
-  it('复制本地文件成功', done =&gt; {
+  it(<span class="hljs-string">'复制本地文件成功'</span>, done =&gt; {
 
-    let source = __filename;
-    let target = randomFilename();
-    let onProgress = false;
+    <span class="hljs-keyword">let</span> source = __filename;
+    <span class="hljs-keyword">let</span> target = randomFilename();
+    <span class="hljs-keyword">let</span> onProgress = <span class="hljs-literal">false</span>;
 
     download(source, target, (size, total) =&gt; {
 
-      onProgress = true;
+      onProgress = <span class="hljs-literal">true</span>;
       assert.equal(size, total);
       assert.equal(total, getFileSize(source));
 
     }).then(filename =&gt; {
 
-      assert.equal(onProgress, true);
+      assert.equal(onProgress, <span class="hljs-literal">true</span>);
       assert.equal(target, filename);
       assert.equal(readFile(source), readFile(target));
 
       done();
 
     }).catch(err =&gt; {
-      throw err;
+      <span class="hljs-keyword">throw</span> err;
     });
   });
 
@@ -1284,9 +1280,9 @@ describe('es2015_demo', () =&gt; {
 </code></pre>
 <p>说明：本文只为了演示如何配置<code>mocha</code>和编写单元测试程序，所以没有给<code>download()</code>函数编写完整的单元测试，仅编写一个测试用例作为演示。</p>
 <p>好了，现在执行<code>$ npm test</code>命令看看：</p>
-<pre><code class="prettyprint bash">$ npm test
+<pre><code class="language-bash">$ npm <span class="hljs-built_in">test</span>
 
-&gt; es2015_demo@1.0.0 test /private/tmp/es2015_demo
+&gt; es2015_demo@1.0.0 <span class="hljs-built_in">test</span> /private/tmp/es2015_demo
 &gt; mocha --compilers js:babel-core/register
 
 
@@ -1303,18 +1299,18 @@ describe('es2015_demo', () =&gt; {
 <h3><a id="1_743"></a>1、编译</h3>
 <p>上文已提到，为了让使用 ES2015 编写的代码能在 Node.js 上正常运行，需要先将其编译成 ES5 标准的代码，然后还需要在程序入口载入<code>babel-polyfill</code>模块。</p>
 <p>我们可以修改文件<code>package.json</code>，为其增加<code>compile</code>命令：</p>
-<pre><code class="prettyprint json">{
-  &quot;scripts&quot;: {
-    &quot;compile&quot;: &quot;babel -d lib/ src/&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel -d lib/ src/"</span>
   }
 }
 </code></pre>
 <p>说明：<code>$ babel -d lib/ src/</code>命令表示<code>lib</code>目录下的所有文件，并保存到<code>src</code>目录下。</p>
 <p>配置完成后，可以执行<code>$ npm run compile</code>命令编译试试：</p>
-<pre><code class="prettyprint bash">$ npm run compile
+<pre><code class="language-bash">$ npm run compile
 
 &gt; @isnc/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
-&gt; babel -d lib/ src/
+&gt; babel <span class="hljs-_">-d</span> lib/ src/
 
 src/copy.js -&gt; lib/copy.js
 src/download.js -&gt; lib/download.js
@@ -1322,14 +1318,14 @@ src/index.js -&gt; lib/index.js
 src/utils.js -&gt; lib/utils.js
 </code></pre>
 <p>此时，我们还不能直接载入<code>lib/index.js</code>文件，因为在此之前需要载入<code>babel-polyfill</code>模块。编辑文件<code>package.json</code>，设置模块入口文件：</p>
-<pre><code class="prettyprint json">{
-  &quot;main&quot;: &quot;index.js&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"main"</span>: <span class="hljs-string">"index.js"</span>
 }
 </code></pre>
 <p>说明：使用<code>$ npm init</code>生成<code>package.json</code>文件时，<code>main</code>的默认值即为<code>index.js</code>，可无需修改。</p>
 <p>新建文件<code>index.js</code>：</p>
-<pre><code class="prettyprint javascript">require('babel-polyfill');
-module.exports = require('./lib').default;
+<pre><code class="language-javascript"><span class="hljs-built_in">require</span>(<span class="hljs-string">'babel-polyfill'</span>);
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./lib'</span>).default;
 </code></pre>
 <p>说明：在<code>src/index.js</code>中<code>download()</code>函数使用的是<code>export default</code>输出，所以在 Node.js 中需要读取模块输出的<code>default</code>属性。</p>
 <p>上文中我们的测试程序是直接载入<code>src</code>目录下的程序，但模块最终发布的却是编译后的程序，为了避免因 babel 的 Bug 而导致编译后的程序与源程序功能有差异，我们的单元测试需要改用编译后的代码。</p>
@@ -1338,8 +1334,8 @@ module.exports = require('./lib').default;
 import {randomFilename} from '../src/utils';
 </code></pre>
 <p>改为：</p>
-<pre><code class="prettyprint javascript">import download from '../';
-import {randomFilename} from '../lib/utils';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> download <span class="hljs-keyword">from</span> <span class="hljs-string">'../'</span>;
+<span class="hljs-keyword">import</span> {randomFilename} <span class="hljs-keyword">from</span> <span class="hljs-string">'../lib/utils'</span>;
 </code></pre>
 <p>在编辑<code>package.json</code>文件，将<code>test</code>命令改为先执行<code>compile</code>编译代码后再执行<code>mocha</code>测试：</p>
 <pre><code>{
@@ -1381,9 +1377,9 @@ lib
 <pre><code>src
 </code></pre>
 <p>在使用<code>$ npm publish</code>命令发布模块时，可以设置<code>prepublish</code>命令来让其自动执行编译。编辑文件<code>package.json</code>，增加以下内容：</p>
-<pre><code class="prettyprint json">{
-  &quot;scripts&quot;: {
-    &quot;prepublish&quot;: &quot;npm run compile&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"prepublish"</span>: <span class="hljs-string">"npm run compile"</span>
   }
 }
 </code></pre>
@@ -1406,49 +1402,49 @@ src/utils.js -&gt; lib/utils.js
 <h3><a id="3_889"></a>3、善后</h3>
 <p>上文例子中需要依赖<code>mocha</code>和<code>babel</code>两个工具，当我们开发多个项目或将其作为开源项目发布出去时，可能不同的项目所依赖<code>babel</code>的版本是不一样的，为了开发环境一致，一般我们需要在当前项目中执行其开发时所指定的<code>babel</code>版本。</p>
 <p>首先执行以下命令安装<code>babel-cli</code>和<code>mocha</code>：</p>
-<pre><code class="prettyprint bash">$ npm i babel-cli mocha --save-dev
+<pre><code class="language-bash">$ npm i babel-cli mocha --save-dev
 </code></pre>
 <p>安装完成后，对于上文中使用的<code>babel</code>和<code>mocha</code>命令，可以使用<code>./node_modules/.bin/babel</code>和<code>./node_modules/.bin/mocha</code>来执行。编辑<code>package.json</code>文件，更改<code>compile</code>和<code>test</code>命令：</p>
-<pre><code class="prettyprint json">{
-  &quot;scripts&quot;: {
-    &quot;compile&quot;: &quot;./node_modules/.bin/babel -d lib/ src/&quot;,
-    &quot;test&quot;: &quot;npm run compile &amp;&amp; ./node_modules/.bin/mocha --compilers js:babel-core/register&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"./node_modules/.bin/babel -d lib/ src/"</span>,
+    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"npm run compile &amp;&amp; ./node_modules/.bin/mocha --compilers js:babel-core/register"</span>
   }
 }
 </code></pre>
 <p>本文示例模块输出的<code>download()</code>函数使用的是 Promise 的异步模式，对于习惯使用 callback 模式的用户，我们也可以通过简单的修改来使其支持 callback 模式。</p>
 <p>编辑文件<code>src/utils.js</code>，增加<code>callbackify()</code>函数：</p>
-<pre><code class="prettyprint javascript">export function callbackify(fn) {
-  let argc = fn.length;
-  return (...args) =&gt; {
-    let callback = args[argc];
-    if (typeof callback !== 'function') callback = null;
-    return fn(...args)
+<pre><code class="language-javascript"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callbackify</span>(<span class="hljs-params">fn</span>) </span>{
+  <span class="hljs-keyword">let</span> argc = fn.length;
+  <span class="hljs-keyword">return</span> (...args) =&gt; {
+    <span class="hljs-keyword">let</span> callback = args[argc];
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> callback !== <span class="hljs-string">'function'</span>) callback = <span class="hljs-literal">null</span>;
+    <span class="hljs-keyword">return</span> fn(...args)
       .then(ret =&gt; {
-        callback &amp;&amp; callback(null, ret);
-        return Promise.resolve(ret);
+        callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve(ret);
       })
       .catch(err =&gt; {
         callback &amp;&amp; callback(err);
-        return Promise.reject(err);
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.reject(err);
       });
   }
 }
 </code></pre>
 <p>编辑文件<code>src/index.js</code>，将其改为以下内容：</p>
-<pre><code class="prettyprint javascript">import path from 'path';
-import mkdirp from 'mkdirp';
-import copyFile from './copy';
-import downloadFile from './download';
-import {randomFilename, isURL, noop, callbackify} from './utils';
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> mkdirp <span class="hljs-keyword">from</span> <span class="hljs-string">'mkdirp'</span>;
+<span class="hljs-keyword">import</span> copyFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./copy'</span>;
+<span class="hljs-keyword">import</span> downloadFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./download'</span>;
+<span class="hljs-keyword">import</span> {randomFilename, isURL, noop, callbackify} <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>;
 
-export default callbackify(function download(source, target, progress) {
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> callbackify(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">source, target, progress</span>) </span>{
   target = target || randomFilename(download.tmpDir);
   progress = progress || noop;
-  return new Promise((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
 
     mkdirp(path.dirname(target), err =&gt; {
-      if (err) return callback(err);
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> callback(err);
 
       resolve((isURL(source) ? downloadFile : copyFile)
         (source, target, progress));
@@ -1459,22 +1455,22 @@ export default callbackify(function download(source, target, progress) {
 </code></pre>
 <p>说明：<code>callbackify()</code>函数的作用是返回一个新的函数，这个函数可以支持原函数的 Promise 模式，同时支持 callback 模式。</p>
 <p>现在再给<code>test/test.js</code>增加一个测试用例：</p>
-<pre><code class="prettyprint javascript">  it('复制本地文件成功 callback', done =&gt; {
+<pre><code class="language-javascript">  it(<span class="hljs-string">'复制本地文件成功 callback'</span>, done =&gt; {
 
-    let source = __filename;
-    let target = randomFilename();
-    let onProgress = false;
+    <span class="hljs-keyword">let</span> source = __filename;
+    <span class="hljs-keyword">let</span> target = randomFilename();
+    <span class="hljs-keyword">let</span> onProgress = <span class="hljs-literal">false</span>;
 
     download(source, target, (size, total) =&gt; {
 
-      onProgress = true;
+      onProgress = <span class="hljs-literal">true</span>;
       assert.equal(size, total);
       assert.equal(total, getFileSize(source));
 
     }, (err, filename) =&gt; {
 
-      assert.equal(err, null);
-      assert.equal(onProgress, true);
+      assert.equal(err, <span class="hljs-literal">null</span>);
+      assert.equal(onProgress, <span class="hljs-literal">true</span>);
       assert.equal(target, filename);
       assert.equal(readFile(source), readFile(target));
 
@@ -1502,32 +1498,32 @@ export default callbackify(function download(source, target, progress) {
 ]]></description><link>http://morning.work/page/2015-11/es6-es7-develop-npm-module-using-babel.html</link><guid isPermaLink="true">http://morning.work/page/2015-11/es6-es7-develop-npm-module-using-babel.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Mon, 30 Nov 2015 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 的 Buffer 那些你可能不知道的用法]]></title><description><![CDATA[<p><h3>目录</h3><ul><ul><li><a href="#_5">前言</a></li><li><a href="#_114">操作结构化数据</a></li><li><a href="#leiproto__214">lei-proto 模块介绍</a></li><li><a href="#_267">扩展阅读</a></li></ul></ul></p>
 <h2><a id="_5"></a>前言</h2>
 <p>在大多数介绍 Buffer 的文章中，主要是围绕数据拼接和内存分配这两方面的。比如我们使用<code>fs</code>模块来读取文件内容的时候，返回的就是一个 Buffer：</p>
-<pre><code class="prettyprint javascript">fs.readFile('filename', function (err, buf) {
-  // &lt;Buffer 2f 2a 2a 0a 20 2a 20 53 75 ... &gt;
+<pre><code class="language-javascript">fs.readFile(<span class="hljs-string">'filename'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, buf</span>) </span>{
+  <span class="hljs-comment">// &lt;Buffer 2f 2a 2a 0a 20 2a 20 53 75 ... &gt;</span>
 });
 </code></pre>
 <p>在使用<code>net</code>或<code>http</code>模块来接收网络数据时，<code>data</code>事件的参数也是一个 Buffer，这时我们还需要使用<code>Buffer.concat()</code>来做数据拼接：</p>
-<pre><code class="prettyprint javascript">var bufs = [];
-conn.on('data', function (buf) {
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> bufs = [];
+conn.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">buf</span>) </span>{
   bufs.push(buf);
 });
-conn.on('end', function () {
-  // 接收数据结束后，拼接所有收到的 Buffer 对象
-  var buf = Buffer.concat(bufs);
+conn.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 接收数据结束后，拼接所有收到的 Buffer 对象</span>
+  <span class="hljs-keyword">var</span> buf = Buffer.concat(bufs);
 });
 </code></pre>
 <p>还可以利用<code>Buffer.toString()</code>来做转换<code>base64</code>或十六进制字符的转换，比如：</p>
-<pre><code class="prettyprint javascript">console.log(new Buffer('hello, world!').toString('base64'));
-// 转换成 base64 字符串：aGVsbG8sIHdvcmxkIQ==
+<pre><code class="language-javascript"><span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">new</span> Buffer(<span class="hljs-string">'hello, world!'</span>).toString(<span class="hljs-string">'base64'</span>));
+<span class="hljs-comment">// 转换成 base64 字符串：aGVsbG8sIHdvcmxkIQ==</span>
 
-console.log(new Buffer('aGVsbG8sIHdvcmxkIQ==', 'base64').toString());
-// 还原 base64 字符串：hello, world!
+<span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">new</span> Buffer(<span class="hljs-string">'aGVsbG8sIHdvcmxkIQ=='</span>, <span class="hljs-string">'base64'</span>).toString());
+<span class="hljs-comment">// 还原 base64 字符串：hello, world!</span>
 
-console.log(new Buffer('hello, world!').toString('hex'));
-// 转换成十六进制字符串：68656c6c6f2c20776f726c6421
+<span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">new</span> Buffer(<span class="hljs-string">'hello, world!'</span>).toString(<span class="hljs-string">'hex'</span>));
+<span class="hljs-comment">// 转换成十六进制字符串：68656c6c6f2c20776f726c6421</span>
 
-console.log(new Buffer('68656c6c6f2c20776f726c6421', 'hex').toString());
-// 还原十六进制字符串：hello, world!
+<span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">new</span> Buffer(<span class="hljs-string">'68656c6c6f2c20776f726c6421'</span>, <span class="hljs-string">'hex'</span>).toString());
+<span class="hljs-comment">// 还原十六进制字符串：hello, world!</span>
 </code></pre>
 <p>一般情况下，单个 Node.js 进程是有最大内存限制的，以下是来自官方文档中的说明：</p>
 <blockquote>
@@ -1535,9 +1531,9 @@ console.log(new Buffer('68656c6c6f2c20776f726c6421', 'hex').toString());
 <p>Currently, by default v8 has a memory limit of 512MB on 32-bit systems, and 1.4GB on 64-bit systems. The limit can be raised by setting --max_old_space_size to a maximum of ~1024 (~1 GB) (32-bit) and ~4096 (~4GB) (64-bit), but it is recommended that you split your single process into several workers if you are hitting memory limits.</p>
 </blockquote>
 <p>由于 Buffer 对象占用的内存空间是不计算在 Node.js 进程内存空间限制上的，因此，我们也常常会使用 Buffer 来存储需要占用大量内存的数据：</p>
-<pre><code class="prettyprint javascript">// 分配一个 2G-1 字节的数据
-// 单次分配内存超过此值会抛出异常 RangeError: Invalid typed array length
-var buf = new Buffer(1024 * 1024 * 1024 - 1);
+<pre><code class="language-javascript"><span class="hljs-comment">// 分配一个 2G-1 字节的数据</span>
+<span class="hljs-comment">// 单次分配内存超过此值会抛出异常 RangeError: Invalid typed array length</span>
+<span class="hljs-keyword">var</span> buf = <span class="hljs-keyword">new</span> Buffer(<span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> - <span class="hljs-number">1</span>);
 </code></pre>
 <p>以上便是 Buffer 的几种常见用法。然而，阅读 Buffer 的 API 文档时，我们会发现更多的是<code>readXXX()</code>和<code>writeXXX()</code>开头的 API，具体如下：</p>
 <ul>
@@ -1580,13 +1576,13 @@ var buf = new Buffer(1024 * 1024 * 1024 - 1);
 <li>buf.writeDoubleBE(value, offset[, noAssert])</li>
 </ul>
 <p>这些 API 为在 Node.js 中操作数据提供了极大的便利。假设我们要将一个整形数值存储到文件中，比如当前时间戳为<code>1447656645380</code>，如果将其当作一个字符串存储时，需要占用 11 字节的空间，而将其转换为二进制存储时仅需 6 字节空间即可：</p>
-<pre><code class="prettyprint javascript">var buf = new Buffer(6);
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> buf = <span class="hljs-keyword">new</span> Buffer(<span class="hljs-number">6</span>);
 
-buf.writeUIntBE(1447656645380, 0, 6);
-// &lt;Buffer 01 51 0f 0f 63 04&gt;
+buf.writeUIntBE(<span class="hljs-number">1447656645380</span>, <span class="hljs-number">0</span>, <span class="hljs-number">6</span>);
+<span class="hljs-comment">// &lt;Buffer 01 51 0f 0f 63 04&gt;</span>
 
-buf.readUIntBE(0, 6);
-// 1447656645380
+buf.readUIntBE(<span class="hljs-number">0</span>, <span class="hljs-number">6</span>);
+<span class="hljs-comment">// 1447656645380</span>
 </code></pre>
 <p>在使用 Node.js 编写一些底层功能时，比如一个网络通信模块、某个数据库的客户端模块，或者需要从文件中操作大量结构化数据时，以上 Buffer 对象提供的 API 都是必不可少的。</p>
 <p>接下来将演示一个使用 Buffer 对象操作结构化数据的例子。</p>
@@ -1632,102 +1628,102 @@ buf.readUIntBE(0, 6);
 </tbody>
 </table>
 <p>每一条记录仅需要 6 字节的空间即可，仅仅是使用文本存储的 40%！下面是用来操作这些记录的程序：</p>
-<pre><code class="prettyprint javascript">// 读取一条记录
-// buf    Buffer 对象
-// offset 本条记录在 Buffer 对象的开始位置
-// data   {number, lesson, score}
-function writeRecord (buf, offset, data) {
-  buf.writeUIntBE(data.number, offset, 3);
-  buf.writeUInt16BE(data.lesson, offset + 3);
-  buf.writeInt8(data.score, offset + 5);
+<pre><code class="language-javascript"><span class="hljs-comment">// 读取一条记录</span>
+<span class="hljs-comment">// buf    Buffer 对象</span>
+<span class="hljs-comment">// offset 本条记录在 Buffer 对象的开始位置</span>
+<span class="hljs-comment">// data   {number, lesson, score}</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeRecord</span> (<span class="hljs-params">buf, offset, data</span>) </span>{
+  buf.writeUIntBE(data.number, offset, <span class="hljs-number">3</span>);
+  buf.writeUInt16BE(data.lesson, offset + <span class="hljs-number">3</span>);
+  buf.writeInt8(data.score, offset + <span class="hljs-number">5</span>);
 }
 
-// 写入一条记录
-// buf    Buffer 对象
-// offset 本条记录在 Buffer 对象的开始位置
-function readRecord (buf, offset) {
-  return {
-    number: buf.readUIntBE(offset, 3),
-    lesson: buf.readUInt16BE(offset + 3),
-    score: buf.readInt8(offset + 5)
+<span class="hljs-comment">// 写入一条记录</span>
+<span class="hljs-comment">// buf    Buffer 对象</span>
+<span class="hljs-comment">// offset 本条记录在 Buffer 对象的开始位置</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readRecord</span> (<span class="hljs-params">buf, offset</span>) </span>{
+  <span class="hljs-keyword">return</span> {
+    number: buf.readUIntBE(offset, <span class="hljs-number">3</span>),
+    lesson: buf.readUInt16BE(offset + <span class="hljs-number">3</span>),
+    score: buf.readInt8(offset + <span class="hljs-number">5</span>)
   };
 }
 
-// 写入记录列表
-// list  记录列表，每一条包含 {number, lesson, score}
-function writeList (list) {
-  var buf = new Buffer(list.length * 6);
-  var offset = 0;
-  for (var i = 0; i &lt; list.length; i++) {
+<span class="hljs-comment">// 写入记录列表</span>
+<span class="hljs-comment">// list  记录列表，每一条包含 {number, lesson, score}</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeList</span> (<span class="hljs-params">list</span>) </span>{
+  <span class="hljs-keyword">var</span> buf = <span class="hljs-keyword">new</span> Buffer(list.length * <span class="hljs-number">6</span>);
+  <span class="hljs-keyword">var</span> offset = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; list.length; i++) {
     writeRecord(buf, offset, list[i]);
-    offset += 6;
+    offset += <span class="hljs-number">6</span>;
   }
-  return buf;
+  <span class="hljs-keyword">return</span> buf;
 }
 
-// 读取记录列表
-// buf  Buffer 对象
-function readList (buf) {
-  var offset = 0;
-  var list = [];
-  while (offset &lt; buf.length) {
+<span class="hljs-comment">// 读取记录列表</span>
+<span class="hljs-comment">// buf  Buffer 对象</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readList</span> (<span class="hljs-params">buf</span>) </span>{
+  <span class="hljs-keyword">var</span> offset = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">var</span> list = [];
+  <span class="hljs-keyword">while</span> (offset &lt; buf.length) {
     list.push(readRecord(buf, offset));
-    offset += 6;
+    offset += <span class="hljs-number">6</span>;
   }
-  return list;
+  <span class="hljs-keyword">return</span> list;
 }
 </code></pre>
 <p>我们可以再编写一段程序来看看效果：</p>
-<pre><code class="prettyprint javascript">var list = [
-  {number: 100001, lesson: 1001, score: 99},
-  {number: 100002, lesson: 1001, score: 88},
-  {number: 100003, lesson: 1001, score: 77},
-  {number: 100004, lesson: 1001, score: 66},
-  {number: 100005, lesson: 1001, score: 55},
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> list = [
+  {number: <span class="hljs-number">100001</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">99</span>},
+  {number: <span class="hljs-number">100002</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">88</span>},
+  {number: <span class="hljs-number">100003</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">77</span>},
+  {number: <span class="hljs-number">100004</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">66</span>},
+  {number: <span class="hljs-number">100005</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">55</span>},
 ];
-console.log(list);
+<span class="hljs-built_in">console</span>.log(list);
 
-var buf = writeList(list);
-console.log(buf);
-// 输出 &lt;Buffer 01 86 a1 03 e9 63 01 86 a2 03 e9 58 01 86 a3 03 e9 4d 01 86 a4 03 e9 42 01 86 a5 03 e9 37&gt;
+<span class="hljs-keyword">var</span> buf = writeList(list);
+<span class="hljs-built_in">console</span>.log(buf);
+<span class="hljs-comment">// 输出 &lt;Buffer 01 86 a1 03 e9 63 01 86 a2 03 e9 58 01 86 a3 03 e9 4d 01 86 a4 03 e9 42 01 86 a5 03 e9 37&gt;</span>
 
-var ret = readList(buf);
-console.log(ret);
-/* 输出
+<span class="hljs-keyword">var</span> ret = readList(buf);
+<span class="hljs-built_in">console</span>.log(ret);
+<span class="hljs-comment">/* 输出
 [ { number: 100001, lesson: 1001, score: 99 },
   { number: 100002, lesson: 1001, score: 88 },
   { number: 100003, lesson: 1001, score: 77 },
   { number: 100004, lesson: 1001, score: 66 },
   { number: 100005, lesson: 1001, score: 55 } ]
-*/
+*/</span>
 </code></pre>
 <h2><a id="leiproto__214"></a>lei-proto 模块介绍</h2>
 <p>上面的例子中，当每一条记录的结构有变化时，我们需要修改<code>readRecord()</code>和<code>writeRecord()</code>，重新计算每一个字段在 Buffer 中的偏移量，当记录的字段比较复杂时很容易出错。为此我编写了<code>lei-proto</code>模块，它允许你通过简单定义每条记录的结构即可生成对应的<code>readRecord()</code>和`writeRecord()函数。</p>
 <p>首先执行以下命令安装此模块：</p>
-<pre><code class="prettyprint bash">$ npm install lei-proto --save
+<pre><code class="language-bash">$ npm install lei-proto --save
 </code></pre>
 <p>使用<code>lei-proto</code>模块后，前文的例子可以改为这样：</p>
-<pre><code class="prettyprint javascript">var parsePorto = require('lei-proto');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> parsePorto = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-proto'</span>);
 
-// 生成指定记录结构的数据编码/解码器
-var record = parsePorto([
-  ['number', 'uint', 3],
-  ['lesson', 'uint', 2],
-  ['score', 'uint', 1]
+<span class="hljs-comment">// 生成指定记录结构的数据编码/解码器</span>
+<span class="hljs-keyword">var</span> record = parsePorto([
+  [<span class="hljs-string">'number'</span>, <span class="hljs-string">'uint'</span>, <span class="hljs-number">3</span>],
+  [<span class="hljs-string">'lesson'</span>, <span class="hljs-string">'uint'</span>, <span class="hljs-number">2</span>],
+  [<span class="hljs-string">'score'</span>, <span class="hljs-string">'uint'</span>, <span class="hljs-number">1</span>]
 ]);
 
-function readList (buf) {
-  var list = [];
-  var offset = 0;
-  while (offset &lt; buf.length) {
-    list.push(record.decode(buf.slice(offset, offset + 6)));
-    offset += 6;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readList</span> (<span class="hljs-params">buf</span>) </span>{
+  <span class="hljs-keyword">var</span> list = [];
+  <span class="hljs-keyword">var</span> offset = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">while</span> (offset &lt; buf.length) {
+    list.push(record.decode(buf.slice(offset, offset + <span class="hljs-number">6</span>)));
+    offset += <span class="hljs-number">6</span>;
   }
-  return list;
+  <span class="hljs-keyword">return</span> list;
 }
 
-function writeList (list) {
-  return Buffer.concat(list.map(record.encodeEx));
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeList</span> (<span class="hljs-params">list</span>) </span>{
+  <span class="hljs-keyword">return</span> Buffer.concat(list.map(record.encodeEx));
 }
 </code></pre>
 <p>运行与上文同样的测试程序，可看到其结果是一样的：</p>
@@ -1752,7 +1748,7 @@ function writeList (list) {
 </ul>
 ]]></description><link>http://morning.work/page/2015-11/nodejs_buffer.html</link><guid isPermaLink="true">http://morning.work/page/2015-11/nodejs_buffer.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Mon, 16 Nov 2015 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 定制 REPL 的妙用]]></title><description><![CDATA[<p>相信在学习 Node.js 的时候，对 Node.js 的 REPL 并不陌生。我们可以在 REPL 里面输入 JavaScript 代码并立刻看到效果，常常用来试用一些新的模块，甚至直接把 REPL 当计算器来用。</p>
 <p>最近在修改以前使用 Node.js 写的<a href="https://github.com/leizongmin/node-segment">中文分词模块</a>时，想要看到代码修改后的效果，但是又不方便马上写测试代码，自然想到使用 REPL 来测试。比如执行以下命令启动 Node.js 的 REPL 界面：</p>
-<pre><code class="prettyprint bash">$ node
+<pre><code class="language-bash">$ node
 </code></pre>
 <p>然后在控制台界面中输入要测试的代码（其中<code>&gt;</code>开头的行是手工输入并按回车的代码，其他部分为 REPL 的输出结果）：</p>
 <pre><code>&gt; var Segment = require('./')
@@ -1768,28 +1764,28 @@ undefined
 <p>但当我修改了模块的代码后，要看效果时又要重复输入上面的代码，这种<strong>做重复无意义工作的行为绝非是一名有理想的程序员想要的</strong>。于是，我决定自己<strong>定制一个 REPL</strong>，这样就可以预先执行一些初始化代码，一启动程序就可以进入主题了。</p>
 <p>看了一下<a href="https://nodejs.org/api/repl.html">REPL 模块的文档</a>之后，大概搞清了怎么个用法，接下来开始写代码了。</p>
 <p>首先在项目的根目录下新建名为<code>repl</code>的文件，代码如下：</p>
-<pre><code class="prettyprint javascript">#!/usr/bin/env node
+<pre><code class="language-javascript"><span class="hljs-meta">#!/usr/bin/env node</span>
 
-var repl = require('repl');
+<span class="hljs-keyword">var</span> repl = <span class="hljs-built_in">require</span>(<span class="hljs-string">'repl'</span>);
 
-// 创建一个 REPL
-var r = repl.start('&gt; ');
-// context 即为 REPL 中的上下文环境
-var c = r.context;
+<span class="hljs-comment">// 创建一个 REPL</span>
+<span class="hljs-keyword">var</span> r = repl.start(<span class="hljs-string">'&gt; '</span>);
+<span class="hljs-comment">// context 即为 REPL 中的上下文环境</span>
+<span class="hljs-keyword">var</span> c = r.context;
 
-// 测试用的初始化代码
-// 在 REPL 中可以通过 Segment 和 segment 来访问以下两个变量
-c.Segment = require('./');
-c.segment = new c.Segment();
+<span class="hljs-comment">// 测试用的初始化代码</span>
+<span class="hljs-comment">// 在 REPL 中可以通过 Segment 和 segment 来访问以下两个变量</span>
+c.Segment = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./'</span>);
+c.segment = <span class="hljs-keyword">new</span> c.Segment();
 c.segment.useDefault();
 
-// 精简函数名，方便手工输入，在 REPL 中可以通过 s 来访问此函数
-c.s = function () {
-  return c.segment.doSegment.apply(c.segment, arguments);
+<span class="hljs-comment">// 精简函数名，方便手工输入，在 REPL 中可以通过 s 来访问此函数</span>
+c.s = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">return</span> c.segment.doSegment.apply(c.segment, <span class="hljs-built_in">arguments</span>);
 };
 </code></pre>
 <p>文件第一行的<code>#!/usr/bin/env node</code>表示这是一个脚本文件，使用<code>node</code>命令来执行它，所以还要给这个文件加上可执行权限：</p>
-<pre><code class="prettyprint bash">$ chmod +x repl
+<pre><code class="language-bash">$ chmod +x repl
 </code></pre>
 <p>现在就可以试试这个定制的 REPL 了：</p>
 <pre><code>$ ./repl
@@ -1802,41 +1798,41 @@ c.s = function () {
 <p>当我修改了模块代码，为什么要重启 REPL 呢，难道不能重新加载一次这个模块，然后该干嘛还干嘛？</p>
 <p>从<a href="https://nodejs.org/api/modules.html#modules_caching">Node.js 的模块系统文档</a>可知，在使用<code>require()</code>来加载模块后，相关的文件内容会被缓存到<code>require.cache[filename]</code>中，当再次<code>require()</code>此文件的时候并不会重新加载。所以要想在不重启进程的情况下重新加载模块，我们就要清理这个模块相关的所有缓存。</p>
 <p>把<code>repl</code>文件改成以下代码：</p>
-<pre><code class="prettyprint javascript">#!/usr/bin/env node
+<pre><code class="language-javascript"><span class="hljs-meta">#!/usr/bin/env node</span>
 
-var fs = require('fs');
-var path = require('path');
-var repl = require('repl');
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+<span class="hljs-keyword">var</span> repl = <span class="hljs-built_in">require</span>(<span class="hljs-string">'repl'</span>);
 
 
-var r = repl.start('&gt; ');
-var c = r.context;
+<span class="hljs-keyword">var</span> r = repl.start(<span class="hljs-string">'&gt; '</span>);
+<span class="hljs-keyword">var</span> c = r.context;
 
-// 原来的初始化代码放到此函数内
-c._load = function () {
-  c.Segment = require('./');
-  c.segment = new c.Segment();
+<span class="hljs-comment">// 原来的初始化代码放到此函数内</span>
+c._load = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  c.Segment = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./'</span>);
+  c.segment = <span class="hljs-keyword">new</span> c.Segment();
   c.segment.useDefault();
-  c.s = function () {
-    return c.segment.doSegment.apply(c.segment, arguments);
+  c.s = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">return</span> c.segment.doSegment.apply(c.segment, <span class="hljs-built_in">arguments</span>);
   };
 };
 
-// 在 REPL 中执行 reload()可重新加载模块
-c.reload = function () {
-  var t = Date.now();
+<span class="hljs-comment">// 在 REPL 中执行 reload()可重新加载模块</span>
+c.reload = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> t = <span class="hljs-built_in">Date</span>.now();
 
-  // 清空当前项目根目录下所有文件的缓存
-  var dir = path.resolve(__dirname) + path.sep;
-  for (var i in require.cache) {
-    if (i.indexOf(dir) === 0) {
-      delete require.cache[i];
+  <span class="hljs-comment">// 清空当前项目根目录下所有文件的缓存</span>
+  <span class="hljs-keyword">var</span> dir = path.resolve(__dirname) + path.sep;
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">require</span>.cache) {
+    <span class="hljs-keyword">if</span> (i.indexOf(dir) === <span class="hljs-number">0</span>) {
+      <span class="hljs-keyword">delete</span> <span class="hljs-built_in">require</span>.cache[i];
     }
   }
 
-  // 重新执行初始化
+  <span class="hljs-comment">// 重新执行初始化</span>
   c._load();
-  console.log('OK. (spent %sms)', Date.now() - t);
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'OK. (spent %sms)'</span>, <span class="hljs-built_in">Date</span>.now() - t);
 }
 
 c._load();
@@ -1868,186 +1864,186 @@ undefined
 <h2><a id="_7"></a>通过环境变量指定配置</h2>
 <p><a href="http://baike.baidu.com/view/95930.htm">环境变量（environment variables）</a> 一般是指在操作系统中用来指定操作系统运行环境的一些参数，如：临时文件夹位置和系统文件夹位置等。比如<code>HOME</code>表示当前用户的根目录，<code>TMPDIR</code>表示系统临时目录等，我们可以通过设置一些特定的环境变量，程序在启动时可以读取这些环境变量并做相应的初始化动作。</p>
 <p>在 Node.js 中可以通过<code>process.env</code>来访问当前的环境变量信息，比如：</p>
-<pre><code class="prettyprint javascript">{ PATH: '/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
-  TMPDIR: '/var/folders/rs/g4wqpvvj7bj08t35dxvfm0rr0000gn/T/',
-  LOGNAME: 'glen',
-  XPC_FLAGS: '0x0',
-  HOME: '/Users/glen',
-  TERM: 'xterm-256color',
-  COLORFGBG: '7;0',
-  USER: 'glen',
-  ITERM_PROFILE: 'Glen',
-  TERM_PROGRAM: 'iTerm.app',
-  XPC_SERVICE_NAME: '0',
-  SHELL: '/bin/zsh',
-  ITERM_SESSION_ID: 'w0t4p0',
-  PWD: '/Users/glen/work',
-  __CF_USER_TEXT_ENCODING: '0x1F5:0x0:0x0',
-  LC_CTYPE: 'UTF-8',
-  SHLVL: '1',
-  OLDPWD: '/Users/glen/work',
-  ZSH: '/Users/glen/.oh-my-zsh',
-  PAGER: 'less',
-  LESS: '-R',
-  LSCOLORS: 'Gxfxcxdxbxegedabagacad',
-  AUTOJUMP_SOURCED: '1',
-  AUTOJUMP_ERROR_PATH: '/Users/glen/Library/autojump/errors.log',
-  RUST_SRC_PATH: '/Users/glen/work/source/rust/src',
-  _: '/usr/local/bin/node' }
+<pre><code class="language-javascript">{ PATH: <span class="hljs-string">'/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'</span>,
+  TMPDIR: <span class="hljs-string">'/var/folders/rs/g4wqpvvj7bj08t35dxvfm0rr0000gn/T/'</span>,
+  LOGNAME: <span class="hljs-string">'glen'</span>,
+  XPC_FLAGS: <span class="hljs-string">'0x0'</span>,
+  HOME: <span class="hljs-string">'/Users/glen'</span>,
+  TERM: <span class="hljs-string">'xterm-256color'</span>,
+  COLORFGBG: <span class="hljs-string">'7;0'</span>,
+  USER: <span class="hljs-string">'glen'</span>,
+  ITERM_PROFILE: <span class="hljs-string">'Glen'</span>,
+  TERM_PROGRAM: <span class="hljs-string">'iTerm.app'</span>,
+  XPC_SERVICE_NAME: <span class="hljs-string">'0'</span>,
+  SHELL: <span class="hljs-string">'/bin/zsh'</span>,
+  ITERM_SESSION_ID: <span class="hljs-string">'w0t4p0'</span>,
+  PWD: <span class="hljs-string">'/Users/glen/work'</span>,
+  __CF_USER_TEXT_ENCODING: <span class="hljs-string">'0x1F5:0x0:0x0'</span>,
+  LC_CTYPE: <span class="hljs-string">'UTF-8'</span>,
+  SHLVL: <span class="hljs-string">'1'</span>,
+  OLDPWD: <span class="hljs-string">'/Users/glen/work'</span>,
+  ZSH: <span class="hljs-string">'/Users/glen/.oh-my-zsh'</span>,
+  PAGER: <span class="hljs-string">'less'</span>,
+  LESS: <span class="hljs-string">'-R'</span>,
+  LSCOLORS: <span class="hljs-string">'Gxfxcxdxbxegedabagacad'</span>,
+  AUTOJUMP_SOURCED: <span class="hljs-string">'1'</span>,
+  AUTOJUMP_ERROR_PATH: <span class="hljs-string">'/Users/glen/Library/autojump/errors.log'</span>,
+  RUST_SRC_PATH: <span class="hljs-string">'/Users/glen/work/source/rust/src'</span>,
+  _: <span class="hljs-string">'/usr/local/bin/node'</span> }
 </code></pre>
 <h3><a id="_42"></a>设置环境变量</h3>
 <p>环境变量的名字一般为大写，多个单词之间可通过下划线来连接。</p>
 <p>Windows 系统下可通过<code>set</code>命令来设置环境变量，比如：</p>
-<pre><code class="prettyprint bash">$ set HELLO_MSG=&quot;Hello, world!&quot;
+<pre><code class="language-bash">$ <span class="hljs-built_in">set</span> HELLO_MSG=<span class="hljs-string">"Hello, world!"</span>
 </code></pre>
 <p>Linux 系统下可通过<code>export</code>命令来设置，比如：</p>
-<pre><code class="prettyprint bash">$ export HELLO_MSG=&quot;Hello, world!&quot;
+<pre><code class="language-bash">$ <span class="hljs-built_in">export</span> HELLO_MSG=<span class="hljs-string">"Hello, world!"</span>
 </code></pre>
 <h3><a id="_Nodejs__58"></a>在 Node.js 中读取环境变量</h3>
 <p>创建文件<code>1.js</code>，代码如下：</p>
-<pre><code class="prettyprint javascript">console.log(process.env.HELLO_MSG);
+<pre><code class="language-javascript"><span class="hljs-built_in">console</span>.log(process.env.HELLO_MSG);
 </code></pre>
 <p>然后在命令行中执行：</p>
-<pre><code class="prettyprint bash">$ export HELLO_MSG=&quot;Hello, world&quot; &amp;&amp; node 1.js
+<pre><code class="language-bash">$ <span class="hljs-built_in">export</span> HELLO_MSG=<span class="hljs-string">"Hello, world"</span> &amp;&amp; node 1.js
 </code></pre>
 <p>控制台将输出<code>Hello, world</code>，即我们启动程序时给环境变量<code>HELLO_MSG</code>设置的值。</p>
 <h2><a id="_75"></a>通过配置文件指定配置</h2>
 <p>一些规模较小的项目往往会通过单一的配置文件来存储其配置，比如 CNode 中文社区的开源项目 <a href="https://github.com/cnodejs/nodeclub">nodeclub</a> 在启动时会载入文件<code>config.js</code>，该文件的大概结构如下：</p>
-<pre><code class="prettyprint javascript">var config = {
-  // debug 为 true 时，用于本地调试
-  debug: true,
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> config = {
+  <span class="hljs-comment">// debug 为 true 时，用于本地调试</span>
+  debug: <span class="hljs-literal">true</span>,
 
-  name: 'Nodeclub', // 社区名字
-  description: 'CNode：Node.js 专业中文社区', // 社区的描述
-  keywords: 'nodejs, node, express, connect, socket.io',
+  name: <span class="hljs-string">'Nodeclub'</span>, <span class="hljs-comment">// 社区名字</span>
+  description: <span class="hljs-string">'CNode：Node.js 专业中文社区'</span>, <span class="hljs-comment">// 社区的描述</span>
+  keywords: <span class="hljs-string">'nodejs, node, express, connect, socket.io'</span>,
 
-  // 其他配置项...
+  <span class="hljs-comment">// 其他配置项...</span>
 };
-module.exports = config;
+<span class="hljs-built_in">module</span>.exports = config;
 </code></pre>
 <p>在程序启动的时候，可以使用<code>require()</code>来载入此文件，得到一个对象，然后通过此对象的属性来读取相应的配置信息：</p>
-<pre><code class="prettyprint javascript">// 载入配置文件
-var config = require('./config');
+<pre><code class="language-javascript"><span class="hljs-comment">// 载入配置文件</span>
+<span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./config'</span>);
 
-// 以下为使用到配置的部分代码：
-if (!config.debug &amp;&amp; config.oneapm_key) {
-  require('oneapm');
+<span class="hljs-comment">// 以下为使用到配置的部分代码：</span>
+<span class="hljs-keyword">if</span> (!config.debug &amp;&amp; config.oneapm_key) {
+  <span class="hljs-built_in">require</span>(<span class="hljs-string">'oneapm'</span>);
 }
 
 app.use(session({
   secret: config.session_secret,
-  store: new RedisStore({
+  store: <span class="hljs-keyword">new</span> RedisStore({
     port: config.redis_port,
     host: config.redis_host,
   }),
-  resave: true,
-  saveUninitialized: true,
+  resave: <span class="hljs-literal">true</span>,
+  saveUninitialized: <span class="hljs-literal">true</span>,
 }))
 
-app.listen(config.port, function () {
-  logger.log('NodeClub listening on port', config.port);
-  logger.log('God bless love....');
-  logger.log('You can debug your app with http://' + config.hostname + ':' + config.port);
-  logger.log('');
+app.listen(config.port, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  logger.log(<span class="hljs-string">'NodeClub listening on port'</span>, config.port);
+  logger.log(<span class="hljs-string">'God bless love....'</span>);
+  logger.log(<span class="hljs-string">'You can debug your app with http://'</span> + config.hostname + <span class="hljs-string">':'</span> + config.port);
+  logger.log(<span class="hljs-string">''</span>);
 });
 </code></pre>
 <p>使用配置文件与使用环境变量来指定配置相比，配置文件的可读性更强，可以表示一些更复杂的结构，而使用环境变量一般只限于<code>key=value</code>的形式。但在配置项数量较少时，使用环境变量会更简单，比如项目中只需要配置一个监听端口，可以简单使用<code>export PORT=3000 &amp;&amp; node app.js</code>命令来启动程序，而不需要单独创建一个配置文件。大多数时候往往会结合这两种方式来进行，下文讲详细讲解。</p>
 <h3><a id="_124"></a>其他配置文件格式</h3>
 <p>一般为了方便，在 Node.js 项目中会习惯使用<code>.js</code>文件格式，它的好处是可以使用通过程序来动态生成一些配置项，比如 nodeclub 的其中一个配置项：</p>
-<pre><code class="prettyprint javascript">var config = {
-  // 文件上传配置
-  // 注：如果填写 qn_access，则会上传到 7 牛，以下配置无效
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> config = {
+  <span class="hljs-comment">// 文件上传配置</span>
+  <span class="hljs-comment">// 注：如果填写 qn_access，则会上传到 7 牛，以下配置无效</span>
   upload: {
-    path: path.join(__dirname, 'public/upload/'),
-    url: '/public/upload/'
+    path: path.join(__dirname, <span class="hljs-string">'public/upload/'</span>),
+    url: <span class="hljs-string">'/public/upload/'</span>
   },
 }
 </code></pre>
 <p>其中使用到了<code>path.join()</code>和<code>__dirname</code>来生成<code>upload.path</code>。</p>
 <h4><a id="JSON__141"></a>JSON 格式</h4>
 <p>另外，我们也可以使用 <a href="http://json.org/">JSON</a> 格式的配置文件，比如文件<code>config.json</code>：</p>
-<pre><code class="prettyprint json">{
-  &quot;debug&quot;: true,
-  &quot;name&quot;: &quot;Nodeclub&quot;,
-  &quot;description&quot;: &quot;CNode：Node.js 专业中文社区&quot;,
-  &quot;keywords&quot;: &quot;nodejs, node, express, connect, socket.io&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"debug"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Nodeclub"</span>,
+  <span class="hljs-attr">"description"</span>: <span class="hljs-string">"CNode：Node.js 专业中文社区"</span>,
+  <span class="hljs-attr">"keywords"</span>: <span class="hljs-string">"nodejs, node, express, connect, socket.io"</span>
 }
 </code></pre>
 <p>在程序中可以通过以下方式来载入 JSON 文件配置：</p>
-<pre><code class="prettyprint javascript">// 通过 require()函数
-var config = require('./config.json');
+<pre><code class="language-javascript"><span class="hljs-comment">// 通过 require()函数</span>
+<span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./config.json'</span>);
 
-// 读取文件并使用 JSON.parse()解析
-var fs = require('fs');
-var config = JSON.parse(fs.readFileSync('./config.json').toString());
+<span class="hljs-comment">// 读取文件并使用 JSON.parse()解析</span>
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> config = <span class="hljs-built_in">JSON</span>.parse(fs.readFileSync(<span class="hljs-string">'./config.json'</span>).toString());
 </code></pre>
 <p>大多数时候，我们往往需要添加一些备注信息来说明某个配置项的使用方法及用途，在标准 JSON 文件中是不允许添加备注的，我们可以使用<code>strip-json-comments</code>模块来去掉配置文件中的备注，再将其当作标准的 JSON 来解析。</p>
 <p>比如以下是带备注信息的 JSON 配置文件：</p>
-<pre><code class="prettyprint javascript">{
-  // debug 为 true 时，用于本地调试
-  &quot;debug&quot;: true,
-  // 社区名字
-  &quot;name&quot;: &quot;Nodeclub&quot;,
-  // 社区的描述
-  &quot;description&quot;: &quot;CNode：Node.js 专业中文社区&quot;,
-  &quot;keywords&quot;: &quot;nodejs, node, express, connect, socket.io&quot;
+<pre><code class="language-javascript">{
+  <span class="hljs-comment">// debug 为 true 时，用于本地调试</span>
+  <span class="hljs-string">"debug"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-comment">// 社区名字</span>
+  <span class="hljs-string">"name"</span>: <span class="hljs-string">"Nodeclub"</span>,
+  <span class="hljs-comment">// 社区的描述</span>
+  <span class="hljs-string">"description"</span>: <span class="hljs-string">"CNode：Node.js 专业中文社区"</span>,
+  <span class="hljs-string">"keywords"</span>: <span class="hljs-string">"nodejs, node, express, connect, socket.io"</span>
 }
 </code></pre>
 <p>我们可以编写一个<code>loadJSONFile()</code>函数来载入带有备注的 JSON 文件：</p>
-<pre><code class="prettyprint javascript">var fs = require('fs');
-var stripJsonComments = require('strip-json-comments');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> stripJsonComments = <span class="hljs-built_in">require</span>(<span class="hljs-string">'strip-json-comments'</span>);
 
-function loadJSONFile (file) {
-  var json = fs.readFileSync(file).toString();
-  return JSON.parse(stripJsonComments(json));
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">loadJSONFile</span> (<span class="hljs-params">file</span>) </span>{
+  <span class="hljs-keyword">var</span> json = fs.readFileSync(file).toString();
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.parse(stripJsonComments(json));
 }
 
-var config = loadJSONFile('./config.json');
-console.log(config);
+<span class="hljs-keyword">var</span> config = loadJSONFile(<span class="hljs-string">'./config.json'</span>);
+<span class="hljs-built_in">console</span>.log(config);
 </code></pre>
 <h4><a id="YAML__196"></a>YAML 格式</h4>
 <p><a href="http://yaml.org/">YAML</a> 是面向所有编程语言的对人类友好的数据序列化标准。其最大的优点是可读性较好，比如以下 YAML 格式的配置：</p>
-<pre><code class="prettyprint yaml">name: John Smith
-age: 37
-spouse:
-  name: Jane Smith
-  age: 25
-children:
-  - name: Jimmy Smith
-    age: 15
-  - name: Jenny Smith
-    age: 12
+<pre><code class="language-yaml"><span class="hljs-attr">name:</span> John Smith
+<span class="hljs-attr">age:</span> <span class="hljs-number">37</span>
+<span class="hljs-attr">spouse:</span>
+<span class="hljs-attr">  name:</span> Jane Smith
+<span class="hljs-attr">  age:</span> <span class="hljs-number">25</span>
+<span class="hljs-attr">children:</span>
+<span class="hljs-attr">  - name:</span> Jimmy Smith
+<span class="hljs-attr">    age:</span> <span class="hljs-number">15</span>
+<span class="hljs-attr">  - name:</span> Jenny Smith
+<span class="hljs-attr">    age:</span> <span class="hljs-number">12</span>
 </code></pre>
 <p>其对应的 JSON 结构如下：</p>
-<pre><code class="prettyprint json">{
-  &quot;age&quot;: 37,
-  &quot;spouse&quot;: {
-    &quot;age&quot;: 25,
-    &quot;name&quot;: &quot;Jane Smith&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"age"</span>: <span class="hljs-number">37</span>,
+  <span class="hljs-attr">"spouse"</span>: {
+    <span class="hljs-attr">"age"</span>: <span class="hljs-number">25</span>,
+    <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Jane Smith"</span>
   },
-  &quot;name&quot;: &quot;John Smith&quot;,
-  &quot;children&quot;: [
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"John Smith"</span>,
+  <span class="hljs-attr">"children"</span>: [
     {
-      &quot;age&quot;: 15,
-      &quot;name&quot;: &quot;Jimmy Smith&quot;
+      <span class="hljs-attr">"age"</span>: <span class="hljs-number">15</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Jimmy Smith"</span>
     },
     {
-      &quot;age&quot;: 12,
-      &quot;name&quot;: &quot;Jenny Smith&quot;
+      <span class="hljs-attr">"age"</span>: <span class="hljs-number">12</span>,
+      <span class="hljs-attr">"name"</span>: <span class="hljs-string">"Jenny Smith"</span>
     }
   ]
 }
 </code></pre>
 <p>在 Node.js 中可以通过<code>yamljs</code>模块来解析 YAML 格式，比如可以编写一个<code>loadYAMLFile()</code>函数来载入 YAML 格式的配置文件：</p>
-<pre><code class="prettyprint javascript">var fs = require('fs');
-var YAML = require('yamljs');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> YAML = <span class="hljs-built_in">require</span>(<span class="hljs-string">'yamljs'</span>);
 
-function loadYAMLFile (file) {
-  return YAML.parse(fs.readFileSync(file).toString());
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">loadYAMLFile</span> (<span class="hljs-params">file</span>) </span>{
+  <span class="hljs-keyword">return</span> YAML.parse(fs.readFileSync(file).toString());
 }
 
-var config = loadYAMLFile('./config.yaml');
-console.log(config);
+<span class="hljs-keyword">var</span> config = loadYAMLFile(<span class="hljs-string">'./config.yaml'</span>);
+<span class="hljs-built_in">console</span>.log(config);
 </code></pre>
 <h2><a id="_251"></a>根据运行环境选择不同的配置</h2>
 <p>大多数情况下，程序在本地开发环境和生产环境中的配置信息是不一样的，比如开发时连接到的数据库里面的数据是模拟出来的，而生产环境要连接到实际的数据库上，因此我们需要让程序能根据不同的运行环境来载入不同的配置文件。</p>
@@ -2056,78 +2052,78 @@ console.log(config);
 <p>由于<code>./config.js</code>文件已经被添加到<code>.gitignore</code>文件中，因此我们<code>./config.js</code>文件的修改不会被纳入到项目的版本管理中，所以不同机器中的<code>./config.js</code>不会产生冲突，可以使用各自的配置来启动程序。</p>
 <h3><a id="_261"></a>通过环境变量指定配置文件名</h3>
 <p>我们可以通过环境变量来指定配置文件，比如：</p>
-<pre><code class="prettyprint bash">$ export CONFIG_FILE=&quot;./config/production.js&quot;
+<pre><code class="language-bash">$ <span class="hljs-built_in">export</span> CONFIG_FILE=<span class="hljs-string">"./config/production.js"</span>
 </code></pre>
 <p>然后可以通过以下方式来载入配置文件：</p>
-<pre><code class="prettyprint javascript">var path = require('path');
-var config = require(path.resolve(process.env.CONFIG_FILE));
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+<span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(path.resolve(process.env.CONFIG_FILE));
 </code></pre>
 <p>另外，也可以通过环境变量来指定当前运行环境的名称，然后在指定目录下载入相应的配置，比如：</p>
-<pre><code class="prettyprint bash">$ export NODE_ENV=&quot;production&quot;
+<pre><code class="language-bash">$ <span class="hljs-built_in">export</span> NODE_ENV=<span class="hljs-string">"production"</span>
 </code></pre>
 <p>然后可以通过以下方式来载入配置文件：</p>
-<pre><code class="prettyprint javascript">var path = require('path');
-var configFile = path.resolve('./config', process.env.NODE_ENV + '.js');
-var config = require(configFile);
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+<span class="hljs-keyword">var</span> configFile = path.resolve(<span class="hljs-string">'./config'</span>, process.env.NODE_ENV + <span class="hljs-string">'.js'</span>);
+<span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(configFile);
 </code></pre>
 <h2><a id="_config__291"></a>使用 config 模块来读取配置</h2>
 <p><a href="https://www.npmjs.com/package/config">config</a> 模块是 NPM 上下载量最高的 Node.js 配置文件管理模块，其实现原理与上文中介绍的方法大同小异，在实际开发中我们可以考虑使用这个现成的模块。下面将介绍此模块的简单使用方法。</p>
 <p><code>config</code>模块通过环境变量<code>NODE_CONFIG_DIR</code>来指定配置文件所在的目录，默认为<code>./config</code>（即当前运行目录下的<code>config</code>目录），通过环境变量<code>NODE_ENV</code>来指定当前的运行环境版本。</p>
 <p>配置文件使用 JSON 格式，模块加载后，会首先载入默认的配置文件<code>${NODE_CONFIG_DIR}/default.json</code>，再载入文件<code>${NODE_CONFIG_DIR}/${NODE_ENV}.json</code>，如果配置项有冲突则覆盖默认的配置。</p>
 <p>比如我们新建默认配置文件<code>config/default.json</code>：</p>
-<pre><code class="prettyprint javascript">{
-  // Customer module configs
-  &quot;Customer&quot;: {
-    &quot;dbConfig&quot;: {
-      &quot;host&quot;: &quot;localhost&quot;,
-      &quot;port&quot;: 5984,
-      &quot;dbName&quot;: &quot;customers&quot;
+<pre><code class="language-javascript">{
+  <span class="hljs-comment">// Customer module configs</span>
+  <span class="hljs-string">"Customer"</span>: {
+    <span class="hljs-string">"dbConfig"</span>: {
+      <span class="hljs-string">"host"</span>: <span class="hljs-string">"localhost"</span>,
+      <span class="hljs-string">"port"</span>: <span class="hljs-number">5984</span>,
+      <span class="hljs-string">"dbName"</span>: <span class="hljs-string">"customers"</span>
     },
-    &quot;credit&quot;: {
-      &quot;initialLimit&quot;: 100,
-      // Set low for development
-      &quot;initialDays&quot;: 1
+    <span class="hljs-string">"credit"</span>: {
+      <span class="hljs-string">"initialLimit"</span>: <span class="hljs-number">100</span>,
+      <span class="hljs-comment">// Set low for development</span>
+      <span class="hljs-string">"initialDays"</span>: <span class="hljs-number">1</span>
     }
   }
 }
 </code></pre>
 <p>再新建<code>production</code>环境配置文件<code>config/production.json</code>：</p>
-<pre><code class="prettyprint javascript">{
-  &quot;Customer&quot;: {
-    &quot;dbConfig&quot;: {
-      &quot;host&quot;: &quot;prod-db-server&quot;
+<pre><code class="language-javascript">{
+  <span class="hljs-string">"Customer"</span>: {
+    <span class="hljs-string">"dbConfig"</span>: {
+      <span class="hljs-string">"host"</span>: <span class="hljs-string">"prod-db-server"</span>
     },
-    &quot;credit&quot;: {
-      &quot;initialDays&quot;: 30
+    <span class="hljs-string">"credit"</span>: {
+      <span class="hljs-string">"initialDays"</span>: <span class="hljs-number">30</span>
     }
   }
 }
 </code></pre>
 <p>再新建测试文件<code>1.js</code>：</p>
-<pre><code class="prettyprint javascript">var config = require('config');
-console.log(config);
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'config'</span>);
+<span class="hljs-built_in">console</span>.log(config);
 </code></pre>
 <p>执行程序，可看到其输出的结果为默认的配置：</p>
-<pre><code class="prettyprint javascript">{ Customer:
-   { dbConfig: { host: 'localhost', port: 5984, dbName: 'customers' },
-     credit: { initialLimit: 100, initialDays: 1 } } }
+<pre><code class="language-javascript">{ Customer:
+   { dbConfig: { host: <span class="hljs-string">'localhost'</span>, port: <span class="hljs-number">5984</span>, dbName: <span class="hljs-string">'customers'</span> },
+     credit: { initialLimit: <span class="hljs-number">100</span>, initialDays: <span class="hljs-number">1</span> } } }
 </code></pre>
 <p>假如要使用<code>production</code>的配置，则使用以下命令启动：</p>
-<pre><code class="prettyprint bash">$ export NODE_ENV=production &amp;&amp; node 1.js
+<pre><code class="language-bash">$ <span class="hljs-built_in">export</span> NODE_ENV=production &amp;&amp; node 1.js
 </code></pre>
 <p>则其输出将是如下结果：</p>
-<pre><code class="prettyprint json">{ Customer:
+<pre><code class="language-json">{ Customer:
    { dbConfig: { host: 'prod-db-server', port: 5984, dbName: 'customers' },
      credit: { initialLimit: 100, initialDays: 30 } } }
 </code></pre>
 <p>在<code>production.json</code>文件中，重新定义了<code>Customer.dbConfig.host</code>和<code>Customer.credit.initialDays</code>这两个配置项，所以在<code>production</code>环境中仅这两项被覆盖为新的值，而其他配置项则使用<code>default.json</code>中指定的值。</p>
 <p>载入<code>config</code>模块后，其返回的对象实际上就是当前的配置信息，同时提供了两个方法<code>get()</code>和<code>has()</code>来操作配置项。比如：</p>
-<pre><code class="prettyprint javascript">var config = require('config');
-console.log(config);
-console.log(config.get('Customer'));
-console.log(config.get('Customer.dbConfig'));
-console.log(config.has('Customer.dbConfig.host'));
-console.log(config.has('Customer.dbConfig.host2'));
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'config'</span>);
+<span class="hljs-built_in">console</span>.log(config);
+<span class="hljs-built_in">console</span>.log(config.get(<span class="hljs-string">'Customer'</span>));
+<span class="hljs-built_in">console</span>.log(config.get(<span class="hljs-string">'Customer.dbConfig'</span>));
+<span class="hljs-built_in">console</span>.log(config.has(<span class="hljs-string">'Customer.dbConfig.host'</span>));
+<span class="hljs-built_in">console</span>.log(config.has(<span class="hljs-string">'Customer.dbConfig.host2'</span>));
 </code></pre>
 <p>执行程序后输出结果如下：</p>
 <pre><code>{ Customer:
@@ -2167,16 +2163,16 @@ false
 <p>由于要操作的是文本文件，并且文件中的内容每一行记录均使用换行符<code>\n</code>来分隔，我编写了一个模块用来按行从一个<code>stream</code>中读取内容，以及按行往一个<code>stream</code>中写入内容，下面将介绍这个模块的简单使用方法。</p>
 <h3><a id="_19"></a>安装模块</h3>
 <p>执行以下命令安装</p>
-<pre><code class="prettyprint bash">$ npm install lei-stream --save
+<pre><code class="language-bash">$ npm install lei-stream --save
 </code></pre>
 <h3><a id="_27"></a>按行读取流</h3>
-<pre><code class="prettyprint javascript">var readLine = require('lei-stream').readLine;
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> readLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).readLine;
 
-readLine('./myfile.txt').go(function (data, next) {
-  console.log(data);
+readLine(<span class="hljs-string">'./myfile.txt'</span>).go(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data, next</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(data);
   next();
-}, function () {
-  console.log('end');
+}, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
 });
 </code></pre>
 <p>说明：</p>
@@ -2186,30 +2182,30 @@ readLine('./myfile.txt').go(function (data, next) {
 <li><code>readLine()</code>的第三个参数为整个流读取完毕后的回调函数</li>
 </ul>
 <p>另外，我们也可以指定各个选项来达到更个性化的控制：</p>
-<pre><code class="prettyprint javascript">var fs = require('fs');
-var readLine = require('lei-stream').readLine;
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> readLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).readLine;
 
-// readLineStream 第一个参数为 ReadStream 实例，也可以为文件名
-var s = readLine(fs.createReadStream('./myfile.txt'), {
-  // 换行符，默认\n
-  newline: '\n',
-  // 是否自动读取下一行，默认 false
-  autoNext: false,
-  // 编码器，可以为函数或字符串（内置编码器：json，base64），默认 null
-  encoding: function (data) {
-    return JSON.parse(data);
+<span class="hljs-comment">// readLineStream 第一个参数为 ReadStream 实例，也可以为文件名</span>
+<span class="hljs-keyword">var</span> s = readLine(fs.createReadStream(<span class="hljs-string">'./myfile.txt'</span>), {
+  <span class="hljs-comment">// 换行符，默认\n</span>
+  newline: <span class="hljs-string">'\n'</span>,
+  <span class="hljs-comment">// 是否自动读取下一行，默认 false</span>
+  autoNext: <span class="hljs-literal">false</span>,
+  <span class="hljs-comment">// 编码器，可以为函数或字符串（内置编码器：json，base64），默认 null</span>
+  encoding: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.parse(data);
   }
 });
 
-// 读取到一行数据时触发 data 事件
-s.on('data', function (data) {
-  console.log(data);
+<span class="hljs-comment">// 读取到一行数据时触发 data 事件</span>
+s.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
+  <span class="hljs-built_in">console</span>.log(data);
   s.next();
 });
 
-// 流结束时触发 end 事件
-s.on('end', function () {
-  console.log('end');
+<span class="hljs-comment">// 流结束时触发 end 事件</span>
+s.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
 });
 </code></pre>
 <p>以下是关于<code>readLine()</code>的第二个参数的说明：</p>
@@ -2225,31 +2221,31 @@ s.on('end', function () {
 <li>当到达流末尾时，所有数据已读取完毕，会触发<code>end</code>事件</li>
 </ul>
 <h3><a id="_88"></a>按行写流</h3>
-<pre><code class="prettyprint javascript">var fs = require('fs');
-var writeLineStream = require('lei-stream').writeLine;
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">var</span> writeLineStream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).writeLine;
 
-// writeLineStream 第一个参数为 ReadStream 实例，也可以为文件名
-var s = writeLineStream(fs.createWriteStream('./myfile.txt'), {
-  // 换行符，默认\n
-  newline: '\n',
-  // 编码器，可以为函数或字符串（内置编码器：json，base64），默认 null
-  encoding: function (data) {
-    return JSON.stringify(data);
+<span class="hljs-comment">// writeLineStream 第一个参数为 ReadStream 实例，也可以为文件名</span>
+<span class="hljs-keyword">var</span> s = writeLineStream(fs.createWriteStream(<span class="hljs-string">'./myfile.txt'</span>), {
+  <span class="hljs-comment">// 换行符，默认\n</span>
+  newline: <span class="hljs-string">'\n'</span>,
+  <span class="hljs-comment">// 编码器，可以为函数或字符串（内置编码器：json，base64），默认 null</span>
+  encoding: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">JSON</span>.stringify(data);
   },
-  // 缓存的行数，默认为 0（表示不缓存），此选项主要用于优化写文件性能，当数量缓存的内容超过该数量时再一次性写入到流中，可以提高写速度
-  cacheLines: 0
+  <span class="hljs-comment">// 缓存的行数，默认为 0（表示不缓存），此选项主要用于优化写文件性能，当数量缓存的内容超过该数量时再一次性写入到流中，可以提高写速度</span>
+  cacheLines: <span class="hljs-number">0</span>
 });
 
-// 写一行
-s.write(data, function () {
-  // 回调函数可选
-  console.log('wrote');
+<span class="hljs-comment">// 写一行</span>
+s.write(data, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 回调函数可选</span>
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'wrote'</span>);
 });
 
-// 结束
-s.end(function () {
-  // 回调函数可选
-  console.log('end');
+<span class="hljs-comment">// 结束</span>
+s.end(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 回调函数可选</span>
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
 });
 </code></pre>
 <p>说明：</p>
@@ -2263,58 +2259,58 @@ s.end(function () {
 <h3><a id="_129"></a>实验</h3>
 <p>我们在使用<code>fs.createReadStream()</code>创建一个读文件流后，文件内容便源源不断地被读取出来，不断地触发<code>data</code>事件。然后在<code>ReadStream</code>的<code>data</code>事件里面处理，并写入到<code>WriteStream</code>中。然而，大多数情况下读文件的速度总比写文件的速度快，这样便导致大量的数据被积压在内存中，当要读取的文件很大时，甚至会导致因占用内存太多而导致整个 Node.js 进程崩溃。</p>
 <p>以下是我通过<code>lei-stream</code>编写的一个例子，按行读取数据并写入到另一个文件中（在写入文件时不等待写入完成即刻执行<code>next()</code>来读取下一行，用于模拟不限制读取速度）：</p>
-<pre><code class="prettyprint javascript">var readLine = require('lei-stream').readLine;
-var writeLine = require('lei-stream').writeLine;
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> readLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).readLine;
+<span class="hljs-keyword">var</span> writeLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).writeLine;
 
-// 一个几百 M 的文本文件
-var inputFile = '/Volumes/Works/data/xh.txt';
-var outputFile = '/Volumes/Works/tmp/output.txt';
+<span class="hljs-comment">// 一个几百 M 的文本文件</span>
+<span class="hljs-keyword">var</span> inputFile = <span class="hljs-string">'/Volumes/Works/data/xh.txt'</span>;
+<span class="hljs-keyword">var</span> outputFile = <span class="hljs-string">'/Volumes/Works/tmp/output.txt'</span>;
 
-var output = writeLine(outputFile);
-var counter = 0;
-var startTime = Date.now();
+<span class="hljs-keyword">var</span> output = writeLine(outputFile);
+<span class="hljs-keyword">var</span> counter = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">var</span> startTime = <span class="hljs-built_in">Date</span>.now();
 
-function msToS (v) {
-  return parseInt(v / 1000, 10);
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">msToS</span> (<span class="hljs-params">v</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">parseInt</span>(v / <span class="hljs-number">1000</span>, <span class="hljs-number">10</span>);
 }
 
-function getSpentTime () {
-  return Date.now() - startTime;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getSpentTime</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">Date</span>.now() - startTime;
 }
 
-readLine(inputFile).go(function (data, next) {
+readLine(inputFile).go(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data, next</span>) </span>{
   counter++;
   output.write(data);
-  if (counter % 10000 === 0) {
+  <span class="hljs-keyword">if</span> (counter % <span class="hljs-number">10000</span> === <span class="hljs-number">0</span>) {
     printSpeedInfo();
   }
   next();
-}, function () {
-  console.log('end');
-  output.end(function () {
-    console.log('done. total %s lines, spent %sS', counter, msToS(getSpentTime()));
+}, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
+  output.end(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done. total %s lines, spent %sS'</span>, counter, msToS(getSpentTime()));
     printMemoryUsage();
     process.exit();
   });
 });
 
-// 打印进度
-function printSpeedInfo () {
-  var t = msToS(getSpentTime());
-  var s = counter / t;
-  if (!isFinite(s)) s = counter;
-  console.log('read %s lines, speed: %sL/S', counter, s.toFixed(0));
+<span class="hljs-comment">// 打印进度</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printSpeedInfo</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> t = msToS(getSpentTime());
+  <span class="hljs-keyword">var</span> s = counter / t;
+  <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">isFinite</span>(s)) s = counter;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'read %s lines, speed: %sL/S'</span>, counter, s.toFixed(<span class="hljs-number">0</span>));
 }
 
-// 打印内存占用情况
-function printMemoryUsage () {
-  var info = process.memoryUsage();
-  function mb (v) {
-    return (v / 1024 / 1024).toFixed(2) + 'MB';
+<span class="hljs-comment">// 打印内存占用情况</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printMemoryUsage</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> info = process.memoryUsage();
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mb</span> (<span class="hljs-params">v</span>) </span>{
+    <span class="hljs-keyword">return</span> (v / <span class="hljs-number">1024</span> / <span class="hljs-number">1024</span>).toFixed(<span class="hljs-number">2</span>) + <span class="hljs-string">'MB'</span>;
   }
-  console.log('rss=%s, heapTotal=%s, heapUsed=%s', mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'rss=%s, heapTotal=%s, heapUsed=%s'</span>, mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
 }
-setInterval(printMemoryUsage, 1000);
+setInterval(printMemoryUsage, <span class="hljs-number">1000</span>);
 </code></pre>
 <p>执行这个程序后，打印出来的结果如下：</p>
 <pre><code>read 210000 lines, speed: 210000L/S
@@ -2330,16 +2326,16 @@ rss=709.11MB, heapTotal=726.18MB, heapUsed=695.46MB
 </code></pre>
 <p>从输出的结果中可以看出，程序启动一秒后内存占用即达到<code>77.64MB</code>，而在程序结束时内存占用已达到<code>726.18MB</code>，如果文件体积再增加一倍，估计整个程序是无法执行完成的。</p>
 <p>为了验证限制读取速度是否有效，我将读取内容部分的程序改为这样：</p>
-<pre><code class="prettyprint javascript">readLine(inputFile).go(function (data, next) {
+<pre><code class="language-javascript">readLine(inputFile).go(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data, next</span>) </span>{
   counter++;
   output.write(data, next);
-  if (counter % 10000 === 0) {
+  <span class="hljs-keyword">if</span> (counter % <span class="hljs-number">10000</span> === <span class="hljs-number">0</span>) {
     printSpeedInfo();
   }
-}, function () {
-  console.log('end');
-  output.end(function () {
-    console.log('done. total %s lines, spent %sS', counter, msToS(getSpentTime()));
+}, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
+  output.end(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done. total %s lines, spent %sS'</span>, counter, msToS(getSpentTime()));
     printMemoryUsage();
     process.exit();
   });
@@ -2366,85 +2362,85 @@ rss=62.54MB, heapTotal=45.16MB, heapUsed=16.80MB
 <li><code>ReadStream.resume()</code>重新开始读取 <a href="https://nodejs.org/api/stream.html#stream_readable_resume">参考文档</a></li>
 </ul>
 <p>当读取速度超出我们期望的值时，可以执行<code>pause()</code>先暂停，待时机符合时再执行<code>resume()</code>重新开始。以下是用来限制读取速度的实例：</p>
-<pre><code class="prettyprint javascript">var util = require('util');
-var events = require('events');
-var fs = require('fs');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> util = <span class="hljs-built_in">require</span>(<span class="hljs-string">'util'</span>);
+<span class="hljs-keyword">var</span> events = <span class="hljs-built_in">require</span>(<span class="hljs-string">'events'</span>);
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
 
-// 一个几百 M 的文本文件
-var inputFile = '/Volumes/Works/data/xh.txt';
+<span class="hljs-comment">// 一个几百 M 的文本文件</span>
+<span class="hljs-keyword">var</span> inputFile = <span class="hljs-string">'/Volumes/Works/data/xh.txt'</span>;
 
 
-function ReadStreamThrottle (stream, speed) {
-  this._stream = stream;
-  this._readBytes = 0;
-  this._speed = speed;
-  this._ended = false;
-  this._readBytesSecond = 0;
-  this._lastTimestamp = Date.now();
-  this._paused = false;
-  var self = this;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">ReadStreamThrottle</span> (<span class="hljs-params">stream, speed</span>) </span>{
+  <span class="hljs-keyword">this</span>._stream = stream;
+  <span class="hljs-keyword">this</span>._readBytes = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">this</span>._speed = speed;
+  <span class="hljs-keyword">this</span>._ended = <span class="hljs-literal">false</span>;
+  <span class="hljs-keyword">this</span>._readBytesSecond = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">this</span>._lastTimestamp = <span class="hljs-built_in">Date</span>.now();
+  <span class="hljs-keyword">this</span>._paused = <span class="hljs-literal">false</span>;
+  <span class="hljs-keyword">var</span> self = <span class="hljs-keyword">this</span>;
 
-  // 检查速度是否太快
-  function isTooFast () {
-    var t = (Date.now() - self._lastTimestamp) / 1000;
-    var bps = self._readBytesSecond / t;
-    return bps &gt; speed;
+  <span class="hljs-comment">// 检查速度是否太快</span>
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isTooFast</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> t = (<span class="hljs-built_in">Date</span>.now() - self._lastTimestamp) / <span class="hljs-number">1000</span>;
+    <span class="hljs-keyword">var</span> bps = self._readBytesSecond / t;
+    <span class="hljs-keyword">return</span> bps &gt; speed;
   }
 
-  // 每隔一段时间检查速度
-  function checkSpeed () {
-    if (isTooFast()) {
+  <span class="hljs-comment">// 每隔一段时间检查速度</span>
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">checkSpeed</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">if</span> (isTooFast()) {
       self.pause();
-      // 直到平均速度放缓到预设的值时继续读流
-      var tid = setInterval(function () {
-        if (!isTooFast()) {
+      <span class="hljs-comment">// 直到平均速度放缓到预设的值时继续读流</span>
+      <span class="hljs-keyword">var</span> tid = setInterval(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">if</span> (!isTooFast()) {
           clearInterval(tid);
           self.resume();
         }
-      }, 100);
-    } else {
+      }, <span class="hljs-number">100</span>);
+    } <span class="hljs-keyword">else</span> {
       self.resume();
     }
   }
 
-  stream.on('data', function (chunk) {
+  stream.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunk</span>) </span>{
     self._readBytes += chunk.length;
     self._readBytesSecond += chunk.length;
-    self.emit('data', chunk);
+    self.emit(<span class="hljs-string">'data'</span>, chunk);
     checkSpeed();
   });
 
-  stream.on('end', function () {
-    self._ended = true;
-    self.emit('end');
+  stream.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    self._ended = <span class="hljs-literal">true</span>;
+    self.emit(<span class="hljs-string">'end'</span>);
   });
 }
 
 util.inherits(ReadStreamThrottle, events.EventEmitter);
 
-ReadStreamThrottle.prototype.pause = function () {
-  this._paused = true;
-  this._stream.pause();
+ReadStreamThrottle.prototype.pause = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">this</span>._paused = <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">this</span>._stream.pause();
 };
 
-ReadStreamThrottle.prototype.resume = function () {
-  this._paused = false;
-  this._stream.resume();
+ReadStreamThrottle.prototype.resume = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">this</span>._paused = <span class="hljs-literal">false</span>;
+  <span class="hljs-keyword">this</span>._stream.resume();
 };
 
 
-// 读取文件，限制速度不大于 10MB/S
-var MB = 1024 * 1024;
-var s = new ReadStreamThrottle(fs.createReadStream(inputFile), MB * 10);
-var bytes = 0;
-var t = Date.now();
-s.on('data', function (c) {
+<span class="hljs-comment">// 读取文件，限制速度不大于 10MB/S</span>
+<span class="hljs-keyword">var</span> MB = <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span>;
+<span class="hljs-keyword">var</span> s = <span class="hljs-keyword">new</span> ReadStreamThrottle(fs.createReadStream(inputFile), MB * <span class="hljs-number">10</span>);
+<span class="hljs-keyword">var</span> bytes = <span class="hljs-number">0</span>;
+<span class="hljs-keyword">var</span> t = <span class="hljs-built_in">Date</span>.now();
+s.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">c</span>) </span>{
   bytes += c.length;
-  var spent = (Date.now() - t) / 1000;
-  console.log('read %s bytes, speed: %sMB/S', bytes, (bytes / MB / spent).toFixed(2));
+  <span class="hljs-keyword">var</span> spent = (<span class="hljs-built_in">Date</span>.now() - t) / <span class="hljs-number">1000</span>;
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'read %s bytes, speed: %sMB/S'</span>, bytes, (bytes / MB / spent).toFixed(<span class="hljs-number">2</span>));
 });
-s.on('end', function () {
-  console.log('end. total %s bytes', bytes);
+s.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end. total %s bytes'</span>, bytes);
 });
 </code></pre>
 <p>运行程序可以看到打印出以下结果：</p>
@@ -2474,35 +2470,35 @@ end. total 134742016 bytes
 <h3><a id="_367"></a>实验</h3>
 <p>前文中提到，『大多数情况下读文件的速度总比写文件的速度快，这样便导致大量的数据被积压在内存中，当要读取的文件很大时，甚至会导致因占用内存太多而导致整个 Node.js 进程崩溃』，那为什么我们在复制超大文件时程序又没问题呢？</p>
 <p>于是我编写了以下程序：</p>
-<pre><code class="prettyprint javascript">var fs = require('fs');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
 
-var inputFile = '/Volumes/Works/data/xh.txt';
-var outputFile = '/Volumes/Works/tmp/output.txt';
+<span class="hljs-keyword">var</span> inputFile = <span class="hljs-string">'/Volumes/Works/data/xh.txt'</span>;
+<span class="hljs-keyword">var</span> outputFile = <span class="hljs-string">'/Volumes/Works/tmp/output.txt'</span>;
 
-var input = fs.createReadStream(inputFile);
-var output = fs.createWriteStream(outputFile);
+<span class="hljs-keyword">var</span> input = fs.createReadStream(inputFile);
+<span class="hljs-keyword">var</span> output = fs.createWriteStream(outputFile);
 
-input.on('data', function (chunk) {
+input.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunk</span>) </span>{
   output.write(chunk);
 });
 
-input.on('end', function () {
-  console.log('end');
-  output.end(function () {
+input.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'end'</span>);
+  output.end(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
     printMemoryUsage();
     process.exit();
   });
 });
 
-// 打印内存占用情况
-function printMemoryUsage () {
-  var info = process.memoryUsage();
-  function mb (v) {
-    return (v / 1024 / 1024).toFixed(2) + 'MB';
+<span class="hljs-comment">// 打印内存占用情况</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">printMemoryUsage</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> info = process.memoryUsage();
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mb</span> (<span class="hljs-params">v</span>) </span>{
+    <span class="hljs-keyword">return</span> (v / <span class="hljs-number">1024</span> / <span class="hljs-number">1024</span>).toFixed(<span class="hljs-number">2</span>) + <span class="hljs-string">'MB'</span>;
   }
-  console.log('rss=%s, heapTotal=%s, heapUsed=%s', mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'rss=%s, heapTotal=%s, heapUsed=%s'</span>, mb(info.rss), mb(info.heapTotal), mb(info.heapUsed));
 }
-setInterval(printMemoryUsage, 1000);
+setInterval(printMemoryUsage, <span class="hljs-number">1000</span>);
 </code></pre>
 <p>说明：在读取文件的<code>data</code>事件中，直接将数据原样写入到另一个文件中，用于模拟简单的复制文件操作。</p>
 <p>程序执行结果如下：</p>
@@ -2513,11 +2509,11 @@ rss=83.86MB, heapTotal=11.26MB, heapUsed=5.21MB
 </code></pre>
 <p>从结果中可以看出，在读取文件结束后，写文件操作也很快完成，而内存占用并没有太大起伏。</p>
 <p>于是我将<code>data</code>事件部分改为以下代码：</p>
-<pre><code class="prettyprint javascript">input.on('data', function (chunk) {
+<pre><code class="language-javascript">input.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunk</span>) </span>{
   chunk = chunk.toString();
-  var lines = chunk.split('\n');
-  lines.forEach(function (line) {
-    output.write(line + '\n');
+  <span class="hljs-keyword">var</span> lines = chunk.split(<span class="hljs-string">'\n'</span>);
+  lines.forEach(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">line</span>) </span>{
+    output.write(line + <span class="hljs-string">'\n'</span>);
   });
 });
 </code></pre>
@@ -2551,10 +2547,10 @@ rss=762.20MB, heapTotal=749.80MB, heapUsed=725.75MB
 </code></pre>
 <p>由结果可以看出，在读取文件结束后，程序还运行了很长时间才完成了写文件操作，在此过程中内存占用不断地增加，并且很明显感觉到打印内存占用的速度越来越慢（本来应该是 1 秒作用的时间打印一次）。</p>
 <p>是不是因为频繁的<code>write()</code>操作导致的呢？于是我又将<code>data</code>事件部分的代码改为这样：</p>
-<pre><code class="prettyprint javascript">input.on('data', function (chunk) {
+<pre><code class="language-javascript">input.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">chunk</span>) </span>{
   chunk = chunk.toString();
-  var lines = chunk.split('\n');
-  output.write(lines.join('\n') + '\n');
+  <span class="hljs-keyword">var</span> lines = chunk.split(<span class="hljs-string">'\n'</span>);
+  output.write(lines.join(<span class="hljs-string">'\n'</span>) + <span class="hljs-string">'\n'</span>);
 });
 </code></pre>
 <p>说明：考虑到有可能是因为<code>data</code>事件中对数据的处理导致写入缓慢，于是同样将读取出来的数据拆分成多行，但是写入时又将这些数据合并起来，只执行一次<code>write()</code>。</p>
@@ -2587,27 +2583,27 @@ rss=64.83MB, heapTotal=45.16MB, heapUsed=15.29MB
 <p>由结果可以看出，程序执行时间从原来的 90S 下降到 13S，并且内存占用仍然保持在 45.16MB。</p>
 <h3><a id="_516"></a>原理</h3>
 <p>首先看看 Node.js 源码中<code>fs.ReadStream</code>的<code>write()</code>里面是怎样的（<a href="https://github.com/joyent/node/blob/master/lib/fs.js#L1789">源码</a>）：</p>
-<pre><code class="prettyprint javascript">WriteStream.prototype._write = function(data, encoding, cb) {
-  if (!util.isBuffer(data))
-    return this.emit('error', new Error('Invalid data'));
+<pre><code class="language-javascript">WriteStream.prototype._write = <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data, encoding, cb</span>) </span>{
+  <span class="hljs-keyword">if</span> (!util.isBuffer(data))
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'Invalid data'</span>));
 
-  if (!util.isNumber(this.fd))
-    return this.once('open', function() {
-      this._write(data, encoding, cb);
+  <span class="hljs-keyword">if</span> (!util.isNumber(<span class="hljs-keyword">this</span>.fd))
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.once(<span class="hljs-string">'open'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-keyword">this</span>._write(data, encoding, cb);
     });
 
-  var self = this;
-  fs.write(this.fd, data, 0, data.length, this.pos, function(er, bytes) {
-    if (er) {
+  <span class="hljs-keyword">var</span> self = <span class="hljs-keyword">this</span>;
+  fs.write(<span class="hljs-keyword">this</span>.fd, data, <span class="hljs-number">0</span>, data.length, <span class="hljs-keyword">this</span>.pos, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">er, bytes</span>) </span>{
+    <span class="hljs-keyword">if</span> (er) {
       self.destroy();
-      return cb(er);
+      <span class="hljs-keyword">return</span> cb(er);
     }
     self.bytesWritten += bytes;
     cb();
   });
 
-  if (!util.isUndefined(this.pos))
-    this.pos += data.length;
+  <span class="hljs-keyword">if</span> (!util.isUndefined(<span class="hljs-keyword">this</span>.pos))
+    <span class="hljs-keyword">this</span>.pos += data.length;
 };
 </code></pre>
 <p>由源码可以看出，每一次的<code>write()</code>实际上是直接调用<code>fs.write()</code>来写入文件的（<code>WriteStream</code>记录了当前文件的偏移量），当频繁调用<code>write()</code>来写入数据时，每一次都会创建用于<code>fs.write()</code>的回调函数，因此内存占用急剧升高和性能下降也就很合情合理了。</p>
@@ -2627,68 +2623,68 @@ rss=64.83MB, heapTotal=45.16MB, heapUsed=15.29MB
 <p>首先，本地测试环境和生产环境的数据库连接这些配置信息是不一样的，需要将其分开为两个文件存储
 到<code>config</code>目录下，比如：</p>
 <p>开发环境配置文件<code>config/development.js</code>：</p>
-<pre><code class="prettyprint javascript">module.exports = {
-  port:  3001,
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  port:  <span class="hljs-number">3001</span>,
   mysql: {
-    user: 'root'
+    user: <span class="hljs-string">'root'</span>
   }
 };
 </code></pre>
 <p>生产环境配置文件<code>config/production.js</code>:</p>
-<pre><code class="prettyprint javascript">module.exports = {
-  port: 80,
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  port: <span class="hljs-number">80</span>,
   mysql: {
-    user: 'myapp',
-    password: '2zbonsjzl305vkh3'
+    user: <span class="hljs-string">'myapp'</span>,
+    password: <span class="hljs-string">'2zbonsjzl305vkh3'</span>
   }
 };
 </code></pre>
 <p>另外还要建立一个程序自动载入相应环境的配置，文件<code>config/index.js</code>：</p>
-<pre><code class="prettyprint javascript">var path = require('path');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
 
-// 通过 NODE_ENV 来设置环境变量，如果没有指定则默认为生产环境
-var env = process.env.NODE_ENV || 'production';
+<span class="hljs-comment">// 通过 NODE_ENV 来设置环境变量，如果没有指定则默认为生产环境</span>
+<span class="hljs-keyword">var</span> env = process.env.NODE_ENV || <span class="hljs-string">'production'</span>;
 env = env.toLowerCase();
 
-// 载入配置文件
-var file = path.resolve(__dirname, env);
-try {
-  var config = module.exports = require(file);
-  console.log('Load config: [%s] %s', env, file);
-} catch (err) {
-  console.error('Cannot load config: [%s] %s', env, file);
-  throw err;
+<span class="hljs-comment">// 载入配置文件</span>
+<span class="hljs-keyword">var</span> file = path.resolve(__dirname, env);
+<span class="hljs-keyword">try</span> {
+  <span class="hljs-keyword">var</span> config = <span class="hljs-built_in">module</span>.exports = <span class="hljs-built_in">require</span>(file);
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Load config: [%s] %s'</span>, env, file);
+} <span class="hljs-keyword">catch</span> (err) {
+  <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'Cannot load config: [%s] %s'</span>, env, file);
+  <span class="hljs-keyword">throw</span> err;
 }
 </code></pre>
 <p>假设应用的入口文件是<code>app.js</code>，可通过以下方法载入配置：</p>
-<pre><code class="prettyprint javascript">var config = require('./config');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./config'</span>);
 
-console.log('listen on port %s', config.port);
-// 如果是开发环境，将输出 listen on port 3001
-// 如果是生产环境，将输出 listen on port 80
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'listen on port %s'</span>, config.port);
+<span class="hljs-comment">// 如果是开发环境，将输出 listen on port 3001</span>
+<span class="hljs-comment">// 如果是生产环境，将输出 listen on port 80</span>
 </code></pre>
 <h2><a id="_67"></a>本地开发测试</h2>
 <p>为了方便，我新建一个脚本文件<code>run</code>，代码如下：</p>
-<pre><code class="prettyprint bash">export NODE_ENV=development
+<pre><code class="language-bash"><span class="hljs-built_in">export</span> NODE_ENV=development
 node app
 </code></pre>
 <p>要启动程序，直接在命令行下执行<code>./run</code>即可。</p>
 <h2><a id="_78"></a>部署应用</h2>
 <p>新建部署脚本文件<code>deploy</code>，代码如下：</p>
-<pre><code class="prettyprint bash">git reset --hard
+<pre><code class="language-bash">git reset --hard
 git pull origin HEAD
 npm install
-pm2 stop myapp -f
+pm2 stop myapp <span class="hljs-_">-f</span>
 pm2 start app.js -n myapp
 </code></pre>
 <p>此段代码会自动拉去 git 仓库中最新的一次提交的代码，并使用 npm 来安装 package.json 中列出的模块，
 然后先停止之前已启动的应用实例，再启动。</p>
 <p>为了方便传输代码到服务器端，需要将程序代码提交到一个私有的 git 仓库，首次在服务器端部署时，
 需要先将代码 clone 到服务器端，比如：</p>
-<pre><code class="prettyprint bash">git clone git@github.com:leizongmin/node-uc-server.git ~/myapp
+<pre><code class="language-bash">git <span class="hljs-built_in">clone</span> git@github.com:leizongmin/node-uc-server.git ~/myapp
 </code></pre>
 <p>应用在服务器端运行时使用<code>pm2</code>工具来管理进程，所以还需要先在服务器上安装此工具：</p>
-<pre><code class="prettyprint bash">npm install pm2 -g
+<pre><code class="language-bash">npm install pm2 -g
 </code></pre>
 <p>完成以上准备工作后，我们就可以通过<code>deploy</code>脚本来实现自动更新代码：</p>
 <ul>
@@ -2698,7 +2694,7 @@ pm2 start app.js -n myapp
 </ul>
 <hr>
 <p>以上程序执行的环境为 Linux，如果开发环境是 Windows，需要将<code>run</code>文件改为以下代码：</p>
-<pre><code class="prettyprint bash">set NODE_ENV=development
+<pre><code class="language-bash"><span class="hljs-built_in">set</span> NODE_ENV=development
 node app
 </code></pre>
 <h2><a id="_121"></a>扩展阅读</h2>

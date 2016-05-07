@@ -39,7 +39,7 @@ blockquote {
   font-size: 14px;
   color: #333;
   padding: 8px 0 8px 2.5em;
-  font-style: italic;
+  font-style: normal;
   background-color: #f7f7f8;
   margin: 0;
   border-left: 4px solid #ddd;
@@ -142,32 +142,32 @@ li > p {
     <p><h3>目录</h3><ul><ul><li><a href="#_5">前言</a></li><li><a href="#_114">操作结构化数据</a></li><li><a href="#leiproto__214">lei-proto 模块介绍</a></li><li><a href="#_267">扩展阅读</a></li></ul></ul></p>
 <h2><a id="_5"></a>前言</h2>
 <p>在大多数介绍 Buffer 的文章中，主要是围绕数据拼接和内存分配这两方面的。比如我们使用<code>fs</code>模块来读取文件内容的时候，返回的就是一个 Buffer：</p>
-<pre><code class="prettyprint javascript">fs.readFile('filename', function (err, buf) {
-  // &lt;Buffer 2f 2a 2a 0a 20 2a 20 53 75 ... &gt;
+<pre><code class="language-javascript">fs.readFile(<span class="hljs-string">'filename'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, buf</span>) </span>{
+  <span class="hljs-comment">// &lt;Buffer 2f 2a 2a 0a 20 2a 20 53 75 ... &gt;</span>
 });
 </code></pre>
 <p>在使用<code>net</code>或<code>http</code>模块来接收网络数据时，<code>data</code>事件的参数也是一个 Buffer，这时我们还需要使用<code>Buffer.concat()</code>来做数据拼接：</p>
-<pre><code class="prettyprint javascript">var bufs = [];
-conn.on('data', function (buf) {
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> bufs = [];
+conn.on(<span class="hljs-string">'data'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">buf</span>) </span>{
   bufs.push(buf);
 });
-conn.on('end', function () {
-  // 接收数据结束后，拼接所有收到的 Buffer 对象
-  var buf = Buffer.concat(bufs);
+conn.on(<span class="hljs-string">'end'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 接收数据结束后，拼接所有收到的 Buffer 对象</span>
+  <span class="hljs-keyword">var</span> buf = Buffer.concat(bufs);
 });
 </code></pre>
 <p>还可以利用<code>Buffer.toString()</code>来做转换<code>base64</code>或十六进制字符的转换，比如：</p>
-<pre><code class="prettyprint javascript">console.log(new Buffer('hello, world!').toString('base64'));
-// 转换成 base64 字符串：aGVsbG8sIHdvcmxkIQ==
+<pre><code class="language-javascript"><span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">new</span> Buffer(<span class="hljs-string">'hello, world!'</span>).toString(<span class="hljs-string">'base64'</span>));
+<span class="hljs-comment">// 转换成 base64 字符串：aGVsbG8sIHdvcmxkIQ==</span>
 
-console.log(new Buffer('aGVsbG8sIHdvcmxkIQ==', 'base64').toString());
-// 还原 base64 字符串：hello, world!
+<span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">new</span> Buffer(<span class="hljs-string">'aGVsbG8sIHdvcmxkIQ=='</span>, <span class="hljs-string">'base64'</span>).toString());
+<span class="hljs-comment">// 还原 base64 字符串：hello, world!</span>
 
-console.log(new Buffer('hello, world!').toString('hex'));
-// 转换成十六进制字符串：68656c6c6f2c20776f726c6421
+<span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">new</span> Buffer(<span class="hljs-string">'hello, world!'</span>).toString(<span class="hljs-string">'hex'</span>));
+<span class="hljs-comment">// 转换成十六进制字符串：68656c6c6f2c20776f726c6421</span>
 
-console.log(new Buffer('68656c6c6f2c20776f726c6421', 'hex').toString());
-// 还原十六进制字符串：hello, world!
+<span class="hljs-built_in">console</span>.log(<span class="hljs-keyword">new</span> Buffer(<span class="hljs-string">'68656c6c6f2c20776f726c6421'</span>, <span class="hljs-string">'hex'</span>).toString());
+<span class="hljs-comment">// 还原十六进制字符串：hello, world!</span>
 </code></pre>
 <p>一般情况下，单个 Node.js 进程是有最大内存限制的，以下是来自官方文档中的说明：</p>
 <blockquote>
@@ -175,9 +175,9 @@ console.log(new Buffer('68656c6c6f2c20776f726c6421', 'hex').toString());
 <p>Currently, by default v8 has a memory limit of 512MB on 32-bit systems, and 1.4GB on 64-bit systems. The limit can be raised by setting --max_old_space_size to a maximum of ~1024 (~1 GB) (32-bit) and ~4096 (~4GB) (64-bit), but it is recommended that you split your single process into several workers if you are hitting memory limits.</p>
 </blockquote>
 <p>由于 Buffer 对象占用的内存空间是不计算在 Node.js 进程内存空间限制上的，因此，我们也常常会使用 Buffer 来存储需要占用大量内存的数据：</p>
-<pre><code class="prettyprint javascript">// 分配一个 2G-1 字节的数据
-// 单次分配内存超过此值会抛出异常 RangeError: Invalid typed array length
-var buf = new Buffer(1024 * 1024 * 1024 - 1);
+<pre><code class="language-javascript"><span class="hljs-comment">// 分配一个 2G-1 字节的数据</span>
+<span class="hljs-comment">// 单次分配内存超过此值会抛出异常 RangeError: Invalid typed array length</span>
+<span class="hljs-keyword">var</span> buf = <span class="hljs-keyword">new</span> Buffer(<span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> * <span class="hljs-number">1024</span> - <span class="hljs-number">1</span>);
 </code></pre>
 <p>以上便是 Buffer 的几种常见用法。然而，阅读 Buffer 的 API 文档时，我们会发现更多的是<code>readXXX()</code>和<code>writeXXX()</code>开头的 API，具体如下：</p>
 <ul>
@@ -220,13 +220,13 @@ var buf = new Buffer(1024 * 1024 * 1024 - 1);
 <li>buf.writeDoubleBE(value, offset[, noAssert])</li>
 </ul>
 <p>这些 API 为在 Node.js 中操作数据提供了极大的便利。假设我们要将一个整形数值存储到文件中，比如当前时间戳为<code>1447656645380</code>，如果将其当作一个字符串存储时，需要占用 11 字节的空间，而将其转换为二进制存储时仅需 6 字节空间即可：</p>
-<pre><code class="prettyprint javascript">var buf = new Buffer(6);
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> buf = <span class="hljs-keyword">new</span> Buffer(<span class="hljs-number">6</span>);
 
-buf.writeUIntBE(1447656645380, 0, 6);
-// &lt;Buffer 01 51 0f 0f 63 04&gt;
+buf.writeUIntBE(<span class="hljs-number">1447656645380</span>, <span class="hljs-number">0</span>, <span class="hljs-number">6</span>);
+<span class="hljs-comment">// &lt;Buffer 01 51 0f 0f 63 04&gt;</span>
 
-buf.readUIntBE(0, 6);
-// 1447656645380
+buf.readUIntBE(<span class="hljs-number">0</span>, <span class="hljs-number">6</span>);
+<span class="hljs-comment">// 1447656645380</span>
 </code></pre>
 <p>在使用 Node.js 编写一些底层功能时，比如一个网络通信模块、某个数据库的客户端模块，或者需要从文件中操作大量结构化数据时，以上 Buffer 对象提供的 API 都是必不可少的。</p>
 <p>接下来将演示一个使用 Buffer 对象操作结构化数据的例子。</p>
@@ -272,102 +272,102 @@ buf.readUIntBE(0, 6);
 </tbody>
 </table>
 <p>每一条记录仅需要 6 字节的空间即可，仅仅是使用文本存储的 40%！下面是用来操作这些记录的程序：</p>
-<pre><code class="prettyprint javascript">// 读取一条记录
-// buf    Buffer 对象
-// offset 本条记录在 Buffer 对象的开始位置
-// data   {number, lesson, score}
-function writeRecord (buf, offset, data) {
-  buf.writeUIntBE(data.number, offset, 3);
-  buf.writeUInt16BE(data.lesson, offset + 3);
-  buf.writeInt8(data.score, offset + 5);
+<pre><code class="language-javascript"><span class="hljs-comment">// 读取一条记录</span>
+<span class="hljs-comment">// buf    Buffer 对象</span>
+<span class="hljs-comment">// offset 本条记录在 Buffer 对象的开始位置</span>
+<span class="hljs-comment">// data   {number, lesson, score}</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeRecord</span> (<span class="hljs-params">buf, offset, data</span>) </span>{
+  buf.writeUIntBE(data.number, offset, <span class="hljs-number">3</span>);
+  buf.writeUInt16BE(data.lesson, offset + <span class="hljs-number">3</span>);
+  buf.writeInt8(data.score, offset + <span class="hljs-number">5</span>);
 }
 
-// 写入一条记录
-// buf    Buffer 对象
-// offset 本条记录在 Buffer 对象的开始位置
-function readRecord (buf, offset) {
-  return {
-    number: buf.readUIntBE(offset, 3),
-    lesson: buf.readUInt16BE(offset + 3),
-    score: buf.readInt8(offset + 5)
+<span class="hljs-comment">// 写入一条记录</span>
+<span class="hljs-comment">// buf    Buffer 对象</span>
+<span class="hljs-comment">// offset 本条记录在 Buffer 对象的开始位置</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readRecord</span> (<span class="hljs-params">buf, offset</span>) </span>{
+  <span class="hljs-keyword">return</span> {
+    number: buf.readUIntBE(offset, <span class="hljs-number">3</span>),
+    lesson: buf.readUInt16BE(offset + <span class="hljs-number">3</span>),
+    score: buf.readInt8(offset + <span class="hljs-number">5</span>)
   };
 }
 
-// 写入记录列表
-// list  记录列表，每一条包含 {number, lesson, score}
-function writeList (list) {
-  var buf = new Buffer(list.length * 6);
-  var offset = 0;
-  for (var i = 0; i &lt; list.length; i++) {
+<span class="hljs-comment">// 写入记录列表</span>
+<span class="hljs-comment">// list  记录列表，每一条包含 {number, lesson, score}</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeList</span> (<span class="hljs-params">list</span>) </span>{
+  <span class="hljs-keyword">var</span> buf = <span class="hljs-keyword">new</span> Buffer(list.length * <span class="hljs-number">6</span>);
+  <span class="hljs-keyword">var</span> offset = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; list.length; i++) {
     writeRecord(buf, offset, list[i]);
-    offset += 6;
+    offset += <span class="hljs-number">6</span>;
   }
-  return buf;
+  <span class="hljs-keyword">return</span> buf;
 }
 
-// 读取记录列表
-// buf  Buffer 对象
-function readList (buf) {
-  var offset = 0;
-  var list = [];
-  while (offset &lt; buf.length) {
+<span class="hljs-comment">// 读取记录列表</span>
+<span class="hljs-comment">// buf  Buffer 对象</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readList</span> (<span class="hljs-params">buf</span>) </span>{
+  <span class="hljs-keyword">var</span> offset = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">var</span> list = [];
+  <span class="hljs-keyword">while</span> (offset &lt; buf.length) {
     list.push(readRecord(buf, offset));
-    offset += 6;
+    offset += <span class="hljs-number">6</span>;
   }
-  return list;
+  <span class="hljs-keyword">return</span> list;
 }
 </code></pre>
 <p>我们可以再编写一段程序来看看效果：</p>
-<pre><code class="prettyprint javascript">var list = [
-  {number: 100001, lesson: 1001, score: 99},
-  {number: 100002, lesson: 1001, score: 88},
-  {number: 100003, lesson: 1001, score: 77},
-  {number: 100004, lesson: 1001, score: 66},
-  {number: 100005, lesson: 1001, score: 55},
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> list = [
+  {number: <span class="hljs-number">100001</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">99</span>},
+  {number: <span class="hljs-number">100002</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">88</span>},
+  {number: <span class="hljs-number">100003</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">77</span>},
+  {number: <span class="hljs-number">100004</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">66</span>},
+  {number: <span class="hljs-number">100005</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">55</span>},
 ];
-console.log(list);
+<span class="hljs-built_in">console</span>.log(list);
 
-var buf = writeList(list);
-console.log(buf);
-// 输出 &lt;Buffer 01 86 a1 03 e9 63 01 86 a2 03 e9 58 01 86 a3 03 e9 4d 01 86 a4 03 e9 42 01 86 a5 03 e9 37&gt;
+<span class="hljs-keyword">var</span> buf = writeList(list);
+<span class="hljs-built_in">console</span>.log(buf);
+<span class="hljs-comment">// 输出 &lt;Buffer 01 86 a1 03 e9 63 01 86 a2 03 e9 58 01 86 a3 03 e9 4d 01 86 a4 03 e9 42 01 86 a5 03 e9 37&gt;</span>
 
-var ret = readList(buf);
-console.log(ret);
-/* 输出
+<span class="hljs-keyword">var</span> ret = readList(buf);
+<span class="hljs-built_in">console</span>.log(ret);
+<span class="hljs-comment">/* 输出
 [ { number: 100001, lesson: 1001, score: 99 },
   { number: 100002, lesson: 1001, score: 88 },
   { number: 100003, lesson: 1001, score: 77 },
   { number: 100004, lesson: 1001, score: 66 },
   { number: 100005, lesson: 1001, score: 55 } ]
-*/
+*/</span>
 </code></pre>
 <h2><a id="leiproto__214"></a>lei-proto 模块介绍</h2>
 <p>上面的例子中，当每一条记录的结构有变化时，我们需要修改<code>readRecord()</code>和<code>writeRecord()</code>，重新计算每一个字段在 Buffer 中的偏移量，当记录的字段比较复杂时很容易出错。为此我编写了<code>lei-proto</code>模块，它允许你通过简单定义每条记录的结构即可生成对应的<code>readRecord()</code>和`writeRecord()函数。</p>
 <p>首先执行以下命令安装此模块：</p>
-<pre><code class="prettyprint bash">$ npm install lei-proto --save
+<pre><code class="language-bash">$ npm install lei-proto --save
 </code></pre>
 <p>使用<code>lei-proto</code>模块后，前文的例子可以改为这样：</p>
-<pre><code class="prettyprint javascript">var parsePorto = require('lei-proto');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> parsePorto = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-proto'</span>);
 
-// 生成指定记录结构的数据编码/解码器
-var record = parsePorto([
-  ['number', 'uint', 3],
-  ['lesson', 'uint', 2],
-  ['score', 'uint', 1]
+<span class="hljs-comment">// 生成指定记录结构的数据编码/解码器</span>
+<span class="hljs-keyword">var</span> record = parsePorto([
+  [<span class="hljs-string">'number'</span>, <span class="hljs-string">'uint'</span>, <span class="hljs-number">3</span>],
+  [<span class="hljs-string">'lesson'</span>, <span class="hljs-string">'uint'</span>, <span class="hljs-number">2</span>],
+  [<span class="hljs-string">'score'</span>, <span class="hljs-string">'uint'</span>, <span class="hljs-number">1</span>]
 ]);
 
-function readList (buf) {
-  var list = [];
-  var offset = 0;
-  while (offset &lt; buf.length) {
-    list.push(record.decode(buf.slice(offset, offset + 6)));
-    offset += 6;
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readList</span> (<span class="hljs-params">buf</span>) </span>{
+  <span class="hljs-keyword">var</span> list = [];
+  <span class="hljs-keyword">var</span> offset = <span class="hljs-number">0</span>;
+  <span class="hljs-keyword">while</span> (offset &lt; buf.length) {
+    list.push(record.decode(buf.slice(offset, offset + <span class="hljs-number">6</span>)));
+    offset += <span class="hljs-number">6</span>;
   }
-  return list;
+  <span class="hljs-keyword">return</span> list;
 }
 
-function writeList (list) {
-  return Buffer.concat(list.map(record.encodeEx));
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">writeList</span> (<span class="hljs-params">list</span>) </span>{
+  <span class="hljs-keyword">return</span> Buffer.concat(list.map(record.encodeEx));
 }
 </code></pre>
 <p>运行与上文同样的测试程序，可看到其结果是一样的：</p>
@@ -400,11 +400,7 @@ function writeList (list) {
 </body>
 </html>
 
-<link rel="stylesheet" href="//cdn.staticfile.org/prettify/r298/prettify.min.css">
-<script src="//cdn.staticfile.org/prettify/r298/prettify.min.js"></script>
-<script>
-prettyPrint();
-</script>
+<link rel="stylesheet" href="/styles/github.css" />
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -415,23 +411,16 @@ prettyPrint();
   ga('send', 'pageview');
 </script>
 
-
-<!-- 多说评论框 start -->
-<div class="ds-thread" data-thread-key="/2015-11/nodejs_buffer.html" data-title="Node.js 的 Buffer 那些你可能不知道的用法 - 早起搬砖 morning.work" data-url="http://morning.work/page/2015-11/nodejs_buffer.html"></div>
-<!-- 多说评论框 end -->
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {
-  short_name: "morningwork"
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+  this.page.url = 'http://morning.work/page/2015-11/nodejs_buffer.html';
+  this.page.identifier = '/2015-11/nodejs_buffer.html';
 };
-(function() {
-  var ds = document.createElement('script');
-  ds.type = 'text/javascript';
-  ds.async = true;
-  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-  ds.charset = 'UTF-8';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+(function() {  // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  s.src = '//leizongmin-writings.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
 })();
 </script>
-<!-- 多说公共JS代码 end -->
-

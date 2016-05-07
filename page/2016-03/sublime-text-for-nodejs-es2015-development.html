@@ -39,7 +39,7 @@ blockquote {
   font-size: 14px;
   color: #333;
   padding: 8px 0 8px 2.5em;
-  font-style: italic;
+  font-style: normal;
   background-color: #f7f7f8;
   margin: 0;
   border-left: 4px solid #ddd;
@@ -148,13 +148,13 @@ li > p {
 <h2><a id="_14"></a>配置</h2>
 <p>Sublime Text 的配置通过改配置文件来完成，选择菜单 <strong>Preferences &gt; Settings - User</strong>（OSX 系统下是 <strong>Sublime Text &gt; Preferences &gt; Settings - User</strong>） 即可打开配置文件，然后在打开默认的配置文件 <strong>Preferences &gt; Settings - Default</strong> 作为对照，把需要更改的项目复制到「User」配置文件并修改其值。</p>
 <p>比如以下配置用来修改缩进长度和方式：</p>
-<pre><code class="prettyprint javascript">{
+<pre><code class="language-javascript">{
 
-  // The number of spaces a tab is considered equal to
-  &quot;tab_size&quot;: 2,
+  <span class="hljs-comment">// The number of spaces a tab is considered equal to</span>
+  <span class="hljs-string">"tab_size"</span>: <span class="hljs-number">2</span>,
 
-  // Set to true to insert spaces when tab is pressed
-  &quot;translate_tabs_to_spaces&quot;: true,
+  <span class="hljs-comment">// Set to true to insert spaces when tab is pressed</span>
+  <span class="hljs-string">"translate_tabs_to_spaces"</span>: <span class="hljs-literal">true</span>,
 
 }
 </code></pre>
@@ -192,10 +192,10 @@ li > p {
 <h3><a id="SublimeLinter_83"></a>SublimeLinter</h3>
 <p>SublimeLinter 主要用于在 Sublime Text 下对代码进行语法检查，这个插件安装配置会稍微复杂一些。</p>
 <p>首先执行以下命令安装用于 JavaScript 语法检查的 eslint 和 babel-eslint ：</p>
-<pre><code class="prettyprint bash">$ npm install -g eslint babel-eslint
+<pre><code class="language-bash">$ npm install -g eslint babel-eslint
 </code></pre>
 <p>由于 babel-eslint 依赖的模块比较多，在国内的网络环境下可能会安装失败，可以在安装时指定使用淘宝的 NPM 镜像：</p>
-<pre><code class="prettyprint bash">$ npm install -g eslint babel-eslint --registry=http://registry.npm.taobao.org
+<pre><code class="language-bash">$ npm install -g eslint babel-eslint --registry=http://registry.npm.taobao.org
 </code></pre>
 <p>安装完成后，我们再通过 Package Control 来安装 SublimeLinter 和 SublimeLinter-contrib-eslint 这两个插件。</p>
 <p>现在我们来打开一个 JavaScript 文件：</p>
@@ -221,11 +221,7 @@ li > p {
 </body>
 </html>
 
-<link rel="stylesheet" href="//cdn.staticfile.org/prettify/r298/prettify.min.css">
-<script src="//cdn.staticfile.org/prettify/r298/prettify.min.js"></script>
-<script>
-prettyPrint();
-</script>
+<link rel="stylesheet" href="/styles/github.css" />
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -236,23 +232,16 @@ prettyPrint();
   ga('send', 'pageview');
 </script>
 
-
-<!-- 多说评论框 start -->
-<div class="ds-thread" data-thread-key="/2016-03/sublime-text-for-nodejs-es2015-development.html" data-title="在 Sublime Text 上配置 ES2015 开发环境 - 早起搬砖 morning.work" data-url="http://morning.work/page/2016-03/sublime-text-for-nodejs-es2015-development.html"></div>
-<!-- 多说评论框 end -->
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {
-  short_name: "morningwork"
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+  this.page.url = 'http://morning.work/page/2016-03/sublime-text-for-nodejs-es2015-development.html';
+  this.page.identifier = '/2016-03/sublime-text-for-nodejs-es2015-development.html';
 };
-(function() {
-  var ds = document.createElement('script');
-  ds.type = 'text/javascript';
-  ds.async = true;
-  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-  ds.charset = 'UTF-8';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+(function() {  // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  s.src = '//leizongmin-writings.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
 })();
 </script>
-<!-- 多说公共JS代码 end -->
-

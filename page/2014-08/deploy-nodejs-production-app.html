@@ -39,7 +39,7 @@ blockquote {
   font-size: 14px;
   color: #333;
   padding: 8px 0 8px 2.5em;
-  font-style: italic;
+  font-style: normal;
   background-color: #f7f7f8;
   margin: 0;
   border-left: 4px solid #ddd;
@@ -146,68 +146,68 @@ li > p {
 <p>首先，本地测试环境和生产环境的数据库连接这些配置信息是不一样的，需要将其分开为两个文件存储
 到<code>config</code>目录下，比如：</p>
 <p>开发环境配置文件<code>config/development.js</code>：</p>
-<pre><code class="prettyprint javascript">module.exports = {
-  port:  3001,
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  port:  <span class="hljs-number">3001</span>,
   mysql: {
-    user: 'root'
+    user: <span class="hljs-string">'root'</span>
   }
 };
 </code></pre>
 <p>生产环境配置文件<code>config/production.js</code>:</p>
-<pre><code class="prettyprint javascript">module.exports = {
-  port: 80,
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  port: <span class="hljs-number">80</span>,
   mysql: {
-    user: 'myapp',
-    password: '2zbonsjzl305vkh3'
+    user: <span class="hljs-string">'myapp'</span>,
+    password: <span class="hljs-string">'2zbonsjzl305vkh3'</span>
   }
 };
 </code></pre>
 <p>另外还要建立一个程序自动载入相应环境的配置，文件<code>config/index.js</code>：</p>
-<pre><code class="prettyprint javascript">var path = require('path');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
 
-// 通过 NODE_ENV 来设置环境变量，如果没有指定则默认为生产环境
-var env = process.env.NODE_ENV || 'production';
+<span class="hljs-comment">// 通过 NODE_ENV 来设置环境变量，如果没有指定则默认为生产环境</span>
+<span class="hljs-keyword">var</span> env = process.env.NODE_ENV || <span class="hljs-string">'production'</span>;
 env = env.toLowerCase();
 
-// 载入配置文件
-var file = path.resolve(__dirname, env);
-try {
-  var config = module.exports = require(file);
-  console.log('Load config: [%s] %s', env, file);
-} catch (err) {
-  console.error('Cannot load config: [%s] %s', env, file);
-  throw err;
+<span class="hljs-comment">// 载入配置文件</span>
+<span class="hljs-keyword">var</span> file = path.resolve(__dirname, env);
+<span class="hljs-keyword">try</span> {
+  <span class="hljs-keyword">var</span> config = <span class="hljs-built_in">module</span>.exports = <span class="hljs-built_in">require</span>(file);
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Load config: [%s] %s'</span>, env, file);
+} <span class="hljs-keyword">catch</span> (err) {
+  <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'Cannot load config: [%s] %s'</span>, env, file);
+  <span class="hljs-keyword">throw</span> err;
 }
 </code></pre>
 <p>假设应用的入口文件是<code>app.js</code>，可通过以下方法载入配置：</p>
-<pre><code class="prettyprint javascript">var config = require('./config');
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./config'</span>);
 
-console.log('listen on port %s', config.port);
-// 如果是开发环境，将输出 listen on port 3001
-// 如果是生产环境，将输出 listen on port 80
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'listen on port %s'</span>, config.port);
+<span class="hljs-comment">// 如果是开发环境，将输出 listen on port 3001</span>
+<span class="hljs-comment">// 如果是生产环境，将输出 listen on port 80</span>
 </code></pre>
 <h2><a id="_67"></a>本地开发测试</h2>
 <p>为了方便，我新建一个脚本文件<code>run</code>，代码如下：</p>
-<pre><code class="prettyprint bash">export NODE_ENV=development
+<pre><code class="language-bash"><span class="hljs-built_in">export</span> NODE_ENV=development
 node app
 </code></pre>
 <p>要启动程序，直接在命令行下执行<code>./run</code>即可。</p>
 <h2><a id="_78"></a>部署应用</h2>
 <p>新建部署脚本文件<code>deploy</code>，代码如下：</p>
-<pre><code class="prettyprint bash">git reset --hard
+<pre><code class="language-bash">git reset --hard
 git pull origin HEAD
 npm install
-pm2 stop myapp -f
+pm2 stop myapp <span class="hljs-_">-f</span>
 pm2 start app.js -n myapp
 </code></pre>
 <p>此段代码会自动拉去 git 仓库中最新的一次提交的代码，并使用 npm 来安装 package.json 中列出的模块，
 然后先停止之前已启动的应用实例，再启动。</p>
 <p>为了方便传输代码到服务器端，需要将程序代码提交到一个私有的 git 仓库，首次在服务器端部署时，
 需要先将代码 clone 到服务器端，比如：</p>
-<pre><code class="prettyprint bash">git clone git@github.com:leizongmin/node-uc-server.git ~/myapp
+<pre><code class="language-bash">git <span class="hljs-built_in">clone</span> git@github.com:leizongmin/node-uc-server.git ~/myapp
 </code></pre>
 <p>应用在服务器端运行时使用<code>pm2</code>工具来管理进程，所以还需要先在服务器上安装此工具：</p>
-<pre><code class="prettyprint bash">npm install pm2 -g
+<pre><code class="language-bash">npm install pm2 -g
 </code></pre>
 <p>完成以上准备工作后，我们就可以通过<code>deploy</code>脚本来实现自动更新代码：</p>
 <ul>
@@ -217,7 +217,7 @@ pm2 start app.js -n myapp
 </ul>
 <hr>
 <p>以上程序执行的环境为 Linux，如果开发环境是 Windows，需要将<code>run</code>文件改为以下代码：</p>
-<pre><code class="prettyprint bash">set NODE_ENV=development
+<pre><code class="language-bash"><span class="hljs-built_in">set</span> NODE_ENV=development
 node app
 </code></pre>
 <h2><a id="_121"></a>扩展阅读</h2>
@@ -235,11 +235,7 @@ node app
 </body>
 </html>
 
-<link rel="stylesheet" href="//cdn.staticfile.org/prettify/r298/prettify.min.css">
-<script src="//cdn.staticfile.org/prettify/r298/prettify.min.js"></script>
-<script>
-prettyPrint();
-</script>
+<link rel="stylesheet" href="/styles/github.css" />
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -250,23 +246,16 @@ prettyPrint();
   ga('send', 'pageview');
 </script>
 
-
-<!-- 多说评论框 start -->
-<div class="ds-thread" data-thread-key="/2014-08/deploy-nodejs-production-app.html" data-title="一种简单的生产环境部署 Node.js 程序方法 - 早起搬砖 morning.work" data-url="http://morning.work/page/2014-08/deploy-nodejs-production-app.html"></div>
-<!-- 多说评论框 end -->
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {
-  short_name: "morningwork"
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+  this.page.url = 'http://morning.work/page/2014-08/deploy-nodejs-production-app.html';
+  this.page.identifier = '/2014-08/deploy-nodejs-production-app.html';
 };
-(function() {
-  var ds = document.createElement('script');
-  ds.type = 'text/javascript';
-  ds.async = true;
-  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-  ds.charset = 'UTF-8';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+(function() {  // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  s.src = '//leizongmin-writings.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
 })();
 </script>
-<!-- 多说公共JS代码 end -->
-

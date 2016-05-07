@@ -39,7 +39,7 @@ blockquote {
   font-size: 14px;
   color: #333;
   padding: 8px 0 8px 2.5em;
-  font-style: italic;
+  font-style: normal;
   background-color: #f7f7f8;
   margin: 0;
   border-left: 4px solid #ddd;
@@ -143,20 +143,20 @@ li > p {
 <h2><a id="_pip_4"></a>安装 pip</h2>
 <p><a href="https://pip.pypa.io/en/stable/installing/">pip</a>是 python 的包管理工具。在本文中将使用 python 版本的 shadowsocks，此版本的 shadowsocks 已发布到 pip 上，因此我们需要通过 pip 命令来安装。</p>
 <p>在控制台执行以下命令安装 pip：</p>
-<pre><code class="prettyprint bash">$ curl &quot;https://bootstrap.pypa.io/get-pip.py&quot; -o &quot;get-pip.py&quot;
+<pre><code class="language-bash">$ curl <span class="hljs-string">"https://bootstrap.pypa.io/get-pip.py"</span> -o <span class="hljs-string">"get-pip.py"</span>
 $ python get-pip.py
 </code></pre>
 <h2><a id="_shadowsocks_15"></a>安装配置 shadowsocks</h2>
 <p>在控制台执行以下命令安装 shadowsocks：</p>
-<pre><code class="prettyprint bash">$ pip install --upgrade pip
+<pre><code class="language-bash">$ pip install --upgrade pip
 $ pip install shadowsocks
 </code></pre>
 <p>安装完成后，需要创建配置文件<code>/etc/shadowsocks.json</code>，内容如下：</p>
-<pre><code class="prettyprint json">{
-  &quot;server&quot;: &quot;0.0.0.0&quot;,
-  &quot;server_port&quot;: 8388,
-  &quot;password&quot;: &quot;uzon57jd0v869t7w&quot;,
-  &quot;method&quot;: &quot;aes-256-cfb&quot;
+<pre><code class="language-json">{
+  <span class="hljs-attr">"server"</span>: <span class="hljs-string">"0.0.0.0"</span>,
+  <span class="hljs-attr">"server_port"</span>: <span class="hljs-number">8388</span>,
+  <span class="hljs-attr">"password"</span>: <span class="hljs-string">"uzon57jd0v869t7w"</span>,
+  <span class="hljs-attr">"method"</span>: <span class="hljs-string">"aes-256-cfb"</span>
 }
 </code></pre>
 <p>说明：</p>
@@ -179,11 +179,11 @@ ExecStart=/usr/bin/ssserver -c /etc/shadowsocks.json
 WantedBy=multi-user.target
 </code></pre>
 <p>执行以下命令启动 shadowsocks 服务：</p>
-<pre><code class="prettyprint bash">$ systemctl enable shadowsocks
+<pre><code class="language-bash">$ systemctl <span class="hljs-built_in">enable</span> shadowsocks
 $ systemctl start shadowsocks
 </code></pre>
 <p>为了检查 shadowsocks 服务是否已成功启动，可以执行以下命令查看服务的状态：</p>
-<pre><code class="prettyprint bash">$ systemctl status shadowsocks -l
+<pre><code class="language-bash">$ systemctl status shadowsocks <span class="hljs-_">-l</span>
 </code></pre>
 <p>如果服务启动成功，则控制台显示的信息可能类似这样：</p>
 <pre><code>● shadowsocks.service - Shadowsocks
@@ -201,14 +201,14 @@ Dec 21 23:51:48 morning.work ssserver[19334]: 2015-12-21 23:51:48 INFO     start
 </code></pre>
 <h2><a id="_89"></a>一键安装脚本</h2>
 <p>新建文件<code>install-shadowsocks.sh</code>，内容如下：</p>
-<pre><code class="prettyprint bash">#!/bin/bash
-# Install Shadowsocks on CentOS 7
+<pre><code class="language-bash"><span class="hljs-meta">#!/bin/bash</span>
+<span class="hljs-comment"># Install Shadowsocks on CentOS 7</span>
 
-echo &quot;Installing Shadowsocks...&quot;
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Installing Shadowsocks..."</span>
 
-random-string()
+random-<span class="hljs-function"><span class="hljs-title">string</span></span>()
 {
-    cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1
+    cat /dev/urandom | tr -dc <span class="hljs-string">'a-zA-Z0-9'</span> | fold -w <span class="hljs-variable">${1:-32}</span> | head -n 1
 }
 
 CONFIG_FILE=/etc/shadowsocks.json
@@ -216,65 +216,65 @@ SERVICE_FILE=/etc/systemd/system/shadowsocks.service
 SS_PASSWORD=$(random-string 32)
 SS_PORT=8388
 SS_METHOD=aes-256-cfb
-SS_IP=`ip route get 1 | awk '{print $NF;exit}'`
+SS_IP=`ip route get 1 | awk <span class="hljs-string">'{print $NF;exit}'</span>`
 GET_PIP_FILE=/tmp/get-pip.py
 
-# install pip
-curl &quot;https://bootstrap.pypa.io/get-pip.py&quot; -o &quot;${GET_PIP_FILE}&quot;
-python ${GET_PIP_FILE}
+<span class="hljs-comment"># install pip</span>
+curl <span class="hljs-string">"https://bootstrap.pypa.io/get-pip.py"</span> -o <span class="hljs-string">"<span class="hljs-variable">${GET_PIP_FILE}</span>"</span>
+python <span class="hljs-variable">${GET_PIP_FILE}</span>
 
-# install shadowsocks
+<span class="hljs-comment"># install shadowsocks</span>
 pip install --upgrade pip
 pip install shadowsocks
 
-# create shadowsocls config
-cat &lt;&lt;EOF | sudo tee ${CONFIG_FILE}
+<span class="hljs-comment"># create shadowsocls config</span>
+cat &lt;&lt;EOF | sudo tee <span class="hljs-variable">${CONFIG_FILE}</span>
 {
-  &quot;server&quot;: &quot;0.0.0.0&quot;,
-  &quot;server_port&quot;: ${SS_PORT},
-  &quot;password&quot;: &quot;${SS_PASSWORD}&quot;,
-  &quot;method&quot;: &quot;${SS_METHOD}&quot;
+  <span class="hljs-string">"server"</span>: <span class="hljs-string">"0.0.0.0"</span>,
+  <span class="hljs-string">"server_port"</span>: <span class="hljs-variable">${SS_PORT}</span>,
+  <span class="hljs-string">"password"</span>: <span class="hljs-string">"<span class="hljs-variable">${SS_PASSWORD}</span>"</span>,
+  <span class="hljs-string">"method"</span>: <span class="hljs-string">"<span class="hljs-variable">${SS_METHOD}</span>"</span>
 }
 EOF
 
-# create service
-cat &lt;&lt;EOF | sudo tee ${SERVICE_FILE}
+<span class="hljs-comment"># create service</span>
+cat &lt;&lt;EOF | sudo tee <span class="hljs-variable">${SERVICE_FILE}</span>
 [Unit]
 Description=Shadowsocks
 
 [Service]
 TimeoutStartSec=0
-ExecStart=/usr/bin/ssserver -c ${CONFIG_FILE}
+ExecStart=/usr/bin/ssserver -c <span class="hljs-variable">${CONFIG_FILE}</span>
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# start service
-systemctl enable shadowsocks
+<span class="hljs-comment"># start service</span>
+systemctl <span class="hljs-built_in">enable</span> shadowsocks
 systemctl start shadowsocks
 
-# view service status
+<span class="hljs-comment"># view service status</span>
 sleep 5
-systemctl status shadowsocks -l
+systemctl status shadowsocks <span class="hljs-_">-l</span>
 
-echo &quot;================================&quot;
-echo &quot;&quot;
-echo &quot;Congratulations! Shadowsocks has been installed on your system.&quot;
-echo &quot;You shadowsocks connection info:&quot;
-echo &quot;--------------------------------&quot;
-echo &quot;server:      ${SS_IP}&quot;
-echo &quot;server_port: ${SS_PORT}&quot;
-echo &quot;password:    ${SS_PASSWORD}&quot;
-echo &quot;method:      ${SS_METHOD}&quot;
-echo &quot;--------------------------------&quot;
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"================================"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">""</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"Congratulations! Shadowsocks has been installed on your system."</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"You shadowsocks connection info:"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"--------------------------------"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"server:      <span class="hljs-variable">${SS_IP}</span>"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"server_port: <span class="hljs-variable">${SS_PORT}</span>"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"password:    <span class="hljs-variable">${SS_PASSWORD}</span>"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"method:      <span class="hljs-variable">${SS_METHOD}</span>"</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">"--------------------------------"</span>
 </code></pre>
 <p>执行以下命令一键安装：</p>
-<pre><code class="prettyprint bash">$ chmod +x install-shadowsocks.sh
+<pre><code class="language-bash">$ chmod +x install-shadowsocks.sh
 $ ./install-shadowsocks.sh
 </code></pre>
 <p>也可以直接执行以下命令从 GitHub 下载安装脚本并执行：</p>
-<pre><code class="prettyprint bash">$ bash &lt;(curl -s http://morning.work/examples/2015-12/install-shadowsocks.sh)
+<pre><code class="language-bash">$ bash &lt;(curl <span class="hljs-_">-s</span> http://morning.work/examples/2015-12/install-shadowsocks.sh)
 </code></pre>
 <p>安装完成后会自动打印出 Shadowsocks 的连接配置信息。比如：</p>
 <pre><code>Congratulations! Shadowsocks has been installed on your system.
@@ -306,11 +306,7 @@ method:      aes-256-cfb
 </body>
 </html>
 
-<link rel="stylesheet" href="//cdn.staticfile.org/prettify/r298/prettify.min.css">
-<script src="//cdn.staticfile.org/prettify/r298/prettify.min.js"></script>
-<script>
-prettyPrint();
-</script>
+<link rel="stylesheet" href="/styles/github.css" />
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -321,23 +317,16 @@ prettyPrint();
   ga('send', 'pageview');
 </script>
 
-
-<!-- 多说评论框 start -->
-<div class="ds-thread" data-thread-key="/2015-12/install-shadowsocks-on-centos-7.html" data-title="在 CentOS 7 下安装配置 shadowsocks - 早起搬砖 morning.work" data-url="http://morning.work/page/2015-12/install-shadowsocks-on-centos-7.html"></div>
-<!-- 多说评论框 end -->
-<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-<script type="text/javascript">
-var duoshuoQuery = {
-  short_name: "morningwork"
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+  this.page.url = 'http://morning.work/page/2015-12/install-shadowsocks-on-centos-7.html';
+  this.page.identifier = '/2015-12/install-shadowsocks-on-centos-7.html';
 };
-(function() {
-  var ds = document.createElement('script');
-  ds.type = 'text/javascript';
-  ds.async = true;
-  ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-  ds.charset = 'UTF-8';
-  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+(function() {  // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  s.src = '//leizongmin-writings.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
 })();
 </script>
-<!-- 多说公共JS代码 end -->
-
