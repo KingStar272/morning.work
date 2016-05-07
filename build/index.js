@@ -10,14 +10,22 @@ import rd from 'rd';
 import mkdirp from 'mkdirp';
 import tinyliquid from 'tinyliquid';
 import MarkdownIt from 'markdown-it';
+import hljs from 'highlight.js';
 import RSS from 'rss';
 import authors from './authors';
 
 let md = new MarkdownIt({
   linkify: true,
   html: true,
-  langPrefix: 'prettyprint ',
-  typography: true
+  typography: true,
+  highlight: (str, lang) => {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(lang, str).value;
+      } catch (__) {}
+    }
+    return '';
+  },
 });
 md.use(require('markdown-it-toc'));
 
