@@ -39,31 +39,42 @@ class CNodeJS {
       const opts = {
         method: method.toUpperCase(),
         url: this.options.url + path,
+        json: true,
       };
 
       if (opts.method === 'GET' || opts.method === 'HEAD') {
         opts.qs = this.baseParams(params);
       } else {
-        opts.formData = this.baseParams(params);
+        opts.body = this.baseParams(params);
       }
 
       rawRequest(opts, (err, res, body) => {
 
         if (err) return reject(err);
-        if (res.statusCode !== 200) return reject(new Error(`status ${res.statusCode}`));
 
-        let json;
-        try {
-          json = JSON.parse(body.toString());
-        } catch (err) {
-          return reject(new Error(`parse JSON data error: ${err.message}`));
+        if (body.success) {
+          resolve(body);
+        } else {
+          reject(new Error(body.error_msg));
         }
-
-        resolve(json);
 
       });
 
     });
+  }
+
+  getTopics(params, callback) {
+    return this.request('GET', 'topics', params, callback)
+               .then(ret => Promise.resolve(ret.data));
+  }
+
+  getTopicDetail(params, callback) {
+    return this.request('GET', `topic/${params.id}`, params, callback)
+               .then(ret => Promise.resolve(ret.data));
+  }
+
+  testToken(callback) {
+    return this.request('POST', `accesstoken`, {}, callback);
   }
 
 }

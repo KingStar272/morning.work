@@ -4,6 +4,7 @@ date: 2016-05-06
 author: 老雷
 ```
 
+## 说几句无关主题的话
 
 尽管这几年来 Node.js 已经得到越来越多的关注，连市场卖菜的老太婆都能分别得出哪个是写 Node.js
 的，那个是写 PHP 的。然而，终究是不能跟老大哥 Java 比的。我们在使用一些第三方服务时常常会
@@ -79,9 +80,7 @@ client.getTopics({page: 1}, (err, list) => {
 ```
 
 
-## 开工
-
-### 初始化项目
+## 初始化项目
 
 1、首先新建项目目录：
 
@@ -125,33 +124,30 @@ class CNodeJS {
 
   }
 
-  request(method, path, params) {
+  request(method, path, params, callback) {
     return new Promise((resolve, reject) => {
 
       const opts = {
         method: method.toUpperCase(),
         url: this.options.url + path,
+        json: true,
       };
 
       if (opts.method === 'GET' || opts.method === 'HEAD') {
         opts.qs = this.baseParams(params);
       } else {
-        opts.formData = this.baseParams(params);
+        opts.body = this.baseParams(params);
       }
 
       rawRequest(opts, (err, res, body) => {
 
         if (err) return reject(err);
-        if (res.statusCode !== 200) return reject(new Error(`status ${res.statusCode}`));
 
-        let json;
-        try {
-          json = JSON.parse(body.toString());
-        } catch (err) {
-          return reject(new Error(`parse JSON data error: ${err.message}`));
+        if (body.success) {
+          resolve(body);
+        } else {
+          reject(new Error(body.error_msg));
         }
-
-        resolve(json);
 
       });
 
@@ -170,7 +166,8 @@ module.exports = CNodeJS;
 + 我们实现了一个带有 `request` 方法的 `CNodeJS` 类，可以通过该方法给发送任意 API 请求，
   比如请求主题首页是 `request('GET', 'topics', {page: 1})`
 + 如果初始化 `CNodeJS` 实例时传入了 `token`，则每次请求都会自动带上 `accesstoken` 参数
-+ 服务器响应非 `200` 都表示 API 请求出错
++ 返回的结果 `success=true` 表示 API 请求成功，则直接回调该结果；如果失败则
+  `error_msg` 表示出错信息
 
 4、新建测试文件 `test.js`：
 
@@ -187,13 +184,13 @@ client.request('GET', 'topics', {page: 1})
 
 5、执行命令 `node test.js` 即可看到类似以下的结果：
 
-```
+```javascript
 { success: true,
   data:
    [ { id: '572afb6b15c24e592c16e1e6',
        author_id: '504c28a2e2b845157708cb61',
        tab: 'share',
-       content: '<div class="markdown-text"><p>之前的
+       content: '.......'
 ...
 ```
 
@@ -208,20 +205,23 @@ client.request('GET', 'topics', {page: 1})
 1、修改文件 `index.js` 中 `request(method, path, params) { }` 定义部分：
 
 ```javascript
-  request(method, path, params, callback) {
-    return new Promise((_resolve, _reject) => {
+request(method, path, params, callback) {
+  return new Promise((_resolve, _reject) => {
 
-      const resolve = ret => {
-        _resolve(ret);
-        callback && callback(null, ret);
-      };
+    const resolve = ret => {
+      _resolve(ret);
+      callback && callback(null, ret);
+    };
 
-      const reject = err => {
-        _reject(err);
-        callback && callback(err);
-      };
+    const reject = err => {
+      _reject(err);
+      callback && callback(err);
+    };
 
-      // 以下部分不变 ...
+    // 以下部分不变
+    // ...
+  });
+}
 ```
 
 说明：
@@ -247,5 +247,66 @@ client.request('GET', 'topics', {page: 1}, (err, ret) => {
 通过简单的修改我们就已经实现了同时支持 `promise` 和 `callback` 两种异步回调方式。
 
 
-### 封装 API
+## 封装 API
 
+前文我们实现的 `request()` 方法已经可以调用任意的 API 了，但是为了是方便，一般需要为每个 API
+单独封装一个方法，比如：
+
++ `getTopics(params, callback)` - 获取主题首页
++ `getTopicDetail(params, callback)` - 获取主题详情
++ `testToken(callback)` - 测试 `token` 是否正确
+
+对于 `getTopics()` 可以这样简单地实现：
+
+```javascript
+getTopics(params, callback) {
+  return this.request('GET', 'topics', params, callback);
+}
+```
+
+但其返回的结果是这样结构的：
+
+```javascript
+{ success: true,
+  data: []
+}
+```
+
+要取得结果还要读取里面的 `data`，针对这种情况我们可以改成这样：
+
+```javascript
+getTopics(params, callback) {
+  return this.request('GET', 'topics', params, callback)
+             .then(ret => Promise.resolve(ret.data));
+}
+```
+
+`getTopicDetail()` 和 `testToken()` 可以这样实现：
+
+```javascript
+getTopicDetail(params, callback) {
+  return this.request('GET', `topic/${params.id}`, params, callback)
+             .then(ret => Promise.resolve(ret.data));
+}
+
+testToken(callback) {
+  return this.request('POST', `accesstoken`, {}, callback);
+}
+```
+
+对于其他的 API 也可以采用类似的方法一一实现。
+
+
+## 结尾
+
+由此看来编写一个简单的 API 客户端也不是一件很难的事情，本文介绍的方法已经能适应大多数的情况了。
+当然还有些问题是没提到的，比如阿里云 OSS 这种 SDK 还要考虑 stream 上传问题，还有断点续传。
+对于安全性要求较高的 SDK 可能还需要做数据签名等等。
+
+在编写本文的时候，通过阅读 `request` 的 API 文档我才发现原来可以通过 `json=true` 选项来让
+它自动解析返回的结果，这样确实能少写好几行代码了。
+
+另外我还是忍不住再吐槽一下，CNodeJS 的 API 接口设计得并不一致，响应成功时并不是所有数据都放在
+`data` 里面（比如 `testToken()`）。
+
+发觉最近有点上火了 ^_^
