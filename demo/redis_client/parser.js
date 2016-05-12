@@ -46,6 +46,28 @@ function parseResult(text) {
       break;
     }
 
+    if (line[0] === '$') {
+      const n = parseInt(line.slice(1), 10);
+      if (isNaN(n)) {
+
+        continue;
+
+      } else if (n === -1) {
+
+        result = {data: null};
+        break;
+
+      } else {
+
+        const line2 = nextLine();
+        if (line2) {
+          result = {data: line2};
+        }
+        break;
+
+      }
+    }
+
     if (line[0] === '*') {
       const n = parseInt(line.slice(1), 10);
       if (isNaN(n)) {
