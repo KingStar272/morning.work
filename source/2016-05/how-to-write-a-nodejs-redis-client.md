@@ -15,7 +15,7 @@ author: 老雷
 
 这次要写的这个 Redis 客户端应该算是个客户端了，需要直接发起`TCP/IP`连接去跟服务器通讯，需要自己解析客户端返回的结果，还要做一些简单的容错处理，如果要做到足够健壮也不容易，不过就本文要实现一个基本可用的例子来说，还是简单了点。
 
-无论是实现 REST 的 API 客户端还是这样一个 Redis 客户端，虽然具体实现的细节不同，但是，**套路**还是一样的。二十一世纪行走江湖最重要的是什么？套路！套路！套路！所以呢，本文还是跟之前一样的套路。
+无论是实现 REST 的 API 客户端还是这样一个 Redis 客户端，虽然具体实现的细节不同，但是，**套路**还是**一样**的。二十一世纪行走江湖最重要的是什么？套路！套路！套路！所以呢，本文还是跟之前一样的套路。
 
 
 ## Redis 协议
@@ -379,6 +379,13 @@ class Redis extends events.EventEmitter {
 module.exports = Redis;
 ```
 
+说明：
+
++ 每次`data`事件接收到结果时，直接将其`push()`到`RedisProto`中，并尝试执行`next()`获得结果
++ 因为命令的执行结果都是按照顺序返回的，所以我们只需要按顺序从`this._callbacks`中取出最前面的元素，直接执行回调
++ 如果连接已经端口，则不允许再执行命令，直接返回`connection has been closed`错误
++ `sendCommand()`同时支持`callback`和`promise`方式的回调，但是套路跟上一篇文章《如何用 Node.js 编写一个 API 客户端》稍有不同
+
 新建测试文件`test.js`：
 
 ```javascript
@@ -424,7 +431,7 @@ success OK
 
 ## 更友好的接口
 
-上文我们实现了一个`sendCommand()`方法，理论上可以通过该方法执行任意的 Redis 命令，但是我们可能更希望每条命令有一个对应的方法，比如`sendCommand('GET a')`我们可以写出`get('a')`，这样看起来会更直观。
+上文我们实现了一个`sendCommand()`方法，理论上可以通过该方法执行任意的 Redis 命令，但是我们可能更希望每条命令有一个对应的方法，比如`sendCommand('GET a')`我们可以写成`get('a')`，这样看起来会更直观。
 
 首先在`index.js`文件头部载入`fs`和`path`模块：
 
@@ -574,11 +581,18 @@ b=undefined, err=Error: connection has been closed
 
 ## 还存在的问题
 
-不支持更复杂的数据结构
+看起来这个模块已经能正常使用了，但是其实并不完善。跟NPM上的`ioredis`模块起来还存在以下问题：
 
++ 不支持`multi()`命令
++ 不支持`publish`和`subscribe`命令
++ 不能解析更复杂的返回结果，比如`command`命令的返回结果
++ 没有严格的测试，假如服务端返回了一个非预期的格式，我也不知道程序会咋样
++ `RedisProto`解析结果的算法还是可以优化的，目前这个只能算是大概能用
 
------
+好了，我只是出个题目面面试，又不是要撸一个轮子出来，剩下的就交给你啦。
+
 
 ## 参考链接
 
 + [Redis协议](http://redis.cn/topics/protocol.html)（http://redis.cn/topics/protocol.html）
+
