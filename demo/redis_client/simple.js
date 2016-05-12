@@ -25,7 +25,6 @@ class Redis extends events.EventEmitter {
 
     this._isClosed = false;
     this._isConnected = false;
-    this._pendingCommands = [];
     this._callbacks = [];
 
     this._proto = new RedisProto();
@@ -33,7 +32,6 @@ class Redis extends events.EventEmitter {
     this.connection = net.createConnection(options.port, options.host, () => {
       this._isConnected = true;
       this.emit('connect');
-      this._sendPendingCommands();
     });
 
     this.connection.on('error', err => {
@@ -42,8 +40,8 @@ class Redis extends events.EventEmitter {
 
     this.connection.on('close', () => {
       this._isClosed = true;
-      this._callbackAll();
       this.emit('close');
+      this._callbackAll();
     });
 
     this.connection.on('end', () => {
@@ -55,16 +53,6 @@ class Redis extends events.EventEmitter {
     });
 
     this._bindCommands();
-
-  }
-
-  _sendPendingCommands() {
-
-    for (const item of this._pendingCommands) {
-      this._sendCommand(item.cmd, item.cb);
-    }
-
-    this._pendingCommands = null;
 
   }
 
@@ -80,11 +68,8 @@ class Redis extends events.EventEmitter {
         return cb(new Error('connection has been closed'));
       }
 
-      if (!this._isConnected) {
-        this._pendingCommands.push({cmd: cmd, cb: cb})
-      } else {
-        this._sendCommand(cmd, cb);
-      }
+      this._callbacks.push(cb);
+      this.connection.write(`${cmd}\r\n`);
 
     });
   }
@@ -118,14 +103,6 @@ class Redis extends events.EventEmitter {
 
   }
 
-  _sendCommand(cmd, cb) {
-
-    this._callbacks.push(cb);
-
-    this.connection.write(`${cmd}\r\n`);
-
-  }
-
   _pushData(data) {
 
     this._proto.push(data);
@@ -134,6 +111,7 @@ class Redis extends events.EventEmitter {
 
       const result = this._proto.result;
       const cb = this._callbacks.shift();
+
       if (result.error) {
         cb(new Error(result.error));
       } else {
@@ -146,22 +124,15 @@ class Redis extends events.EventEmitter {
 
   _callbackAll() {
 
-    if (this._pendingCommands) {
-      for (const item of this._pendingCommands) {
-        item.cb(new Error('connection has been closed'));
-      }
-    }
-
     for (const cb of this._callbacks) {
       cb(new Error('connection has been closed'));
     }
+    this._callbacks = [];
 
   }
 
   end() {
-
     this.connection.destroy();
-
   }
 
 }
