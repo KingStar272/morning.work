@@ -73,7 +73,7 @@ class Redis extends events.EventEmitter {
 
   }
 
-  command(cmd, callback) {
+  sendCommand(cmd, callback) {
     return new Promise((resolve, reject) => {
 
       const cb = (err, ret) => {
@@ -109,7 +109,7 @@ class Redis extends events.EventEmitter {
 
         args = args.map(item => Array.isArray(item) ? item.join(' ') : item).join(' ');
 
-        return self.command(`${cmd} ${args}`, callback);
+        return self.sendCommand(`${cmd} ${args}`, callback);
 
       };
     };
@@ -128,7 +128,7 @@ class Redis extends events.EventEmitter {
 
     this._callbacks.push(cb);
 
-    debug('send command: %s', cmd);
+    debug('send sendCommand: %s', cmd);
     this.connection.write(`${cmd}\r\n`);
 
   }
