@@ -10,8 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const events = require('events');
 const net = require('net');
-const debug = require('debug')('redis');
-const parseResult = require('./parser');
+const RedisProto = require('./proto');
 
 class Redis extends events.EventEmitter {
 
@@ -26,36 +25,32 @@ class Redis extends events.EventEmitter {
 
     this._isClosed = false;
     this._isConnected = false;
-    this._buffer = '';
     this._pendingCommands = [];
     this._callbacks = [];
 
+    this._proto = new RedisProto();
+
     this.connection = net.createConnection(options.port, options.host, () => {
-      debug('connect event');
       this._isConnected = true;
       this.emit('connect');
       this._sendPendingCommands();
     });
 
     this.connection.on('error', err => {
-      debug('error event: %s', err);
       this.emit('error', err);
     });
 
     this.connection.on('close', () => {
-      debug('close event');
       this._isClosed = true;
       this._callbackAll();
       this.emit('close');
     });
 
     this.connection.on('end', () => {
-      debug('end event');
       this.emit('end');
     });
 
     this.connection.on('data', data => {
-      debug('data event: %s', data);
       this._pushData(data);
     });
 
@@ -77,7 +72,6 @@ class Redis extends events.EventEmitter {
     return new Promise((resolve, reject) => {
 
       const cb = (err, ret) => {
-        debug('callback: cmd=%s, err=%s, ret=%j', cmd, err, ret);
         callback && callback(err, ret);
         err ? reject(err) : resolve(ret);
       };
@@ -128,20 +122,17 @@ class Redis extends events.EventEmitter {
 
     this._callbacks.push(cb);
 
-    debug('send sendCommand: %s', cmd);
     this.connection.write(`${cmd}\r\n`);
 
   }
 
   _pushData(data) {
 
-    this._buffer = this._buffer + data.toString();
+    this._proto.push(data);
 
-    while (true) {
+    while (this._proto.next()) {
 
-      const result = this._parseResult();
-      if (!result) break;
-
+      const result = this._proto.result;
       const cb = this._callbacks.shift();
       if (result.error) {
         cb(new Error(result.error));
@@ -150,17 +141,6 @@ class Redis extends events.EventEmitter {
       }
 
     }
-
-  }
-
-  _parseResult() {
-
-    const result = parseResult(this._buffer);
-    if (result) {
-      this._buffer = result.rest;
-    }
-
-    return result;
 
   }
 
@@ -180,7 +160,6 @@ class Redis extends events.EventEmitter {
 
   end() {
 
-    debug('end');
     this.connection.destroy();
 
   }

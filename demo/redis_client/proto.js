@@ -15,7 +15,6 @@ class RedisProto {
     this._text = lines.pop();
     this._lines = this._lines.concat(lines);
 
-
   }
 
   next() {
@@ -102,7 +101,7 @@ class RedisProto {
 
 module.exports = RedisProto;
 
-
+/*
 const proto = new RedisProto();
 
 // 接受到数据
@@ -120,3 +119,4 @@ while (proto.next()) {
   // 另外可以通过 proto.result 获得
   console.log(proto.result);
 }
+*/

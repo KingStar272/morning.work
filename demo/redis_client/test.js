@@ -12,7 +12,7 @@ client.get('b', (err, ret) => {
   console.log('b=%s, err=%s', ret, err);
 });
 
-// client.command(console.log);
+client.keys('*', console.log);
 
 client.set('a', Date.now())
   .then(ret => console.log('success', ret))
