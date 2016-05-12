@@ -30,6 +30,8 @@ Redis 协议的详细介绍可以参考这里：http://redis.cn/topics/protocol.
 + 批量回复，回复的第一个字节将是`$`
 + 多个批量回复，回复的第一个字节将是`*`
 
+每一行都使用`\r\n`来分隔。
+
 为了查看具体的返回结果是怎样的，我们可以用`telnet`客户端来测试。假定本机已经运行了 Redis 服务，其监听端口为`6379`，我们可以执行以下命令连接：
 
 ```bash
@@ -442,7 +444,7 @@ const path = require('path');
 
 然后给`Redis`类增加`_bindCommands()`方法：
 
-```
+```javascript
 _bindCommands() {
 
   const self = this;
@@ -492,7 +494,7 @@ KEYS
 
 把测试文件`test.js`改为以下代码：
 
-```
+```javascript
 'use strict';
 
 const Redis = require('./simple');

@@ -1,4 +1,492 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Wed, 11 May 2016 06:01:15 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[如何用 Node.js 编写一个 API 客户端]]></title><description><![CDATA[<h2><a id="_2"></a>说几句无关主题的话</h2>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Thu, 12 May 2016 09:21:05 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[Node.js 面试题： 编写一个 Redis 客户端]]></title><description><![CDATA[<blockquote>
+<p>首先我要吐槽一下，<strong>招聘 Node.js 工程师真心累</strong>，虽然近两年来 Node.js 已经越来越火了，但发个招聘信息出去，投简历的也没几个。这几天好不容易连坑带拐终于勾搭上了一个，小心脏扑通扑通的久久不能平静下来，不过因为对方简历显示的主要项目经验还是前端方面的，而我们需要招的是后端，机智的我特意设计了下文这样一道面试题。</p>
+<p>这样一道面试题也是临时想到的，为了确定这道题目可以在一定时间内做出来，我自己先写了一个基本可用的版本，从开始到结束约耗时两个小时（中途还去撒了两泡尿），考虑到面试者在陌生环境下可能影响正常发挥，一个下午的时间应该能应付下来。另外，我们定这样一个题目时也明确了：不要求必须完成，<strong>主要考察思路、实现逻辑、代码风格和一些可能存在的问题或错误的预判</strong>。</p>
+<p>以下开始进入主题。</p>
+</blockquote>
+<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这_不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块_，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
+<p>这次要写的这个 Redis 客户端应该算是个客户端了，需要直接发起<code>TCP/IP</code>连接去跟服务器通讯，需要自己解析客户端返回的结果，还要做一些简单的容错处理，如果要做到足够健壮也不容易，不过就本文要实现一个基本可用的例子来说，还是简单了点。</p>
+<p>无论是实现 REST 的 API 客户端还是这样一个 Redis 客户端，虽然具体实现的细节不同，但是，<strong>套路</strong>还是<strong>一样</strong>的。二十一世纪行走江湖最重要的是什么？套路！套路！套路！所以呢，本文还是跟之前一样的套路。</p>
+<h2><a id="Redis__16"></a>Redis 协议</h2>
+<p>Redis 协议的详细介绍可以参考这里：<a href="http://redis.cn/topics/protocol.html">http://redis.cn/topics/protocol.html</a></p>
+<p>假如我要执行命令<code>KEYS *</code>，只要往服务器发送<code>KEYS *\r\n</code>即可，这时服务器会直接响应结果，返回的结果格式如下：</p>
+<ul>
+<li>用单行回复，回复的第一个字节将是<code>+</code></li>
+<li>错误消息，回复的第一个字节将是<code>-</code></li>
+<li>整型数字，回复的第一个字节将是<code>:</code></li>
+<li>批量回复，回复的第一个字节将是<code>$</code></li>
+<li>多个批量回复，回复的第一个字节将是<code>*</code></li>
+</ul>
+<p>每一行都使用<code>\r\n</code>来分隔。</p>
+<p>为了查看具体的返回结果是怎样的，我们可以用<code>telnet</code>客户端来测试。假定本机已经运行了 Redis 服务，其监听端口为<code>6379</code>，我们可以执行以下命令连接：</p>
+<pre><code class="language-bash">$ nc 127.0.0.1 6379
+</code></pre>
+<p>或者：</p>
+<pre><code class="language-bash">$ telnet 127.0.0.1 6379
+</code></pre>
+<p>下面我们分别测试各个命令返回的结果（其中第一行表示客户端输入的命令，行尾的<code>↵</code>表示按回车发送，第二行开始表示服务器端返回的内容）：</p>
+<p>1、返回错误</p>
+<pre><code>help ↵
+-ERR unknown command 'help'
+</code></pre>
+<p>2、操作成功</p>
+<pre><code>set abc 123456 ↵
++OK
+</code></pre>
+<p>3、得到结果</p>
+<pre><code>get abc ↵
+$6
+123456
+</code></pre>
+<p>4、得不到结果</p>
+<pre><code>get aaa ↵
+$-1
+</code></pre>
+<p>5、得到的结果是整形数字</p>
+<pre><code>hlen aaa ↵
+:5
+</code></pre>
+<p>6、多个批量回复</p>
+<pre><code>keys a* ↵
+*3
+$3
+abc
+$3
+aa1
+$1
+a
+</code></pre>
+<p>7、多命令执行</p>
+<pre><code>multi ↵
++OK
+get a ↵
++QUEUED
+get b ↵
++QUEUED
+get c ↵
++QUEUED
+exec ↵
+*3
+$5
+hello
+$-1
+$5
+world
+</code></pre>
+<h2><a id="_114"></a>解析结果</h2>
+<p>实现一个 Redis 客户端大概的原理是，客户端依次把需要执行的命令发送给服务器，而服务器会按照先后顺序把结果返回给用户。在本文我们使用 Node.js 内置的<code>net</code>模块来操作，通过<code>data</code>事件来接收结果。然而并不能一次性拿到一次请求的结果，有时可能是一个<code>data</code>事件中包含了几条命令的执行结果，也有可能当前命令的结果还没有传输完，剩下一半的结果在下一个<code>data</code>事件中。</p>
+<p>为了方便调试，我们将解析结果的部分独立封装成一个函数，接口如下：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> proto = <span class="hljs-keyword">new</span> RedisProto();
+
+<span class="hljs-comment">// 接受到数据</span>
+proto.push(<span class="hljs-string">'*3\r\n$3\r\nabc\r\n$3\r\naa1\r\n$1\r\na\r\n'</span>);
+proto.push(<span class="hljs-string">'$6\r\n123456\r\n'</span>);
+proto.push(<span class="hljs-string">'-ERR unknown command \'help\'\r\n'</span>);
+proto.push(<span class="hljs-string">'+OK\r\n'</span>);
+proto.push(<span class="hljs-string">':5\r\n'</span>);
+proto.push(<span class="hljs-string">'*3\r\n$5\r\nhe'</span>);
+proto.push(<span class="hljs-string">'llo\r\n$-'</span>);
+proto.push(<span class="hljs-string">'1\r\n$5\r\nworld\r\n'</span>);
+
+<span class="hljs-keyword">while</span> (proto.next()) {
+  <span class="hljs-comment">// proto.next() 如果有解析出完整的结果则返回结果，没有则返回 false</span>
+  <span class="hljs-comment">// 另外可以通过 proto.result 获得</span>
+  <span class="hljs-built_in">console</span>.log(proto.result);
+}
+</code></pre>
+<p>接下来开始编写相应的代码。</p>
+<p>按照套路，我们先初始化项目：</p>
+<pre><code class="language-bash">$ mkdir redis_client
+$ <span class="hljs-built_in">cd</span> redis_client
+$ git init
+$ npm init
+</code></pre>
+<p>新建文件<code>proto.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-comment">/**
+ * 简单 Redis 客户端
+ *
+ * @author Zongmin Lei &lt;leizongmin@gmail.com&gt;
+ */</span>
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">RedisProto</span> </span>{
+
+  <span class="hljs-keyword">constructor</span>() {
+
+    <span class="hljs-keyword">this</span>._lines = []; <span class="hljs-comment">// 已初步解析出来的行</span>
+    <span class="hljs-keyword">this</span>._text = <span class="hljs-string">''</span>;  <span class="hljs-comment">// 剩余不能构成一行的文本</span>
+
+  }
+
+  push(text) {
+
+    <span class="hljs-keyword">const</span> lines = (<span class="hljs-keyword">this</span>._text + text).split(<span class="hljs-string">'\r\n'</span>);
+    <span class="hljs-keyword">this</span>._text = lines.pop();
+    <span class="hljs-keyword">this</span>._lines = <span class="hljs-keyword">this</span>._lines.concat(lines);
+
+  }
+
+  next() {
+
+    <span class="hljs-keyword">const</span> lines = <span class="hljs-keyword">this</span>._lines;
+    <span class="hljs-keyword">const</span> first = lines[<span class="hljs-number">0</span>];
+
+    <span class="hljs-keyword">const</span> popResult = (lineNumber, result) =&gt; {
+      <span class="hljs-keyword">this</span>._lines = <span class="hljs-keyword">this</span>._lines.slice(lineNumber);
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.result = result;
+    };
+
+    <span class="hljs-keyword">const</span> popEmpty = () =&gt; {
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.result = <span class="hljs-literal">false</span>;
+    };
+
+    <span class="hljs-keyword">if</span> (lines.length &lt; <span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> popEmpty();
+
+    <span class="hljs-keyword">switch</span> (first[<span class="hljs-number">0</span>]) {
+
+      <span class="hljs-keyword">case</span> <span class="hljs-string">'+'</span>:
+        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {data: first.slice(<span class="hljs-number">1</span>)});
+
+      <span class="hljs-keyword">case</span> <span class="hljs-string">'-'</span>:
+        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {error: first.slice(<span class="hljs-number">1</span>)});
+
+      <span class="hljs-keyword">case</span> <span class="hljs-string">':'</span>:
+        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {data: <span class="hljs-built_in">Number</span>(first.slice(<span class="hljs-number">1</span>))});
+
+      <span class="hljs-keyword">case</span> <span class="hljs-string">'$'</span>: {
+        <span class="hljs-keyword">const</span> n = <span class="hljs-built_in">Number</span>(first.slice(<span class="hljs-number">1</span>));
+        <span class="hljs-keyword">if</span> (n === <span class="hljs-number">-1</span>) {
+          <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {data: <span class="hljs-literal">null</span>});
+        } <span class="hljs-keyword">else</span> {
+          <span class="hljs-keyword">const</span> second = lines[<span class="hljs-number">1</span>];
+          <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> second !== <span class="hljs-string">'undefined'</span>) {
+            <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">2</span>, {data: second});
+          } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> popEmpty();
+          }
+        }
+      }
+
+      <span class="hljs-keyword">case</span> <span class="hljs-string">'*'</span>: {
+        <span class="hljs-keyword">const</span> n = <span class="hljs-built_in">Number</span>(first.slice(<span class="hljs-number">1</span>));
+        <span class="hljs-keyword">if</span> (n === <span class="hljs-number">0</span>) {
+          <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {data: []});
+        } <span class="hljs-keyword">else</span> {
+          <span class="hljs-keyword">const</span> array = [];
+          <span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>;
+          <span class="hljs-keyword">for</span> (; i &lt; lines.length &amp;&amp; array.length &lt; n; i++) {
+            <span class="hljs-keyword">const</span> a = lines[i];
+            <span class="hljs-keyword">const</span> b = lines[i + <span class="hljs-number">1</span>];
+            <span class="hljs-keyword">if</span> (a.slice(<span class="hljs-number">0</span>, <span class="hljs-number">3</span>) === <span class="hljs-string">'$-1'</span>) {
+              array.push(<span class="hljs-literal">null</span>);
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (a[<span class="hljs-number">0</span>] === <span class="hljs-string">':'</span>) {
+              array.push(<span class="hljs-built_in">Number</span>(a.slice(<span class="hljs-number">1</span>)));
+            } <span class="hljs-keyword">else</span> {
+              <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> b !== <span class="hljs-string">'undefined'</span>) {
+                array.push(b);
+                i++;
+              } <span class="hljs-keyword">else</span> {
+                <span class="hljs-keyword">return</span> popEmpty();
+              }
+            }
+          }
+          <span class="hljs-keyword">if</span> (array.length === n) {
+            <span class="hljs-keyword">return</span> popResult(i, {data: array});
+          } <span class="hljs-keyword">else</span> {
+            <span class="hljs-keyword">return</span> popEmpty();
+          }
+        }
+      }
+
+      <span class="hljs-keyword">default</span>:
+        <span class="hljs-keyword">return</span> popEmpty();
+
+    }
+
+  }
+
+}
+
+<span class="hljs-built_in">module</span>.exports = RedisProto;
+</code></pre>
+<p>执行上文中的测试代码可得到如下结果：</p>
+<pre><code class="language-javascript">{ data: <span class="hljs-string">'123456'</span> }
+{ data: [ <span class="hljs-string">'abc'</span>, <span class="hljs-string">'aa1'</span>, <span class="hljs-string">'a'</span> ] }
+{ error: <span class="hljs-string">'ERR unknown command \'help\''</span> }
+{ data: <span class="hljs-string">'OK'</span> }
+{ data: <span class="hljs-number">5</span> }
+{ data: [ <span class="hljs-string">'hello'</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">'world'</span> ] }
+</code></pre>
+<h2><a id="_Redis__275"></a>实现 Redis 客户端</h2>
+<p>新建文件<code>index.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-comment">/**
+ * 简单 Redis 客户端
+ *
+ * @author Zongmin Lei &lt;leizongmin@gmail.com&gt;
+ */</span>
+
+<span class="hljs-keyword">const</span> events = <span class="hljs-built_in">require</span>(<span class="hljs-string">'events'</span>);
+<span class="hljs-keyword">const</span> net = <span class="hljs-built_in">require</span>(<span class="hljs-string">'net'</span>);
+<span class="hljs-keyword">const</span> RedisProto = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./proto'</span>);
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Redis</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">events</span>.<span class="hljs-title">EventEmitter</span> </span>{
+
+  <span class="hljs-keyword">constructor</span>(options) {
+    <span class="hljs-keyword">super</span>();
+
+    options = options || {};
+    options.host = options.host || <span class="hljs-string">'127.0.0.1'</span>;
+    options.port = options.port || <span class="hljs-number">6379</span>;
+
+    <span class="hljs-keyword">this</span>.options = options;
+
+    <span class="hljs-keyword">this</span>._isClosed = <span class="hljs-literal">false</span>;
+    <span class="hljs-keyword">this</span>._isConnected = <span class="hljs-literal">false</span>;
+    <span class="hljs-keyword">this</span>._callbacks = [];
+
+    <span class="hljs-keyword">this</span>._proto = <span class="hljs-keyword">new</span> RedisProto();
+
+    <span class="hljs-keyword">this</span>.connection = net.createConnection(options.port, options.host, () =&gt; {
+      <span class="hljs-keyword">this</span>._isConnected = <span class="hljs-literal">true</span>;
+      <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'connect'</span>);
+    });
+
+    <span class="hljs-keyword">this</span>.connection.on(<span class="hljs-string">'error'</span>, err =&gt; {
+      <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+    });
+
+    <span class="hljs-keyword">this</span>.connection.on(<span class="hljs-string">'close'</span>, () =&gt; {
+      <span class="hljs-keyword">this</span>._isClosed = <span class="hljs-literal">true</span>;
+      <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'close'</span>);
+    });
+
+    <span class="hljs-keyword">this</span>.connection.on(<span class="hljs-string">'end'</span>, () =&gt; {
+      <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'end'</span>);
+    });
+
+    <span class="hljs-keyword">this</span>.connection.on(<span class="hljs-string">'data'</span>, data =&gt; {
+      <span class="hljs-keyword">this</span>._pushData(data);
+    });
+
+  }
+
+  sendCommand(cmd, callback) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+
+      <span class="hljs-keyword">const</span> cb = (err, ret) =&gt; {
+        callback &amp;&amp; callback(err, ret);
+        err ? reject(err) : resolve(ret);
+      };
+
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._isClosed) {
+        <span class="hljs-keyword">return</span> cb(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'connection has been closed'</span>));
+      }
+
+      <span class="hljs-keyword">this</span>._callbacks.push(cb);
+      <span class="hljs-keyword">this</span>.connection.write(<span class="hljs-string">`<span class="hljs-subst">${cmd}</span>\r\n`</span>);
+
+    });
+  }
+
+  _pushData(data) {
+
+    <span class="hljs-keyword">this</span>._proto.push(data);
+
+    <span class="hljs-keyword">while</span> (<span class="hljs-keyword">this</span>._proto.next()) {
+
+      <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">this</span>._proto.result;
+      <span class="hljs-keyword">const</span> cb = <span class="hljs-keyword">this</span>._callbacks.shift();
+
+      <span class="hljs-keyword">if</span> (result.error) {
+        cb(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(result.error));
+      } <span class="hljs-keyword">else</span> {
+        cb(<span class="hljs-literal">null</span>, result.data);
+      }
+
+    }
+
+  }
+
+  end() {
+    <span class="hljs-keyword">this</span>.connection.destroy();
+  }
+
+}
+
+<span class="hljs-built_in">module</span>.exports = Redis;
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>每次<code>data</code>事件接收到结果时，直接将其<code>push()</code>到<code>RedisProto</code>中，并尝试执行<code>next()</code>获得结果</li>
+<li>因为命令的执行结果都是按照顺序返回的，所以我们只需要按顺序从<code>this._callbacks</code>中取出最前面的元素，直接执行回调</li>
+<li>如果连接已经端口，则不允许再执行命令，直接返回<code>connection has been closed</code>错误</li>
+<li><code>sendCommand()</code>同时支持<code>callback</code>和<code>promise</code>方式的回调，但是套路跟上一篇文章《如何用 Node.js 编写一个 API 客户端》稍有不同</li>
+</ul>
+<p>新建测试文件<code>test.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> Redis = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./simple'</span>);
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> Redis();
+
+client.sendCommand(<span class="hljs-string">'GET a'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'a=%s, err=%s'</span>, ret, err);
+});
+
+client.sendCommand(<span class="hljs-string">'GET b'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'b=%s, err=%s'</span>, ret, err);
+});
+
+client.sendCommand(<span class="hljs-string">'KEYS *IO*'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'KEYS *IO*=%s, err=%s'</span>, ret, err);
+});
+
+client.sendCommand(<span class="hljs-string">'OOXX'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'OOXX=%s, err=%s'</span>, ret, err);
+});
+
+client.sendCommand(<span class="hljs-string">'SET a '</span> + <span class="hljs-built_in">Date</span>.now())
+  .then(ret =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'success'</span>, ret))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'error'</span>, err))
+  .then(() =&gt; client.end());
+</code></pre>
+<p>执行测试文件<code>node test.js</code>可看到类似如下的结果：</p>
+<pre><code>a=1463041835231, err=null
+b=null, err=null
+KEYS *IO*=sess:cz5F-npwOnw0FmesT6JjqJPL13IO8AzV,sess:NS90IkF6uZNAm-FPEAWXHuh3JrIW1-IO, err=null
+OOXX=undefined, err=Error: ERR unknown command 'OOXX'
+success OK
+</code></pre>
+<p>从结果中可以看出我们这个 Redis 客户端已经基本能用了。</p>
+<h2><a id="_429"></a>更友好的接口</h2>
+<p>上文我们实现了一个<code>sendCommand()</code>方法，理论上可以通过该方法执行任意的 Redis 命令，但是我们可能更希望每条命令有一个对应的方法，比如<code>sendCommand('GET a')</code>我们可以写成<code>get('a')</code>，这样看起来会更直观。</p>
+<p>首先在<code>index.js</code>文件头部载入<code>fs</code>和<code>path</code>模块：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">const</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
+</code></pre>
+<p>然后给<code>Redis</code>类增加<code>_bindCommands()</code>方法：</p>
+<pre><code class="language-javascript">_bindCommands() {
+
+  <span class="hljs-keyword">const</span> self = <span class="hljs-keyword">this</span>;
+  <span class="hljs-keyword">const</span> bind = (cmd) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+
+      <span class="hljs-keyword">let</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>);
+      <span class="hljs-keyword">let</span> callback;
+      <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> args[args.length - <span class="hljs-number">1</span>] === <span class="hljs-string">'function'</span>) {
+        callback = args.pop();
+      }
+
+      args = args.map(item =&gt; <span class="hljs-built_in">Array</span>.isArray(item) ? item.join(<span class="hljs-string">' '</span>) : item).join(<span class="hljs-string">' '</span>);
+
+      <span class="hljs-keyword">return</span> self.sendCommand(<span class="hljs-string">`<span class="hljs-subst">${cmd}</span> <span class="hljs-subst">${args}</span>`</span>, callback);
+
+    };
+  };
+
+  <span class="hljs-keyword">const</span> cmdList = fs.readFileSync(path.resolve(__dirname, <span class="hljs-string">'cmd.txt'</span>)).toString().split(<span class="hljs-string">'\n'</span>);
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> cmd <span class="hljs-keyword">of</span> cmdList) {
+
+    <span class="hljs-keyword">this</span>[cmd.toLowerCase()] = bind(cmd);
+    <span class="hljs-keyword">this</span>[cmd.toUpperCase()] = bind(cmd);
+
+  }
+
+}
+</code></pre>
+<p>然后在<code>Redis</code>类的<code>constructor()</code>方法尾部增加以下代码：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">this</span>._bindCommands();
+</code></pre>
+<p>由于在<code>_bindCommands()</code>中通过读取<code>cmd.txt</code>文件来读取 Redis 的命令列表，所以还需要新建文件<code>cmd.txt</code>，内容格式为每条命令一行（由于篇幅限制，本文只列出需要用到的几条命令）：</p>
+<pre><code>GET
+SET
+AUTH
+MULTI
+EXEC
+KEYS
+</code></pre>
+<p>把测试文件<code>test.js</code>改为以下代码：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> Redis = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./simple'</span>);
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> Redis();
+
+client.get(<span class="hljs-string">'a'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'a=%s, err=%s'</span>, ret, err);
+});
+
+client.get(<span class="hljs-string">'b'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'b=%s, err=%s'</span>, ret, err);
+});
+
+client.keys(<span class="hljs-string">'*IO*'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'KEYS *IO*=%s, err=%s'</span>, ret, err);
+});
+
+client.set(<span class="hljs-string">'a'</span>, <span class="hljs-built_in">Date</span>.now())
+  .then(ret =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'success'</span>, ret))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'error'</span>, err))
+  .then(() =&gt; client.end())
+</code></pre>
+<p>重新执行<code>node test.js</code>可看到结果跟上文还是一致的。</p>
+<h2><a id="_519"></a>简单容错处理</h2>
+<p>假如将测试文件<code>test.js</code>改为这样：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> Redis = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./simple'</span>);
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> Redis();
+
+client.get(<span class="hljs-string">'a'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'a=%s, err=%s'</span>, ret, err);
+
+  client.end();
+
+  client.get(<span class="hljs-string">'b'</span>, (err, ret) =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'b=%s, err=%s'</span>, ret, err);
+  });
+});
+</code></pre>
+<p>在完成<code>get('a')</code>的时候，我们执行<code>client.end()</code>关闭了连接，然后再执行<code>get('b')</code>，大多数情况下将会得到如下的结果：</p>
+<pre><code>a=1463042964235, err=null
+</code></pre>
+<p>而<code>get('b')</code>的回调函数并没有被执行，因为我们在关闭连接后，再也没有收到服务端返回的结果。另外也有可能是因为其他原因，客户端与服务端的连接断开了，此时我们应该能执行回调并返回一个错误。</p>
+<p>在文件<code>index.js</code>中给<code>Redis</code>类增加一个方法<code>_callbackAll()</code>：</p>
+<pre><code class="language-javascript">_callbackAll() {
+
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> cb <span class="hljs-keyword">of</span> <span class="hljs-keyword">this</span>._callbacks) {
+    cb(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'connection has been closed'</span>));
+  }
+  <span class="hljs-keyword">this</span>._callbacks = [];
+
+}
+</code></pre>
+<p>另外，在<code>constructor()</code>方法内，将监听连接的<code>close</code>事件部分代码改成这样：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">this</span>.connection.on(<span class="hljs-string">'close'</span>, () =&gt; {
+  <span class="hljs-keyword">this</span>._isClosed = <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'close'</span>);
+  <span class="hljs-keyword">this</span>._callbackAll();
+});
+</code></pre>
+<p>重新执行<code>node test.js</code>，从执行结果可看出所有回调函数均已被执行：</p>
+<pre><code>a=1463042964235, err=null
+b=undefined, err=Error: connection has been closed
+</code></pre>
+<h2><a id="_579"></a>还存在的问题</h2>
+<p>看起来这个模块已经能正常使用了，但是其实并不完善。跟 NPM 上的<code>ioredis</code>模块起来还存在以下问题：</p>
+<ul>
+<li>不支持<code>multi()</code>命令</li>
+<li>不支持<code>publish</code>和<code>subscribe</code>命令</li>
+<li>不能解析更复杂的返回结果，比如<code>command</code>命令的返回结果</li>
+<li>没有严格的测试，假如服务端返回了一个非预期的格式，我也不知道程序会咋样</li>
+<li><code>RedisProto</code>解析结果的算法还是可以优化的，目前这个只能算是大概能用</li>
+</ul>
+<p>好了，我只是出个题目面面试，又不是要撸一个轮子出来，剩下的就交给你啦。</p>
+<h2><a id="_592"></a>参考链接</h2>
+<ul>
+<li><a href="http://redis.cn/topics/protocol.html">Redis 协议</a>（<a href="http://redis.cn/topics/protocol.html%EF%BC%89">http://redis.cn/topics/protocol.html）</a></li>
+</ul>
+]]></description><link>http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html</link><guid isPermaLink="true">http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Thu, 12 May 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何用 Node.js 编写一个 API 客户端]]></title><description><![CDATA[<h2><a id="_2"></a>说几句无关主题的话</h2>
 <p>尽管这几年来 Node.js 已经得到越来越多的关注，连市场卖菜的老太婆都能分别得出哪个是写 Node.js 的，哪个是写 PHP 的。然而，终究是不能跟老大哥 Java 比的。我们在使用一些第三方服务时常常会碰到一时半会还没有官方的 Node.js SDK 的问题，所以能自己随手撸一个刚好够用的 API 客户端来应急成了必备技能。</p>
 <p>说到这里，我忍不住要先吐槽一下：</p>
 <blockquote>
