@@ -6,6 +6,8 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
+const fs = require('fs');
+const path = require('path');
 const events = require('events');
 const net = require('net');
 const debug = require('debug')('redis');
@@ -57,19 +59,21 @@ class Redis extends events.EventEmitter {
       this._pushData(data);
     });
 
+    this._bindCommands();
+
   }
 
   _sendPendingCommands() {
 
     for (const item of this._pendingCommands) {
-      this._sendCommandToServer(item.cmd, item.cb);
+      this._sendCommand(item.cmd, item.cb);
     }
 
     this._pendingCommands = null;
 
   }
 
-  _sendCommand(cmd, callback) {
+  command(cmd, callback) {
     return new Promise((resolve, reject) => {
 
       const cb = (err, ret) => {
@@ -85,13 +89,42 @@ class Redis extends events.EventEmitter {
       if (!this._isConnected) {
         this._pendingCommands.push({cmd: cmd, cb: cb})
       } else {
-        this._sendCommandToServer(cmd, cb);
+        this._sendCommand(cmd, cb);
       }
 
     });
   }
 
-  _sendCommandToServer(cmd, cb) {
+  _bindCommands() {
+
+    const self = this;
+    const bind = (cmd) => {
+      return function () {
+
+        let args = Array.prototype.slice.call(arguments);
+        let callback;
+        if (typeof args[args.length - 1] === 'function') {
+          callback = args.pop();
+        }
+
+        args = args.map(item => Array.isArray(item) ? item.join(' ') : item).join(' ');
+
+        return self.command(`${cmd} ${args}`, callback);
+
+      };
+    };
+
+    const cmdList = fs.readFileSync(path.resolve(__dirname, 'cmd.txt')).toString().split('\n');
+    for (const cmd of cmdList) {
+
+      this[cmd.toLowerCase()] = bind(cmd);
+      this[cmd.toUpperCase()] = bind(cmd);
+
+    }
+
+  }
+
+  _sendCommand(cmd, cb) {
 
     this._callbacks.push(cb);
 

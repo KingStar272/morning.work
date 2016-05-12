@@ -4,7 +4,8 @@ const Redis = require('./');
 
 const client = new Redis();
 
-client._sendCommand('KEYS *')
+client.setex('a 123 456')
   .then(ret => console.log('success', ret))
   .catch(err => console.log('error', err))
+  .then(() => client.end())
 
