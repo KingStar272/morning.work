@@ -117,6 +117,47 @@ world
 
 ## 解析结果
 
+实现一个 Redis 客户端大概的原理是，客户端依次把需要执行的命令发送给服务器，而服务器会按照先后顺序把结果返回给用户。在本文我们使用 Node.js 内置的`net`模块来操作，通过`data`事件来接收结果。然而并不能一次性拿到一次请求的结果，有时可能是一个`data`事件中包含了几条命令的执行结果，也有可能当前命令的结果还没有传输完，剩下一半的结果在下一个`data`事件中。
+
+为了方便调试，我们将解析结果的部分独立封装成一个函数，接口如下：
+
+```javascript
+const proto = new RedisProto();
+
+// 接受到数据
+proto.push('*3\r\n$3\r\nabc\r\n$3\r\naa1\r\n$1\r\na\r\n');
+proto.push('$6\r\n123456\r\n');
+proto.push('-ERR unknown command \'help\'\r\n');
+proto.push('+OK\r\n');
+proto.push(':5\r\n');
+proto.push('*3\r\n$5\r\nhe');
+proto.push('llo\r\n$-');
+proto.push('1\r\n$5\r\nworld\r\n');
+
+while (proto.next()) {
+  // proto.next() 如果有解析出完整的结果则返回结果，没有则返回false
+  // 另外可以通过 proto.result 获得
+  console.log(proto.result);
+}
+```
+
+接下来开始编写相应的代码。
+
+按照套路，我们先初始化项目：
+
+```bash
+$ mkdir redis_client
+$ cd redis_client
+$ git init
+$ npm init
+```
+
+新建文件`proto.js`：
+
+```javascript
+
+```
+
 
 ## 还存在的问题
 
