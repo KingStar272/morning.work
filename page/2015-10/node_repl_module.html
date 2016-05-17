@@ -33,6 +33,19 @@ body {
 b, strong, h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
+b, strong {
+  text-decoration: underline;
+  padding: 0 0.4em;
+}
+blockquote b, blockquote strong {
+  text-decoration: none;
+}
+em {
+  font-size: 0.875em;
+}
+blockquote em {
+  font-size: 1em;
+}
 #ds-thread {
   margin-top: 20px;
 }
@@ -82,6 +95,10 @@ a {
 }
 a:hover {
   color: #B60000;
+}
+ul {
+  list-style-position: outside;
+  padding: 0 2em;
 }
 #content a {
   text-decoration: underline;

@@ -11,7 +11,7 @@ author: 老雷
 > 以下开始进入主题。
 
 
-前几天写了篇文章[《如何用 Node.js 编写一个 API 客户端》](http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html)（http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html ），有人说这_不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块_，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。
+前几天写了篇文章[《如何用 Node.js 编写一个 API 客户端》](http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html)（http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html ），有人说这 _不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块_ ，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。
 
 这次要写的这个 Redis 客户端应该算是个客户端了，需要直接发起`TCP/IP`连接去跟服务器通讯，需要自己解析客户端返回的结果，还要做一些简单的容错处理，如果要做到足够健壮也不容易，不过就本文要实现一个基本可用的例子来说，还是简单了点。
 

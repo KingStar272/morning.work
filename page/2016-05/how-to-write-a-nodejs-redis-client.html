@@ -33,6 +33,19 @@ body {
 b, strong, h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
+b, strong {
+  text-decoration: underline;
+  padding: 0 0.4em;
+}
+blockquote b, blockquote strong {
+  text-decoration: none;
+}
+em {
+  font-size: 0.875em;
+}
+blockquote em {
+  font-size: 1em;
+}
 #ds-thread {
   margin-top: 20px;
 }
@@ -82,6 +95,10 @@ a {
 }
 a:hover {
   color: #B60000;
+}
+ul {
+  list-style-position: outside;
+  padding: 0 2em;
 }
 #content a {
   text-decoration: underline;
@@ -164,7 +181,7 @@ li > p {
 <p>这样一道面试题也是临时想到的，为了确定这道题目可以在一定时间内做出来，我自己先写了一个基本可用的版本，从开始到结束约耗时两个小时（中途还去撒了两泡尿），考虑到面试者在陌生环境下可能影响正常发挥，一个下午的时间应该能应付下来。另外，我们定这样一个题目时也明确了：不要求必须完成，<strong>主要考察思路、实现逻辑、代码风格和一些可能存在的问题或错误的预判</strong>。</p>
 <p>以下开始进入主题。</p>
 </blockquote>
-<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这_不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块_，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
+<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这 <em>不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块</em> ，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
 <p>这次要写的这个 Redis 客户端应该算是个客户端了，需要直接发起<code>TCP/IP</code>连接去跟服务器通讯，需要自己解析客户端返回的结果，还要做一些简单的容错处理，如果要做到足够健壮也不容易，不过就本文要实现一个基本可用的例子来说，还是简单了点。</p>
 <p>无论是实现 REST 的 API 客户端还是这样一个 Redis 客户端，虽然具体实现的细节不同，但是，<strong>套路</strong>还是<strong>一样</strong>的。二十一世纪行走江湖最重要的是什么？套路！套路！套路！所以呢，本文还是跟之前一样的套路。</p>
 <h2><a id="Redis__16"></a>Redis 协议</h2>
