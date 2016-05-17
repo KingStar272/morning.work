@@ -1,12 +1,12 @@
 ```
-title: Node.js 面试题： 编写一个 Redis 客户端
+title: Node.js 面试题： 编写一个简单的 Redis 客户端
 date: 2016-05-12
 author: 老雷
 ```
 
-> 首先我要吐槽一下，**招聘 Node.js 工程师真心累**，虽然近两年来 Node.js 已经越来越火了，但发个招聘信息出去，投简历的也没几个。这几天好不容易连坑带拐终于勾搭上了一个，小心脏扑通扑通的久久不能平静下来，不过因为对方简历显示的主要项目经验还是前端方面的，而我们需要招的是后端，机智的我特意设计了下文这样一道面试题。
+> 首先我要吐槽一下，**招聘 Node.js 工程师真心累**，发个招聘信息出去，投简历的也没几个。这几天好不容易连坑带拐终于勾搭上了一个，小心脏扑通扑通的久久不能平静下来，不过因为对方简历显示的主要项目经验还是前端方面的，而我们需要招的是后端，机智的我特意设计了下文这样一道面试题。
 >
-> 这样一道面试题也是临时想到的，为了确定这道题目可以在一定时间内做出来，我自己先写了一个基本可用的版本，从开始到结束约耗时两个小时（中途还去撒了两泡尿），考虑到面试者在陌生环境下可能影响正常发挥，一个下午的时间应该能应付下来。另外，我们定这样一个题目时也明确了：不要求必须完成，**主要考察思路、实现逻辑、代码风格和一些可能存在的问题或错误的预判**。
+> 这样一道面试题也是临时想到的，为了确定这道题目可以在一定时间内做出来，我自己先写了一个基本可用的版本，从开始到结束约耗时两个小时（中途还去撒了两泡尿），考虑到面试者在陌生环境下可能影响正常发挥，一个下午的时间应该能应付下来。另外，我们定这样一个题目时也明确了：**允许查资料，可以参考现成模块的源代码**，不要求必须完成，主要考察**思路、实现逻辑、代码风格和一些可能存在的问题或错误的预判**。
 >
 > 以下开始进入主题。
 
@@ -20,7 +20,7 @@ author: 老雷
 
 ## Redis 协议
 
-Redis 协议的详细介绍可以参考这里：http://redis.cn/topics/protocol.html
+要开始编写一个 Redis 客户端，我们首先要知道怎么去跟 Redis 通讯，比如要执行`GET a`应该按照什么样的格式给服务器发送指令，服务器返回的结果又是什么样的格式这些。Redis 协议的详细介绍可以参考这里：http://redis.cn/topics/protocol.html
 
 假如我要执行命令`KEYS *`，只要往服务器发送`KEYS *\r\n`即可，这时服务器会直接响应结果，返回的结果格式如下：
 
@@ -32,13 +32,13 @@ Redis 协议的详细介绍可以参考这里：http://redis.cn/topics/protocol.
 
 每一行都使用`\r\n`来分隔。
 
-为了查看具体的返回结果是怎样的，我们可以用`telnet`客户端来测试。假定本机已经运行了 Redis 服务，其监听端口为`6379`，我们可以执行以下命令连接：
+为了查看具体的返回结果是怎样的，我们可以用`nc`命令来测试。假定本机已经运行了 Redis 服务，其监听端口为`6379`，我们可以执行以下命令连接：
 
 ```bash
 $ nc 127.0.0.1 6379
 ```
 
-或者：
+如果本机没有`nc`命令（比如 Windows 用户），可以使用`telnet`命令：
 
 ```bash
 $ telnet 127.0.0.1 6379
@@ -50,6 +50,7 @@ $ telnet 127.0.0.1 6379
 
 ```
 help ↵
+
 -ERR unknown command 'help'
 ```
 
@@ -57,6 +58,7 @@ help ↵
 
 ```
 set abc 123456 ↵
+
 +OK
 ```
 
@@ -64,6 +66,7 @@ set abc 123456 ↵
 
 ```
 get abc ↵
+
 $6
 123456
 ```
@@ -72,6 +75,7 @@ $6
 
 ```
 get aaa ↵
+
 $-1
 ```
 
@@ -79,13 +83,15 @@ $-1
 
 ```
 hlen aaa ↵
+
 :5
 ```
 
-6、多个批量回复
+6、数组结果
 
 ```
 keys a* ↵
+
 *3
 $3
 abc
@@ -99,14 +105,23 @@ a
 
 ```
 multi ↵
+
 +OK
+
 get a ↵
+
 +QUEUED
+
 get b ↵
+
 +QUEUED
+
 get c ↵
+
 +QUEUED
+
 exec ↵
+
 *3
 $5
 hello
@@ -118,7 +133,7 @@ world
 
 ## 解析结果
 
-实现一个 Redis 客户端大概的原理是，客户端依次把需要执行的命令发送给服务器，而服务器会按照先后顺序把结果返回给用户。在本文我们使用 Node.js 内置的`net`模块来操作，通过`data`事件来接收结果。然而并不能一次性拿到一次请求的结果，有时可能是一个`data`事件中包含了几条命令的执行结果，也有可能当前命令的结果还没有传输完，剩下一半的结果在下一个`data`事件中。
+实现一个 Redis 客户端大概的原理是，**客户端依次把需要执行的命令发送给服务器，而服务器会按照先后顺序把结果返回给用户**。在本文我们使用 Node.js 内置的`net`模块来操作，通过`data`事件来接收结果。需要注意的是，有时候结果太长我们可能要几次`data`事件才能拿到完整的结果，有时可能是一个`data`事件中包含了几条命令的执行结果，也有可能当前命令的结果还没有传输完，剩下一半的结果在下一个`data`事件中。
 
 为了方便调试，我们将解析结果的部分独立封装成一个函数，接口如下：
 
@@ -173,24 +188,31 @@ class RedisProto {
 
   }
 
+  // 将收到的数据添加到缓冲区
   push(text) {
 
+    // 将结果按照\r\n分隔
     const lines = (this._text + text).split('\r\n');
+    // 如果结尾是\r\n，那么数组最后一个元素肯定是一个空字符串
+    // 否则，我们应该将剩余的部分跟下一个data事件接收到的数据连起来
     this._text = lines.pop();
     this._lines = this._lines.concat(lines);
 
   }
 
+  // 解析下一个结果，如果没有则返回null
   next() {
 
     const lines = this._lines;
     const first = lines[0];
 
+    // 去掉指定数量的行，并且返回结果
     const popResult = (lineNumber, result) => {
       this._lines = this._lines.slice(lineNumber);
       return this.result = result;
     };
 
+    // 返回空结果
     const popEmpty = () => {
       return this.result = false;
     };
@@ -211,8 +233,10 @@ class RedisProto {
       case '$': {
         const n = Number(first.slice(1));
         if (n === -1) {
+          // 如果是 $-1 表示空结果
           return popResult(1, {data: null});
         } else {
+          // 否则取后面一行作为结果
           const second = lines[1];
           if (typeof second !== 'undefined') {
             return popResult(2, {data: second});
@@ -279,6 +303,8 @@ module.exports = RedisProto;
 
 ## 实现 Redis 客户端
 
+上文我们已经实现了一个简单的解释器，其可以通过`push()`将接收到的数据片段加进去，然后我们只需要不断地调用`next()`来获取下一个解析出来的结果即可，直到其返回`null`，在下一次收到数据时，重复刚才的动作。
+
 新建文件`index.js`：
 
 ```javascript
@@ -299,14 +325,17 @@ class Redis extends events.EventEmitter {
   constructor(options) {
     super();
 
+    // 默认连接配置
     options = options || {};
     options.host = options.host || '127.0.0.1';
     options.port = options.port || 6379;
-
     this.options = options;
 
+    // 连接状态
     this._isClosed = false;
     this._isConnected = false;
+
+    // 回调函数列表
     this._callbacks = [];
 
     this._proto = new RedisProto();
@@ -335,6 +364,7 @@ class Redis extends events.EventEmitter {
 
   }
 
+  // 发送命令给服务器
   sendCommand(cmd, callback) {
     return new Promise((resolve, reject) => {
 
@@ -343,16 +373,20 @@ class Redis extends events.EventEmitter {
         err ? reject(err) : resolve(ret);
       };
 
+      // 如果当前连接已断开，直接返回错误
       if (this._isClosed) {
         return cb(new Error('connection has been closed'));
       }
 
+      // 将回调函数添加到队列
       this._callbacks.push(cb);
+      // 发送命令
       this.connection.write(`${cmd}\r\n`);
 
     });
   }
 
+  // 接收到数据，循环结果
   _pushData(data) {
 
     this._proto.push(data);
@@ -372,6 +406,7 @@ class Redis extends events.EventEmitter {
 
   }
 
+  // 关闭连接
   end() {
     this.connection.destroy();
   }
@@ -385,7 +420,7 @@ module.exports = Redis;
 
 + 每次`data`事件接收到结果时，直接将其`push()`到`RedisProto`中，并尝试执行`next()`获得结果
 + 因为命令的执行结果都是按照顺序返回的，所以我们只需要按顺序从`this._callbacks`中取出最前面的元素，直接执行回调
-+ 如果连接已经端口，则不允许再执行命令，直接返回`connection has been closed`错误
++ 如果连接已经断开，则不允许再执行命令，直接返回`connection has been closed`错误
 + `sendCommand()`同时支持`callback`和`promise`方式的回调，但是套路跟上一篇文章《如何用 Node.js 编写一个 API 客户端》稍有不同
 
 新建测试文件`test.js`：
@@ -448,6 +483,8 @@ const path = require('path');
 _bindCommands() {
 
   const self = this;
+
+  // 绑定命令
   const bind = (cmd) => {
     return function () {
 
@@ -464,11 +501,12 @@ _bindCommands() {
     };
   };
 
+  // 从文件读取命令列表
   const cmdList = fs.readFileSync(path.resolve(__dirname, 'cmd.txt')).toString().split('\n');
   for (const cmd of cmdList) {
 
-    this[cmd.toLowerCase()] = bind(cmd);
-    this[cmd.toUpperCase()] = bind(cmd);
+    // 同时支持大写和小写的函数名
+    this[cmd.toLowerCase()] = this[cmd.toUpperCase()] = bind(cmd);
 
   }
 
@@ -588,10 +626,14 @@ b=undefined, err=Error: connection has been closed
 + 不支持`multi()`命令
 + 不支持`publish`和`subscribe`命令
 + 不能解析更复杂的返回结果，比如`command`命令的返回结果
++ 不支持更多的连接选项，比如密码验证
++ 可能存在unicode字符被截断问题
++ 因为结果是通过`\r\n`来分行的，如果一条数据里面本身包含`\r\n`字符，可能会解析出错
 + 没有严格的测试，假如服务端返回了一个非预期的格式，我也不知道程序会咋样
 + `RedisProto`解析结果的算法还是可以优化的，目前这个只能算是大概能用
++ 如果连接意外断开了，我们可能希望能自动重新连接而不是直接报错
 
-好了，我只是出个题目面面试，又不是要撸一个轮子出来，剩下的就交给你啦。
+**好了，这只是随便撸一下的面试题，又不是要撸成一个轮子，剩下的就交给你啦。**
 
 
 ## 参考链接
