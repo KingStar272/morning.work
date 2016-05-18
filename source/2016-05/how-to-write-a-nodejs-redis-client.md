@@ -428,7 +428,7 @@ module.exports = Redis;
 ```javascript
 'use strict';
 
-const Redis = require('./simple');
+const Redis = require('./index');
 const client = new Redis();
 
 client.sendCommand('GET a', (err, ret) => {
@@ -567,7 +567,7 @@ client.set('a', Date.now())
 ```javascript
 'use strict';
 
-const Redis = require('./simple');
+const Redis = require('./index');
 const client = new Redis();
 
 client.get('a', (err, ret) => {
