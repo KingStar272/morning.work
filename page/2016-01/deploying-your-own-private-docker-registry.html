@@ -6,19 +6,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>利用阿里云 OSS 搭建私有 Docker 仓库 - 早起搬砖 morning.work</title>
+<link rel="stylesheet" href="/styles/github.css" />
 <style>
-@media (min-width: 900px) {
-  html {
-    background-color: #f7f7f8;
-  }
-  body {
-    background-color: #fff;
-    padding: 0 50px;
-  }
-}
 body {
   /*font-family: "Segoe UI", "Lucida Grande", Helvetica, Arial, "Microsoft YaHei", FreeSans, Arimo, "Droid Sans","wenquanyi micro hei","Hiragino Sans GB", "Hiragino Sans GB W3", Arial, sans-serif;*/
-  width: 95%;
+  width: 94%;
   max-width: 800px;
   margin: auto;
   color: rgba(0, 0, 0, 0.8);
@@ -29,6 +21,15 @@ body {
   -webkit-font-smoothing: antialiased;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: 350;
+}
+@media (min-width: 900px) {
+  html {
+    background-color: #f7f7f8;
+  }
+  body {
+    background-color: #fff;
+    padding: 0 50px;
+  }
 }
 b, strong, h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
@@ -76,12 +77,14 @@ pre {
   background-color: #f7f7f8;
   border-radius: 3px;
   white-space: pre-wrap;
-  min-width: 700px;
+  overflow-x: scroll;
 }
 pre code {
   padding: 0;
   color: rgba(0,0,0,.9);
   font-weight: normal;
+  display: block;
+  min-width: 700px;
 }
 pre, pre code, pre code span {
   font-size: 14px;
@@ -462,8 +465,6 @@ $ docker tag ubuntu docker.ucdok.com/<span class="hljs-built_in">test</span>/ubu
 
 </body>
 </html>
-
-<link rel="stylesheet" href="/styles/github.css" />
 
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
