@@ -630,7 +630,7 @@ KEYS
 <p>把测试文件<code>test.js</code>改为以下代码：</p>
 <pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
-<span class="hljs-keyword">const</span> Redis = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./simple'</span>);
+<span class="hljs-keyword">const</span> Redis = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./index'</span>);
 <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> Redis();
 
 client.get(<span class="hljs-string">'a'</span>, (err, ret) =&gt; {
