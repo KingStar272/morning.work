@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Tue, 17 May 2016 17:23:59 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[Node.js 面试题： 编写一个简单的 Redis 客户端]]></title><description><![CDATA[<blockquote>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Wed, 18 May 2016 00:45:57 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[Node.js 面试题： 编写一个简单的 Redis 客户端]]></title><description><![CDATA[<blockquote>
 <p>首先我要吐槽一下，<strong>招聘 Node.js 工程师真心累</strong>，发个招聘信息出去，投简历的也没几个。这几天好不容易连坑带拐终于勾搭上了一个，小心脏扑通扑通的久久不能平静下来，不过因为对方简历显示的主要项目经验还是前端方面的，而我们需要招的是后端，机智的我特意设计了下文这样一道面试题。</p>
 <p>这样一道面试题也是临时想到的，为了确定这道题目可以在一定时间内做出来，我自己先写了一个基本可用的版本，从开始到结束约耗时两个小时（中途还去撒了两泡尿），考虑到面试者在陌生环境下可能影响正常发挥，一个下午的时间应该能应付下来。另外，我们定这样一个题目时也明确了：<strong>允许查资料，可以参考现成模块的源代码</strong>，不要求必须完成，主要考察<strong>思路、实现逻辑、代码风格和一些可能存在的问题或错误的预判</strong>。</p>
 <p>以下开始进入主题。</p>
@@ -242,7 +242,7 @@ $ npm init
 { data: [ <span class="hljs-string">'hello'</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">'world'</span> ] }
 </code></pre>
 <h2><a id="_Redis__299"></a>实现 Redis 客户端</h2>
-<p>上文我们已经实现了一个简单的解释器，其可以通过<code>push()</code>将接收到的数据片段加进去，然后我们只需要不断地调用<code>next()</code>来获取下一个解析出来的结果即可，直到其返回<code>null</code>，在下一次收到数据时，重复刚才的动作。</p>
+<p>上文我们已经实现了一个简单的解释器，其可以通过<code>push()</code>将接收到的数据片段加进去，然后我们只需要不断地调用<code>next()</code>来获取下一个解析出来的结果即可，直到其返回<code>false</code>，在下一次收到数据时，重复刚才的动作。</p>
 <p>新建文件<code>index.js</code>：</p>
 <pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
@@ -414,6 +414,7 @@ success OK
         callback = args.pop();
       }
 
+      <span class="hljs-comment">// 每个参数使用空格分隔</span>
       args = args.map(item =&gt; <span class="hljs-built_in">Array</span>.isArray(item) ? item.join(<span class="hljs-string">' '</span>) : item).join(<span class="hljs-string">' '</span>);
 
       <span class="hljs-keyword">return</span> self.sendCommand(<span class="hljs-string">`<span class="hljs-subst">${cmd}</span> <span class="hljs-subst">${args}</span>`</span>, callback);
@@ -467,7 +468,7 @@ client.set(<span class="hljs-string">'a'</span>, <span class="hljs-built_in">Dat
   .then(() =&gt; client.end())
 </code></pre>
 <p>重新执行<code>node test.js</code>可看到结果跟上文还是一致的。</p>
-<h2><a id="_557"></a>简单容错处理</h2>
+<h2><a id="_558"></a>简单容错处理</h2>
 <p>假如将测试文件<code>test.js</code>改为这样：</p>
 <pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
@@ -509,7 +510,7 @@ client.get(<span class="hljs-string">'a'</span>, (err, ret) =&gt; {
 <pre><code>a=1463042964235, err=null
 b=undefined, err=Error: connection has been closed
 </code></pre>
-<h2><a id="_617"></a>还存在的问题</h2>
+<h2><a id="_618"></a>还存在的问题</h2>
 <p>看起来这个模块已经能正常使用了，但是其实并不完善。跟 NPM 上的<code>ioredis</code>模块起来还存在以下问题：</p>
 <ul>
 <li>不支持<code>multi()</code>命令</li>
@@ -523,7 +524,7 @@ b=undefined, err=Error: connection has been closed
 <li>如果连接意外断开了，我们可能希望能自动重新连接而不是直接报错</li>
 </ul>
 <p><strong>好了，这只是随便撸一下的面试题，又不是要撸成一个轮子，剩下的就交给你啦。</strong></p>
-<h2><a id="_634"></a>参考链接</h2>
+<h2><a id="_635"></a>参考链接</h2>
 <ul>
 <li><a href="http://redis.cn/topics/protocol.html">Redis 协议</a>（<a href="http://redis.cn/topics/protocol.html%EF%BC%89">http://redis.cn/topics/protocol.html）</a></li>
 </ul>

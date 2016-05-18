@@ -303,7 +303,7 @@ module.exports = RedisProto;
 
 ## 实现 Redis 客户端
 
-上文我们已经实现了一个简单的解释器，其可以通过`push()`将接收到的数据片段加进去，然后我们只需要不断地调用`next()`来获取下一个解析出来的结果即可，直到其返回`null`，在下一次收到数据时，重复刚才的动作。
+上文我们已经实现了一个简单的解释器，其可以通过`push()`将接收到的数据片段加进去，然后我们只需要不断地调用`next()`来获取下一个解析出来的结果即可，直到其返回`false`，在下一次收到数据时，重复刚才的动作。
 
 新建文件`index.js`：
 
@@ -494,6 +494,7 @@ _bindCommands() {
         callback = args.pop();
       }
 
+      // 每个参数使用空格分隔
       args = args.map(item => Array.isArray(item) ? item.join(' ') : item).join(' ');
 
       return self.sendCommand(`${cmd} ${args}`, callback);

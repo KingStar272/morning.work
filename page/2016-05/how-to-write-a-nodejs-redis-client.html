@@ -420,7 +420,7 @@ $ npm init
 { data: [ <span class="hljs-string">'hello'</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">'world'</span> ] }
 </code></pre>
 <h2><a id="_Redis__299"></a>实现 Redis 客户端</h2>
-<p>上文我们已经实现了一个简单的解释器，其可以通过<code>push()</code>将接收到的数据片段加进去，然后我们只需要不断地调用<code>next()</code>来获取下一个解析出来的结果即可，直到其返回<code>null</code>，在下一次收到数据时，重复刚才的动作。</p>
+<p>上文我们已经实现了一个简单的解释器，其可以通过<code>push()</code>将接收到的数据片段加进去，然后我们只需要不断地调用<code>next()</code>来获取下一个解析出来的结果即可，直到其返回<code>false</code>，在下一次收到数据时，重复刚才的动作。</p>
 <p>新建文件<code>index.js</code>：</p>
 <pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
@@ -592,6 +592,7 @@ success OK
         callback = args.pop();
       }
 
+      <span class="hljs-comment">// 每个参数使用空格分隔</span>
       args = args.map(item =&gt; <span class="hljs-built_in">Array</span>.isArray(item) ? item.join(<span class="hljs-string">' '</span>) : item).join(<span class="hljs-string">' '</span>);
 
       <span class="hljs-keyword">return</span> self.sendCommand(<span class="hljs-string">`<span class="hljs-subst">${cmd}</span> <span class="hljs-subst">${args}</span>`</span>, callback);
@@ -645,7 +646,7 @@ client.set(<span class="hljs-string">'a'</span>, <span class="hljs-built_in">Dat
   .then(() =&gt; client.end())
 </code></pre>
 <p>重新执行<code>node test.js</code>可看到结果跟上文还是一致的。</p>
-<h2><a id="_557"></a>简单容错处理</h2>
+<h2><a id="_558"></a>简单容错处理</h2>
 <p>假如将测试文件<code>test.js</code>改为这样：</p>
 <pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
@@ -687,7 +688,7 @@ client.get(<span class="hljs-string">'a'</span>, (err, ret) =&gt; {
 <pre><code>a=1463042964235, err=null
 b=undefined, err=Error: connection has been closed
 </code></pre>
-<h2><a id="_617"></a>还存在的问题</h2>
+<h2><a id="_618"></a>还存在的问题</h2>
 <p>看起来这个模块已经能正常使用了，但是其实并不完善。跟 NPM 上的<code>ioredis</code>模块起来还存在以下问题：</p>
 <ul>
 <li>不支持<code>multi()</code>命令</li>
@@ -701,7 +702,7 @@ b=undefined, err=Error: connection has been closed
 <li>如果连接意外断开了，我们可能希望能自动重新连接而不是直接报错</li>
 </ul>
 <p><strong>好了，这只是随便撸一下的面试题，又不是要撸成一个轮子，剩下的就交给你啦。</strong></p>
-<h2><a id="_634"></a>参考链接</h2>
+<h2><a id="_635"></a>参考链接</h2>
 <ul>
 <li><a href="http://redis.cn/topics/protocol.html">Redis 协议</a>（<a href="http://redis.cn/topics/protocol.html%EF%BC%89">http://redis.cn/topics/protocol.html）</a></li>
 </ul>
