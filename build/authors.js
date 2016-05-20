@@ -3,16 +3,17 @@ export default {
     default: {
       name: '老雷',
       about: `
-        Node.js/JavaScript程序员，
+        Node.js/JavaScript/Go开发者，
+        <a href="http://www.superid.me/">一登</a>后端架构师，
         <a href="http://nodejs.ucdok.com/">《Node.js实战》</a>作者之一<br>
-        GitHub: <a href="https://github.com/leizongmin">https://github.com/leizongmin</a>
+        个人主页: <a href="http://ucdok.com">http://ucdok.com<br>
+        GitHub: <a href="https://github.com/leizongmin">https://github.com/leizongmin</a><br>
       `,
-      link: 'http://ucdok.com',
     },
     en: {
       name: 'Zongmin Lei',
       about: `
-        Node.js/JavaScript Programmer<br>
+        Node.js/JavaScript/Go Developer<br>
         GitHub: <a href="https://github.com/leizongmin">https://github.com/leizongmin</a>
       `,
       link: 'http://ucdok.com',
