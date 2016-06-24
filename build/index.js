@@ -132,7 +132,7 @@ function getWords(html) {
     whiteList: [],
     stripIgnoreTag: true,
     stripIgnoreTagBody: ['script'],
-  }).length;
+  }).replace(/\s+/g, '').length;
 }
 
 // 获取剩余阅读时间
