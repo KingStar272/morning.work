@@ -1,7 +1,7 @@
 ```
 title: ES2015 & babel 实战：开发NPM模块
 date: 2015-11-20 to 2015-11-30
-updated: 2016-06-24
+update: 2016-06-24
 author: 老雷
 ```
 
@@ -197,7 +197,9 @@ require('babel-polyfill');
 
 至此，我们已经配置了一个能使用ES2015语法的Node.js运行环境了。
 
-**重要提示：在一个Node.js进程中只能载入一个版本的`babel-polyfill`，不同的模块所`require('babel-polyfill')`很可能不是同一个版本，此时进程会抛出一个异常并退出，所以一般建议在打包的NPM模块中不要有`require('babel-polyfill')`，而是要求在使用该模块的最终项目自行编写`require('babel-polyfill')`，这样可以保证一个进程中只会有一个`babel-polyfill`版本。**
+### 4、重要提示
+
+在一个Node.js进程中只能载入一个版本的`babel-polyfill`，不同的模块所`require('babel-polyfill')`很可能不是同一个版本，此时进程会抛出一个异常并退出，所以一般建议在打包的NPM模块中不要有`require('babel-polyfill')`，而是要求在使用该模块的最终项目自行编写`require('babel-polyfill')`，这样可以保证一个进程中只会有一个`babel-polyfill`版本。
 
 
 ## 编写模块
@@ -757,12 +759,12 @@ $ npm test
 ```json
 {
   "scripts": {
-    "compile": "babel -d lib/ src/"
+    "compile": "babel src -d lib"
   }
 }
 ```
 
-说明：`$ babel -d lib/ src/`命令表示`lib`目录下的所有文件，并保存到`src`目录下。
+说明：`$ babel src -d lib`命令表示`lib`目录下的所有文件，并保存到`src`目录下。
 
 配置完成后，可以执行`$ npm run compile`命令编译试试：
 
@@ -770,7 +772,7 @@ $ npm test
 $ npm run compile
 
 > @isnc/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
-> babel -d lib/ src/
+> babel src -d lib
 
 src/copy.js -> lib/copy.js
 src/download.js -> lib/download.js
@@ -833,7 +835,7 @@ $ npm test
 
 
 > es2015_demo@1.0.0 compile /private/tmp/es2015_demo
-> babel -d lib/ src/
+> babel src -d lib
 
 src/copy.js -> lib/copy.js
 src/download.js -> lib/download.js
@@ -885,7 +887,7 @@ $ npm publish
 
 
 > @leizongmin/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
-> babel -d lib/ src/
+> babel src -d lib
 
 src/copy.js -> lib/copy.js
 src/download.js -> lib/download.js
@@ -909,7 +911,7 @@ $ npm i babel-cli mocha --save-dev
 ```json
 {
   "scripts": {
-    "compile": "babel -d lib/ src/",
+    "compile": "babel src -d lib",
     "test": "npm run compile && mocha --compilers js:babel-core/register"
   }
 }

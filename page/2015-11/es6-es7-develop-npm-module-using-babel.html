@@ -178,7 +178,7 @@ li > p {
         个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
         GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
-    创作于 2015-11-20 ~ 2015-11-30    </div>
+    创作于 2015-11-20 ~ 2015-11-30      ,    2016-06-24 第 1 次更新   </div>
 
   <article id="content">
     <h2><a id="_3"></a>前言</h2>
@@ -310,8 +310,10 @@ ReferenceError: regeneratorRuntime is not defined
 <p>再次执行<code>test.compiled.js</code>便可看到与<code>$ babel-node test.js</code>一样的结果。</p>
 <p><code>polyfill</code>的详细介绍可参考官方文档：<a href="http://babeljs.io/docs/usage/polyfill/">http://babeljs.io/docs/usage/polyfill/</a></p>
 <p>至此，我们已经配置了一个能使用 ES2015 语法的 Node.js 运行环境了。</p>
-<h2><a id="_195"></a>编写模块</h2>
-<h3><a id="1_197"></a>1、功能描述</h3>
+<h3><a id="4_194"></a>4、重要提示</h3>
+<p>在一个 Node.js 进程中只能载入一个版本的<code>babel-polyfill</code>，不同的模块所<code>require('babel-polyfill')</code>很可能不是同一个版本，此时进程会抛出一个异常并退出，所以一般建议在打包的 NPM 模块中不要有<code>require('babel-polyfill')</code>，而是要求在使用该模块的最终项目自行编写<code>require('babel-polyfill')</code>，这样可以保证一个进程中只会有一个<code>babel-polyfill</code>版本。</p>
+<h2><a id="_199"></a>编写模块</h2>
+<h3><a id="1_201"></a>1、功能描述</h3>
 <p>本文以<a href="https://github.com/leizongmin/node-lei-download">lei-download</a>模块为例，该模块是一个主要功能是根据一个 URL 来下载文件到本地，或者本地直接文件的复制，同时提供下载/复制进度信息。其使用方法如下：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">let</span> download = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-download'</span>);
 
@@ -336,7 +338,7 @@ download(source, target, progress, (err, filename) =&gt; {
 <li><code>copyFile(source, target, progress)</code> 复制一个本地文件</li>
 </ul>
 <p>然后再编写一个<code>download()</code>函数来判断<code>source</code>参数，并选择使用<code>downloadFile()</code>或者<code>copyFile()</code>来完成请求。</p>
-<h3><a id="2_227"></a>2、编写程序</h3>
+<h3><a id="2_231"></a>2、编写程序</h3>
 <p>在本项目中，所有的 ES2015 源程序均保存在<code>src</code>目录下，发布项目时会执行相应的命令将其编译并输出到<code>lib</code>目录，具体方法在 <strong>「发布模块」</strong> 小节中介绍。</p>
 <p>实现<code>copyFile()</code>函数，新建文件<code>src/copy.js</code>：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
@@ -497,7 +499,7 @@ downloadFile(url, <span class="hljs-string">'/tmp/avatar.jpg'</span>, (size, tot
   .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 </code></pre>
 <p>正常情况下，其执行结果应该跟上文中的结果是一致的。</p>
-<h3><a id="3_415"></a>3、模块系统</h3>
+<h3><a id="3_419"></a>3、模块系统</h3>
 <p>Node.js 使用的是 CommonJS 模块系统，模块的输出我们一般通过给<code>exports</code>对象设置属性来做：</p>
 <pre><code class="language-javascript"><span class="hljs-comment">// 输出变量或函数</span>
 exports.x = <span class="hljs-number">123</span>;
@@ -637,7 +639,7 @@ _my_module2[<span class="hljs-string">'default'</span>];
 <p><code>mod</code>是通过<code>import * as mod from './my_module'</code>来引入的，其编译后的代码为<code>_interopRequireWildcard(require('./my_module'))</code>。在<code>_interopRequireWildcard()</code>函数中，如果载入的模块是由 ES2015 输出的，那么不做任何处理，否则会生成一个输入模块的拷贝，并且设置其<code>default</code>属性为自身。</p>
 <p><code>y</code>是通过<code>import y from './my_module'</code>来引入的，对<code>y</code>的访问被编译成了<code>_my_module2['default']</code>，所以<code>y</code>实际上是<code>export default</code>的输出。而<code>_my_module2 = _interopRequireDefault(require('./my_module'))</code>，函数<code>_interopRequireDefault()</code>对载入的非 ES2015 模块做了处理，会返回一个<code>default</code>属性指向该模块的新对象。</p>
 <p>当然模块系统的还有更复杂的语法规则，详细说明可参考：<a href="http://www.ruanyifeng.com">阮一峰</a>所著的<a href="http://es6.ruanyifeng.com/">「ECMAScript 6 入门」</a>中<a href="http://es6.ruanyifeng.com/#docs/module">「Module」</a>一章。</p>
-<h3><a id="4_596"></a>4、封装模块</h3>
+<h3><a id="4_600"></a>4、封装模块</h3>
 <p>上文例子中的<code>download()</code>函数所在的文件<code>src/index.js</code>中用到<code>randomFilename()</code>和<code>isURL()</code>这两个函数，为了使得代码结构更清晰，我们尝试把这些工具函数转移到<code>src/utils.js</code>中。</p>
 <p>新建文件<code>src/utils.js</code>：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
@@ -671,7 +673,7 @@ _my_module2[<span class="hljs-string">'default'</span>];
 <p>修改文件<code>src/index.js</code>，将相应的代码删掉，并在文件首部<code>import</code>语句后面增加以下代码：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">import</span> {randomFilename, isURL, noop} <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>;
 </code></pre>
-<h2><a id="_640"></a>单元测试</h2>
+<h2><a id="_644"></a>单元测试</h2>
 <p>本文将以<code>mocha</code>测试框架为例，单元测试程序也将使用 ES2015 来写。</p>
 <p>首先执行以下命令安装<code>mocha</code>：</p>
 <pre><code class="language-bash">$ npm i -g mocha
@@ -748,8 +750,8 @@ describe(<span class="hljs-string">'es2015_demo'</span>, () =&gt; {
 
 </code></pre>
 <p>至此，我们已经完成了使用 ES2015 编写模块，并使用<code>mocha</code>来进行单元测试，下文将介绍如何通过<code>babel</code>编译程序，并发布模块。</p>
-<h2><a id="_741"></a>发布模块</h2>
-<h3><a id="1_743"></a>1、编译</h3>
+<h2><a id="_745"></a>发布模块</h2>
+<h3><a id="1_747"></a>1、编译</h3>
 <p>上文已提到，为了让使用 ES2015 编写的代码能在 Node.js 上正常运行，需要先将其编译成 ES5 标准的代码，然后还需要在程序入口载入<code>babel-polyfill</code>模块。</p>
 <p>我们可以修改文件<code>package.json</code>，为其增加<code>compile</code>命令：</p>
 <pre><code class="language-json">{
@@ -820,7 +822,7 @@ src/utils.js -&gt; lib/utils.js
   1 passing (42ms)
 
 </code></pre>
-<h3><a id="2_844"></a>2、发布</h3>
+<h3><a id="2_848"></a>2、发布</h3>
 <p>在开发项目时，一般都会使用 Git 这样的源代码版本管理工具。上文例子中，<code>lib</code>目录的文件是编译生成的，可以不需要纳入到版本管理中。Node.js 项目在安装模块时会将其保存到<code>node_modules</code>目录下，这些内容也是不应该纳入版本管理的。可以添加文件<code>.gitignore</code>来将其排除：</p>
 <pre><code>*.log
 node_modules
@@ -852,7 +854,7 @@ src/index.js -&gt; lib/index.js
 src/utils.js -&gt; lib/utils.js
 + @leizongmin/es2015_demo@1.0.0
 </code></pre>
-<h3><a id="3_889"></a>3、善后</h3>
+<h3><a id="3_893"></a>3、善后</h3>
 <p>上文例子中需要依赖<code>mocha</code>和<code>babel</code>两个工具，当我们开发多个项目或将其作为开源项目发布出去时，可能不同的项目所依赖<code>babel</code>的版本是不一样的，为了开发环境一致，一般我们需要在当前项目中执行其开发时所指定的<code>babel</code>版本。</p>
 <p>首先执行以下命令安装<code>babel-cli</code>和<code>mocha</code>：</p>
 <pre><code class="language-bash">$ npm i babel-cli mocha --save-dev
@@ -860,11 +862,13 @@ src/utils.js -&gt; lib/utils.js
 <p>安装完成后，对于上文中使用的<code>babel</code>和<code>mocha</code>命令，可以使用<code>./node_modules/.bin/babel</code>和<code>./node_modules/.bin/mocha</code>来执行。编辑<code>package.json</code>文件，更改<code>compile</code>和<code>test</code>命令：</p>
 <pre><code class="language-json">{
   <span class="hljs-attr">"scripts"</span>: {
-    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"./node_modules/.bin/babel -d lib/ src/"</span>,
-    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"npm run compile &amp;&amp; ./node_modules/.bin/mocha --compilers js:babel-core/register"</span>
+    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel -d lib/ src/"</span>,
+    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"npm run compile &amp;&amp; mocha --compilers js:babel-core/register"</span>
   }
 }
 </code></pre>
+<p>说明：在<code>package.json</code>文件的<code>scripts</code>里面，要执行的命令如果是在<code>./node_modules/.bin</code>目录内，可以省略<code>./node_modules/.bin/</code>前缀，比如<code>./node_modules/.bin/mocha</code>可以简写为
+<code>mocha</code>。</p>
 <p>本文示例模块输出的<code>download()</code>函数使用的是 Promise 的异步模式，对于习惯使用 callback 模式的用户，我们也可以通过简单的修改来使其支持 callback 模式。</p>
 <p>编辑文件<code>src/utils.js</code>，增加<code>callbackify()</code>函数：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callbackify</span>(<span class="hljs-params">fn</span>) </span>{
@@ -933,10 +937,10 @@ src/utils.js -&gt; lib/utils.js
   });
 </code></pre>
 <p>如无意外，重新执行<code>$ npm test</code>是可以测试通过的。</p>
-<h2><a id="_991"></a>后记</h2>
+<h2><a id="_998"></a>后记</h2>
 <p>本文的初稿在一个星期之前已经完成，一开始看到 ES2015 的新语法特性时眼前一亮，接着又觉得使用的时候有点繁琐，比如每次运行程序都有先使用 babel 编译，程序运行出错时定位的位置跟 ES2015 源码的位置不同等等。后来经过几天的摸索，发觉新的语法特性确实可以少打了很多代码，而且程序的表现力也更强了，与 babel 编译所耗的那几秒时间相比还是很值得的。</p>
 <p>本文的示例代码可通过 <a href="https://github.com/leizongmin/morning.work/blob/gh-pages/demo/es2015_npm_package">https://github.com/leizongmin/morning.work/blob/gh-pages/demo/es2015_npm_package</a> 获得。</p>
-<h2><a id="_998"></a>扩展阅读</h2>
+<h2><a id="_1005"></a>扩展阅读</h2>
 <ul>
 <li><a href="http://gank.io/post/564151c1f1df1210001c9161">给 JavaScript 初心者的 ES2015 实战</a></li>
 <li><a href="http://es6.ruanyifeng.com/">ECMAScript 6 入门</a></li>
@@ -947,6 +951,8 @@ src/utils.js -&gt; lib/utils.js
 <li><a href="http://jamesknelson.com/writing-npm-packages-with-es6-using-the-babel-6-cli/">Writing NPM packages with ES6 using the Babel 6 CLI</a></li>
 <li><a href="http://info.meteor.com/blog/set-up-sublime-text-for-meteor-es6-es2015-and-jsx-syntax-and-linting">Set up Sublime Text for Meteor ES6 (ES2015) and JSX Syntax and Linting</a></li>
 <li><a href="http://exploringjs.com/es6/ch_modules.html">Exploring ES6 - Modules</a></li>
+<li><a href="https://www.zybuluo.com/yangfch3/note/249328">npm scripts 入门</a></li>
+<li><a href="http://www.qcyoung.com/2016/02/28/%E4%BD%BF%E7%94%A8npm%20scripts%E6%9E%84%E5%BB%BA%E9%A1%B9%E7%9B%AE/">使用 npm scripts 构建项目</a></li>
 </ul>
 
   </article>

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "compile": "babel -d lib/ src/",
+    "compile": "babel src -d lib",
     "prepublish": "npm run compile",
     "mocha": "mocha --compilers js:babel-core/register",
     "test": "npm run compile && npm run mocha"
