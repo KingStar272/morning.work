@@ -182,6 +182,8 @@ li > p {
   <div id="date">
     {{author_links}}
     创作于 {% for d in date %}{{d|escape}} {% unless forloop.last %}~{% endunless %} {% endfor %}
+    {% if update.length > 0 %},{% endif %}
+    {% for d in update %}{{d|escape}} 第 {{forloop.index}} 次更新{% unless forloop.last %},{% endunless %} {% endfor %}
   </div>
   {% endif %}
 

@@ -14,6 +14,7 @@ import hljs from 'highlight.js';
 import RSS from 'rss';
 import authors from './authors';
 
+// 初始化Markdown渲染器
 let md = new MarkdownIt({
   linkify: true,
   html: true,
@@ -29,11 +30,13 @@ let md = new MarkdownIt({
 });
 md.use(require('markdown-it-toc'));
 
+// 文章目录
 let SOURCE_DIR = path.resolve(__dirname, '../source');
 let TARGET_DIR = path.resolve(__dirname, '../page');
 let TPL_LIST = tinyliquid.parse(fs.readFileSync(path.resolve(__dirname, 'tpl_list.html')).toString());
 let TPL_ITEM = tinyliquid.parse(fs.readFileSync(path.resolve(__dirname, 'tpl_item.html')).toString());
 
+// TinyLiquid模板引擎设置
 let baseTplContext = tinyliquid.newContext();
 baseTplContext.onInclude(function (filename, callback) {
   fs.readFile(path.resolve(__dirname, filename), {encoding: 'utf8'}, (err, data) => {
@@ -47,6 +50,7 @@ baseTplContext.onInclude(function (filename, callback) {
   });
 });
 
+// 解析文章内容
 function readFile(f) {
   let data = fs.readFileSync(f).toString().replace(/\r/g, '');
   data = prettyContent(data);
@@ -70,10 +74,19 @@ function readFile(f) {
     }
   });
   info.content = md.render(body);
+
+  // 编写日期
   if (typeof info.date === 'string') {
     info.date = info.date.split(/\s+/).filter(v => /\d{2,4}\-\d{1,2}\-\d{1,2}/.test(v));
   }
-  info.lastDate = info.date[info.date.length - 1];
+  // 更新日期
+  if (typeof info.update === 'string') {
+    info.update = info.update.split(/\s+/).filter(v => /\d{2,4}\-\d{1,2}\-\d{1,2}/.test(v));
+  }
+
+  // 最后更新时间
+  info.lastDate = lastItem(info.update || info.date);
+
   let url = f.slice(SOURCE_DIR.length);
   info.url = url.slice(0, -3) + '.html';
 
@@ -108,6 +121,7 @@ function prettyContent(text) {
 
 /******************************************************************************/
 
+// 获取文章列表
 function getPostList() {
   return rd
   .readFileFilterSync(SOURCE_DIR, /\.md$/)
@@ -117,14 +131,15 @@ function getPostList() {
     console.log('read file: %s', f);
     return readFile(f);
   }).sort((a, b) => {
-    let ad = new Date(lastItem(a.date)).getTime();
-    let bd = new Date(lastItem(b.date)).getTime();
+    let ad = new Date(a.lastDate).getTime();
+    let bd = new Date(b.lastDate).getTime();
     return bd - ad;
   }).filter(a => {
     return !a.draft && !a.hide;
   });
 }
 
+// 渲染文章列表
 export function renderPostList(list, callback, tplList) {
   list = list || getPostList();
   tplList = tplList || tinyliquid.parse(fs.readFileSync(path.resolve(__dirname, 'tpl_list.html')).toString());
@@ -146,6 +161,7 @@ export function renderPostList(list, callback, tplList) {
   });
 }
 
+// 渲染文章页面
 export function renderPost(item, callback, tplItem) {
   if (typeof item === 'string') {
     item = readFile(item);
@@ -164,6 +180,7 @@ export function renderPost(item, callback, tplItem) {
   });
 }
 
+// 渲染RSS
 export function renderFeed(list, callback) {
   list = list || getPostList();
 

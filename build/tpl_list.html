@@ -61,47 +61,48 @@ a:hover {
   margin-top: 100px;
 }
 
-/*@media (max-width: 640px) {*/
-  .item-date {
-    width: inherit;
-    text-align: left;
-    padding: 0;
-    float: none;
-    background: none;
-    color: #888;
-    font-size: 80%;
-  }
-  .date-item {
-    display: inline-block;
-    margin-right: 0.5em;
-  }
-  .item-title {
-    color: #fff;
-    display: block;
-    font-weight: bold;
-    color: #333;
-    margin-top: 0;
-  }
-  .item-main {
-    float: none;
-    margin-left: 0;
-  }
-  .item-title a {
-    color: #008E59;
-  }
-  .item-title a:hover {
-    color: #B60000;
-  }
-  .item {
-    border: none;
-  }
-  .item-link a {
-    color: #888;
-  }
-  .item-link a:hover {
-    color: #B60000;
-  }
-/*}*/
+.item-date {
+  width: inherit;
+  text-align: left;
+  padding: 0;
+  float: none;
+  background: none;
+  color: #888;
+  font-size: 80%;
+}
+.date-item {
+  display: inline-block;
+}
+.update-item {
+  color: rgba(0, 0, 255, 0.6);
+}
+.item-title {
+  color: #fff;
+  display: block;
+  font-weight: bold;
+  color: #333;
+  margin-top: 0;
+}
+.item-main {
+  float: none;
+  margin-left: 0;
+}
+.item-title a {
+  color: #008E59;
+}
+.item-title a:hover {
+  color: #B60000;
+}
+.item {
+  border: none;
+}
+.item-link a {
+  color: #888;
+}
+.item-link a:hover {
+  color: #B60000;
+}
+
 @media (min-width: 900px) {
   html {
     background-color: #f7f7f8;
@@ -123,8 +124,16 @@ body>h1 {
     {% for item in list %}
     <li class="item">
       <div class="item-date">
+        创作于
         {% for d in item.date %}
         <div class="date-item">{{d|escape}}</div>
+          {% unless forloop.last %}~{% endunless %}
+        {% endfor %}
+        {% if item.update.length > 0 %},{% endif %}
+        {% for d in item.update %}
+        <div class="date-item update-item">
+          {{d|escape}}第{{forloop.index}}次更新{% unless forloop.last %},{% endunless %}
+        </div>
         {% endfor %}
       </div>
       <div class="item-main">
@@ -133,7 +142,7 @@ body>h1 {
         </h3>
         {% if item.link %}
         <div class="item-link">
-          <a href="{{item.link|escape}}" target="_blank">{{item.link|escape}}</a>
+          <a href="{{item.link|escape}}" target="_blank">源码链接: {{item.link|escape}}</a>
         </div>
         {% endif %}
       </div>

@@ -61,47 +61,48 @@ a:hover {
   margin-top: 100px;
 }
 
-/*@media (max-width: 640px) {*/
-  .item-date {
-    width: inherit;
-    text-align: left;
-    padding: 0;
-    float: none;
-    background: none;
-    color: #888;
-    font-size: 80%;
-  }
-  .date-item {
-    display: inline-block;
-    margin-right: 0.5em;
-  }
-  .item-title {
-    color: #fff;
-    display: block;
-    font-weight: bold;
-    color: #333;
-    margin-top: 0;
-  }
-  .item-main {
-    float: none;
-    margin-left: 0;
-  }
-  .item-title a {
-    color: #008E59;
-  }
-  .item-title a:hover {
-    color: #B60000;
-  }
-  .item {
-    border: none;
-  }
-  .item-link a {
-    color: #888;
-  }
-  .item-link a:hover {
-    color: #B60000;
-  }
-/*}*/
+.item-date {
+  width: inherit;
+  text-align: left;
+  padding: 0;
+  float: none;
+  background: none;
+  color: #888;
+  font-size: 80%;
+}
+.date-item {
+  display: inline-block;
+}
+.update-item {
+  color: rgba(0, 0, 255, 0.6);
+}
+.item-title {
+  color: #fff;
+  display: block;
+  font-weight: bold;
+  color: #333;
+  margin-top: 0;
+}
+.item-main {
+  float: none;
+  margin-left: 0;
+}
+.item-title a {
+  color: #008E59;
+}
+.item-title a:hover {
+  color: #B60000;
+}
+.item {
+  border: none;
+}
+.item-link a {
+  color: #888;
+}
+.item-link a:hover {
+  color: #B60000;
+}
+
 @media (min-width: 900px) {
   html {
     background-color: #f7f7f8;
@@ -125,63 +126,11 @@ body>h1 {
   <ul>
     <li class="item">
       <div class="item-date">
-        <div class="date-item">2016-05-12</div>
-      </div>
-      <div class="item-main">
-        <h3 class="item-title">
-          <a href="/page/2016-05/how-to-write-a-nodejs-redis-client.html">如何编写一个简单的 Redis 客户端</a>
-        </h3>
-      </div>
-      <div class="item-bottom"></div>
-    </li>
-    <li class="item">
-      <div class="item-date">
-        <div class="date-item">2016-05-07</div>
-      </div>
-      <div class="item-main">
-        <h3 class="item-title">
-          <a href="/page/2016-05/how-to-write-a-nodejs-api-client-package.html">如何用 Node.js 编写一个 API 客户端</a>
-        </h3>
-      </div>
-      <div class="item-bottom"></div>
-    </li>
-    <li class="item">
-      <div class="item-date">
-        <div class="date-item">2016-03-08</div>
-      </div>
-      <div class="item-main">
-        <h3 class="item-title">
-          <a href="/page/2016-03/sublime-text-for-nodejs-es2015-development.html">在 Sublime Text 上配置 ES2015 开发环境</a>
-        </h3>
-      </div>
-      <div class="item-bottom"></div>
-    </li>
-    <li class="item">
-      <div class="item-date">
-        <div class="date-item">2016-01-14</div>
-      </div>
-      <div class="item-main">
-        <h3 class="item-title">
-          <a href="/page/2016-01/deploying-your-own-private-docker-registry.html">利用阿里云 OSS 搭建私有 Docker 仓库</a>
-        </h3>
-      </div>
-      <div class="item-bottom"></div>
-    </li>
-    <li class="item">
-      <div class="item-date">
-        <div class="date-item">2015-12-22</div>
-      </div>
-      <div class="item-main">
-        <h3 class="item-title">
-          <a href="/page/2015-12/install-shadowsocks-on-centos-7.html">在 CentOS 7 下安装配置 shadowsocks</a>
-        </h3>
-      </div>
-      <div class="item-bottom"></div>
-    </li>
-    <li class="item">
-      <div class="item-date">
+        编写于
         <div class="date-item">2015-11-20</div>
-        <div class="date-item">2015-11-30</div>
+~                <div class="date-item">2015-11-30</div>
+                ,                <div class="date-item update-item">
+          2016-06-24第1次更新        </div>
       </div>
       <div class="item-main">
         <h3 class="item-title">
@@ -192,8 +141,69 @@ body>h1 {
     </li>
     <li class="item">
       <div class="item-date">
-        <div class="date-item">2015-11-16</div>
+        编写于
+        <div class="date-item">2016-05-12</div>
+                              </div>
+      <div class="item-main">
+        <h3 class="item-title">
+          <a href="/page/2016-05/how-to-write-a-nodejs-redis-client.html">如何编写一个简单的 Redis 客户端</a>
+        </h3>
       </div>
+      <div class="item-bottom"></div>
+    </li>
+    <li class="item">
+      <div class="item-date">
+        编写于
+        <div class="date-item">2016-05-07</div>
+                              </div>
+      <div class="item-main">
+        <h3 class="item-title">
+          <a href="/page/2016-05/how-to-write-a-nodejs-api-client-package.html">如何用 Node.js 编写一个 API 客户端</a>
+        </h3>
+      </div>
+      <div class="item-bottom"></div>
+    </li>
+    <li class="item">
+      <div class="item-date">
+        编写于
+        <div class="date-item">2016-03-08</div>
+                              </div>
+      <div class="item-main">
+        <h3 class="item-title">
+          <a href="/page/2016-03/sublime-text-for-nodejs-es2015-development.html">在 Sublime Text 上配置 ES2015 开发环境</a>
+        </h3>
+      </div>
+      <div class="item-bottom"></div>
+    </li>
+    <li class="item">
+      <div class="item-date">
+        编写于
+        <div class="date-item">2016-01-14</div>
+                              </div>
+      <div class="item-main">
+        <h3 class="item-title">
+          <a href="/page/2016-01/deploying-your-own-private-docker-registry.html">利用阿里云 OSS 搭建私有 Docker 仓库</a>
+        </h3>
+      </div>
+      <div class="item-bottom"></div>
+    </li>
+    <li class="item">
+      <div class="item-date">
+        编写于
+        <div class="date-item">2015-12-22</div>
+                              </div>
+      <div class="item-main">
+        <h3 class="item-title">
+          <a href="/page/2015-12/install-shadowsocks-on-centos-7.html">在 CentOS 7 下安装配置 shadowsocks</a>
+        </h3>
+      </div>
+      <div class="item-bottom"></div>
+    </li>
+    <li class="item">
+      <div class="item-date">
+        编写于
+        <div class="date-item">2015-11-16</div>
+                              </div>
       <div class="item-main">
         <h3 class="item-title">
           <a href="/page/2015-11/nodejs_buffer.html">Node.js 的 Buffer 那些你可能不知道的用法</a>
@@ -203,8 +213,9 @@ body>h1 {
     </li>
     <li class="item">
       <div class="item-date">
+        编写于
         <div class="date-item">2015-10-31</div>
-      </div>
+                              </div>
       <div class="item-main">
         <h3 class="item-title">
           <a href="/page/2015-10/node_repl_module.html">Node.js 定制 REPL 的妙用</a>
@@ -214,37 +225,40 @@ body>h1 {
     </li>
     <li class="item">
       <div class="item-date">
+        编写于
         <div class="date-item">2015-09-17</div>
-      </div>
+                              </div>
       <div class="item-main">
         <h3 class="item-title">
           <a href="/page/2015-09/nodejs_project_config_loader.html">Node.js 项目的配置文件</a>
         </h3>
         <div class="item-link">
-          <a href="https://github.com/SuperID/super-config" target="_blank">https://github.com/SuperID/super-config</a>
+          <a href="https://github.com/SuperID/super-config" target="_blank">源码链接: https://github.com/SuperID/super-config</a>
         </div>
       </div>
       <div class="item-bottom"></div>
     </li>
     <li class="item">
       <div class="item-date">
+        编写于
         <div class="date-item">2015-07-15</div>
-        <div class="date-item">2015-07-16</div>
-      </div>
+~                <div class="date-item">2015-07-16</div>
+                              </div>
       <div class="item-main">
         <h3 class="item-title">
           <a href="/page/2015-07/read_and_write_big_file_in_nodejs.html">在 Node.js 中读写大文件</a>
         </h3>
         <div class="item-link">
-          <a href="https://github.com/leizongmin/node-lei-stream" target="_blank">https://github.com/leizongmin/node-lei-stream</a>
+          <a href="https://github.com/leizongmin/node-lei-stream" target="_blank">源码链接: https://github.com/leizongmin/node-lei-stream</a>
         </div>
       </div>
       <div class="item-bottom"></div>
     </li>
     <li class="item">
       <div class="item-date">
+        编写于
         <div class="date-item">2014-08-28</div>
-      </div>
+                              </div>
       <div class="item-main">
         <h3 class="item-title">
           <a href="/page/2014-08/deploy-nodejs-production-app.html">一种简单的生产环境部署 Node.js 程序方法</a>
@@ -254,8 +268,9 @@ body>h1 {
     </li>
     <li class="item">
       <div class="item-date">
+        编写于
         <div class="date-item">2013-10-09</div>
-      </div>
+                              </div>
       <div class="item-main">
         <h3 class="item-title">
           <a href="/page/2013-10/nodejs-simple-debug-1.html">《Node.js 入门系列》—— 一些简单的排错方法（一）</a>
@@ -265,8 +280,9 @@ body>h1 {
     </li>
     <li class="item">
       <div class="item-date">
+        编写于
         <div class="date-item">2013-09-26</div>
-      </div>
+                              </div>
       <div class="item-main">
         <h3 class="item-title">
           <a href="/page/2013-09/npm-install-problems.html">《Node.js 入门系列》—— NPM 安装第三方模块常见问题</a>
@@ -276,8 +292,9 @@ body>h1 {
     </li>
     <li class="item">
       <div class="item-date">
+        编写于
         <div class="date-item">2013-09-24</div>
-      </div>
+                              </div>
       <div class="item-main">
         <h3 class="item-title">
           <a href="/page/2013-09/nodejs-find-modules.html">《Node.js 入门系列》—— 寻找第三方模块</a>
