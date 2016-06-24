@@ -1,6 +1,7 @@
 ```
 title: ES2015 & babel 实战：开发NPM模块
 date: 2015-11-20 to 2015-11-30
+updated: 2016-06-24
 author: 老雷
 ```
 
@@ -195,6 +196,8 @@ require('babel-polyfill');
 `polyfill`的详细介绍可参考官方文档：http://babeljs.io/docs/usage/polyfill/
 
 至此，我们已经配置了一个能使用ES2015语法的Node.js运行环境了。
+
+**重要提示：在一个Node.js进程中只能载入一个版本的`babel-polyfill`，不同的模块所`require('babel-polyfill')`很可能不是同一个版本，此时进程会抛出一个异常并退出，所以一般建议在打包的NPM模块中不要有`require('babel-polyfill')`，而是要求在使用该模块的最终项目自行编写`require('babel-polyfill')`，这样可以保证一个进程中只会有一个`babel-polyfill`版本。**
 
 
 ## 编写模块
@@ -912,6 +915,9 @@ $ npm i babel-cli mocha --save-dev
 }
 ```
 
+说明：在`package.json`文件的`scripts`里面，要执行的命令如果是在`./node_modules/.bin`目录内，可以省略`./node_modules/.bin/`前缀，比如`./node_modules/.bin/mocha`可以简写为
+`mocha`。
+
 本文示例模块输出的`download()`函数使用的是Promise的异步模式，对于习惯使用callback模式的用户，我们也可以通过简单的修改来使其支持callback模式。
 
 编辑文件`src/utils.js`，增加`callbackify()`函数：
@@ -1011,4 +1017,5 @@ export default callbackify(function download(source, target, progress) {
 + [Writing NPM packages with ES6 using the Babel 6 CLI](http://jamesknelson.com/writing-npm-packages-with-es6-using-the-babel-6-cli/)
 + [Set up Sublime Text for Meteor ES6 (ES2015) and JSX Syntax and Linting](http://info.meteor.com/blog/set-up-sublime-text-for-meteor-es6-es2015-and-jsx-syntax-and-linting)
 + [Exploring ES6 - Modules](http://exploringjs.com/es6/ch_modules.html)
-
++ [npm scripts 入门](https://www.zybuluo.com/yangfch3/note/249328)
++ [使用npm scripts构建项目](http://www.qcyoung.com/2016/02/28/%E4%BD%BF%E7%94%A8npm%20scripts%E6%9E%84%E5%BB%BA%E9%A1%B9%E7%9B%AE/)
