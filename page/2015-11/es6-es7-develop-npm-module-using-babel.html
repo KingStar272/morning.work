@@ -105,6 +105,15 @@ ul {
 }
 #content a {
   text-decoration: underline;
+  margin: 0 0.2em;
+}
+#content h1 a,
+#content h2 a,
+#content h3 a,
+#content h4 a,
+#content h5 a,
+#content h6 a {
+  margin: 0;
 }
 hr {
   border: none;
@@ -756,16 +765,16 @@ describe(<span class="hljs-string">'es2015_demo'</span>, () =&gt; {
 <p>我们可以修改文件<code>package.json</code>，为其增加<code>compile</code>命令：</p>
 <pre><code class="language-json">{
   <span class="hljs-attr">"scripts"</span>: {
-    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel -d lib/ src/"</span>
+    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel src -d lib"</span>
   }
 }
 </code></pre>
-<p>说明：<code>$ babel -d lib/ src/</code>命令表示<code>lib</code>目录下的所有文件，并保存到<code>src</code>目录下。</p>
+<p>说明：<code>$ babel src -d lib</code>命令表示<code>lib</code>目录下的所有文件，并保存到<code>src</code>目录下。</p>
 <p>配置完成后，可以执行<code>$ npm run compile</code>命令编译试试：</p>
 <pre><code class="language-bash">$ npm run compile
 
 &gt; @isnc/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
-&gt; babel <span class="hljs-_">-d</span> lib/ src/
+&gt; babel src <span class="hljs-_">-d</span> lib
 
 src/copy.js -&gt; lib/copy.js
 src/download.js -&gt; lib/download.js
@@ -807,7 +816,7 @@ import {randomFilename} from '../src/utils';
 
 
 &gt; es2015_demo@1.0.0 compile /private/tmp/es2015_demo
-&gt; babel -d lib/ src/
+&gt; babel src -d lib
 
 src/copy.js -&gt; lib/copy.js
 src/download.js -&gt; lib/download.js
@@ -846,7 +855,7 @@ lib
 
 
 &gt; @leizongmin/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
-&gt; babel -d lib/ src/
+&gt; babel src -d lib
 
 src/copy.js -&gt; lib/copy.js
 src/download.js -&gt; lib/download.js
@@ -862,7 +871,7 @@ src/utils.js -&gt; lib/utils.js
 <p>安装完成后，对于上文中使用的<code>babel</code>和<code>mocha</code>命令，可以使用<code>./node_modules/.bin/babel</code>和<code>./node_modules/.bin/mocha</code>来执行。编辑<code>package.json</code>文件，更改<code>compile</code>和<code>test</code>命令：</p>
 <pre><code class="language-json">{
   <span class="hljs-attr">"scripts"</span>: {
-    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel -d lib/ src/"</span>,
+    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel src -d lib"</span>,
     <span class="hljs-attr">"test"</span>: <span class="hljs-string">"npm run compile &amp;&amp; mocha --compilers js:babel-core/register"</span>
   }
 }
