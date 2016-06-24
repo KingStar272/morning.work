@@ -51,6 +51,10 @@ a:hover {
   font-weight: normal;
   margin-top: 4px;
 }
+.item-info {
+  font-size: 80%;
+  color: #888;
+}
 .item-link {
   font-size: 80%;
 }
@@ -140,6 +144,9 @@ body>h1 {
         <h3 class="item-title">
           <a href="/page{{item.url|escape}}">{{item.title|escape}}</a>
         </h3>
+        <div class="item-info">
+          约 {{item.words}} 字，预计阅读时间为 {{item.remainingTime.hours}} 时 {{item.remainingTime.minutes}} 分钟
+        </div>
         {% if item.link %}
         <div class="item-link">
           <a href="{{item.link|escape}}" target="_blank">源码链接: {{item.link|escape}}</a>

@@ -12,6 +12,7 @@ import tinyliquid from 'tinyliquid';
 import MarkdownIt from 'markdown-it';
 import hljs from 'highlight.js';
 import RSS from 'rss';
+import xss from 'xss';
 import authors from './authors';
 
 // 初始化Markdown渲染器
@@ -75,6 +76,10 @@ function readFile(f) {
   });
   info.content = md.render(body);
 
+  // 字数，阅读时间
+  info.words = getWords(info.content);
+  info.remainingTime = getRemainingTime(info.words);
+
   // 编写日期
   if (typeof info.date === 'string') {
     info.date = info.date.split(/\s+/).filter(v => /\d{2,4}\-\d{1,2}\-\d{1,2}/.test(v));
@@ -87,6 +92,7 @@ function readFile(f) {
   // 最后更新时间
   info.lastDate = lastItem(info.update || info.date);
 
+  // 网址
   let url = f.slice(SOURCE_DIR.length);
   info.url = url.slice(0, -3) + '.html';
 
@@ -114,9 +120,27 @@ function lastItem(arr) {
   return arr[arr.length - 1];
 }
 
+// 格式化文章内容，自动在英文字母与中文之间加空格
 function prettyContent(text) {
   return text.replace(/([a-zA-Z0-9])([\u4E00-\u9FA5]+)/g, '$1 $2')
              .replace(/([\u4E00-\u9FA5]+)([a-zA-Z0-9])/g, '$1 $2');
+}
+
+// 获取当前文章的字数
+function getWords(html) {
+  return xss(html, {
+    whiteList: [],
+    stripIgnoreTag: true,
+    stripIgnoreTagBody: ['script'],
+  }).length;
+}
+
+// 获取剩余阅读时间
+function getRemainingTime(words) {
+  const SPEED = 200;
+  const minutes =  Math.ceil(words / SPEED);
+  const hours = parseInt(minutes / 60, 10);
+  return {hours, minutes: minutes - hours * 60};
 }
 
 /******************************************************************************/
