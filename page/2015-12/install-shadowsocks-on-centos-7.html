@@ -105,6 +105,15 @@ ul {
 }
 #content a {
   text-decoration: underline;
+  margin: 0 0.2em;
+}
+#content h1 a,
+#content h2 a,
+#content h3 a,
+#content h4 a,
+#content h5 a,
+#content h6 a {
+  margin: 0;
 }
 hr {
   border: none;
@@ -129,6 +138,10 @@ td, th {
 #date {
   font-size: 87.5%;
   margin-top: 1em;
+}
+#remaining-time {
+  font-size: 87.5%;
+  margin-top: 0.5em;
 }
 #nav {
   border-bottom: 2px solid #eee;
@@ -178,7 +191,10 @@ li > p {
         个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
         GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
-    创作于 2015-12-22    </div>
+    创作于 2015-12-22            </div>
+  <div id="remaining-time">
+    全文约 4270 字，预计阅读时间为 0 时 22 分钟
+  </div>
 
   <article id="content">
     <p>CentOS 7 开始默认使用<a href="https://en.wikipedia.org/wiki/Systemd">Systemd</a>作为开启启动脚本的管理工具，<a href="https://github.com/shadowsocks/">Shadowsocks</a>则是当前比较受欢迎的科学上网工具，本文将介绍如何在 CentOS 下安装和配置 Shadowsocks 服务。</p>

@@ -1,4 +1,777 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Fri, 20 May 2016 08:13:19 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[如何编写一个简单的 Redis 客户端]]></title><description><![CDATA[<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这 <em>不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块</em> ，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Fri, 24 Jun 2016 04:51:05 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[ES2015 & babel 实战：开发 NPM 模块]]></title><description><![CDATA[<h2><a id="_3"></a>前言</h2>
+<p>近一年来，JavaScript 界关于 ES6（ECMAScript 6，本文简称 ES6）的讨论越来激烈，作为未来要统一全宇宙的语言（<strong>PHP 是世界上最好的语言，但 JavaScript 终将统一全宇宙</strong>），JavaScript 的运行环境众多，对 ECMAScript 标准的支持程度不一，所以对于 ES6 我一直处于观望状态。</p>
+<p>前不久 ES6 标准正式发布，而 Node.js 也在最近刚刚发布了 5.1.0 版本，对 ES6 标准的支持也越来越完善，babel（一个将 ES6/ES7 写的代码转换为 ES5 代码的编译器）也发布了 6.0 版本，近期也涌现出了不少好文章（比如<a href="http://lifemap.in/">小问</a>写的<a href="http://gank.io/post/564151c1f1df1210001c9161">「给 JavaScript 初心者的 ES2015 实战」</a>），种种迹象表明 ES6 真的要火了，而我也终于按耐不住了……</p>
+<p>这几天正在写一个<a href="https://github.com/leizongmin/node-lei-download">方便下载文件的模块</a>（可以得到下载进度信息），正好可以使用 ES6 新语法特性来改写，作为我写下的第一个使用 ES6 语法的 NPM 模块。本文内容将分为以下几部分：</p>
+<ul>
+<li>配置 babel 编译环境</li>
+<li>编写模块</li>
+<li>单元测试</li>
+<li>发布模块</li>
+</ul>
+<p>本文的重点是介绍借助 babel 开发 Node.js 项目的基本方法，同时会简略介绍文中出现的 ES2015 新语法，具体介绍可阅读<a href="http://www.ruanyifeng.com">阮一峰</a>所著的<a href="http://es6.ruanyifeng.com/">「ECMAScript 6 入门」</a>或 babel 官方文档中的<a href="http://babeljs.io/docs/learn-es2015/">「Learn ES2015」</a>。</p>
+<p>babel 官方提供了一个<a href="http://babeljs.io/repl">在线 REPL</a>，可以实时输出转换后的 JavaScript 代码，并且看到其运行结果，对于初学者尤为有用。访问网址 <a href="http://babeljs.io/repl">http://babeljs.io/repl</a> ，其界面如下：</p>
+<p><img src="../../images/2015-11/babel_online_repl.jpg" alt="babel online repl"></p>
+<p>说明：使用时勾选左边的<code>Experimental</code>可使用最新的语法特性。</p>
+<h2><a id="_25"></a>软件环境</h2>
+<p>由于相关软件和模块正处于高速发展期，无法保证你阅读这篇文章的时候还能照着一步一步<strong>准确无误</strong>地运行下去，以下列出在编写本文时所用到的软件和模块的版本：</p>
+<ul>
+<li><strong>Node.js</strong> <code>v5.1.0</code></li>
+<li><strong>npm</strong> <code>3.3.12</code></li>
+<li><strong>babel</strong> <code>6.2.0 (babel-core 6.2.1)</code></li>
+<li><strong>mocha</strong> <code>2.3.4</code></li>
+</ul>
+<h2><a id="_babel__34"></a>配置 babel 编译环境</h2>
+<h3><a id="1_babel_36"></a>1、安装 babel</h3>
+<blockquote>
+<p>Babel is a JavaScript compiler. Use next generation JavaScript, today</p>
+</blockquote>
+<p>目前最新版的 Node.js（v5.1.0）还未完全支持 ES2015 的新语法特性，而且我们编写的模块可能要在 Node v0.12.x 或更低版本下运行，因此需要借助 babel 将 ES2015 标准的 JavaScript 程序转换成 ES5 标准的。</p>
+<p>执行以下命令安装 babel：</p>
+<pre><code class="language-bash">$ npm i -g babel-cli
+</code></pre>
+<p>由于 babel 依赖的模块比较多，可能会花费比较长的时间甚至安装不成功，可以尝试使用 cnpmjs 的 NPM 镜像，比如（简单在安装命令末尾添加<code>--registry=http://registry.npm.taobao.org</code>）：</p>
+<pre><code class="language-bash">$ npm i -g babel-cli --registry=http://registry.npm.taobao.org
+</code></pre>
+<p><a href="http://cnpmjs.org/">cnpmjs</a>镜像的详细介绍可访问其官网：<a href="http://cnpmjs.org/">http://cnpmjs.org/</a></p>
+<p>安装完成后，系统将获得以下两个命令：</p>
+<ul>
+<li><code>babel</code> 编译器</li>
+<li><code>babel-node</code> 可以直接运行 ES2015 程序的 Node 命令</li>
+</ul>
+<p><code>babel-cli</code>的详细用法可以参考其文档：<a href="https://babeljs.io/docs/usage/cli/">https://babeljs.io/docs/usage/cli/</a></p>
+<h3><a id="2_63"></a>2、初始化项目</h3>
+<p>执行以下命令初始化项目（执行<code>npm init</code>时需要按提示输入相应信息，可直接按回车跳过）：</p>
+<pre><code class="language-bash">$ mkdir es2015_demo &amp;&amp; <span class="hljs-built_in">cd</span> es2015_demo &amp;&amp; git init &amp;&amp; npm init
+</code></pre>
+<p>现在我们新建一个文件<code>test.js</code>试试是否能正常运行：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms = 0</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; setTimeout(resolve, ms));
+}
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {
+    <span class="hljs-keyword">await</span> sleep(<span class="hljs-number">500</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`i=<span class="hljs-subst">${i}</span>`</span>);
+  }
+}
+
+test().then(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>));
+</code></pre>
+<p>执行以下命令运行<code>test.js</code>：</p>
+<pre><code class="language-bash">$ babel-node test.js
+</code></pre>
+<p>在我本机的环境下显示以下错误信息：</p>
+<pre><code>/usr/local/lib/node_modules/babel-cli/node_modules/babel-core/lib/transformation/file/index.js:540
+      throw err;
+      ^
+
+SyntaxError: /private/tmp/es2015_demo/test.js: Unexpected token (5:6)
+  3 | }
+  4 |
+&gt; 5 | async function test() {
+    |       ^
+  6 |   for (let i = 0; i &lt; 10; i++) {
+  7 |     await sleep(500);
+  8 |     console.log(`i=${i}`);
+
+...
+</code></pre>
+<p>由提示信息可判断出，应该是不支持<code>async function</code>导致的，因为这是 ES7 标准中定义的新语法，需要配置相应的 babel 插件才能支持它。本文为了方面使用最新的 JavaScript 语法，暂时不考虑 babel 的编译性能，直接开启所有可能用到的插件，具体可以自行研究 babel 的官方文档。</p>
+<p>新建文件<code>.babelrc</code>：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"presets"</span>: [<span class="hljs-string">"es2015"</span>, <span class="hljs-string">"stage-0"</span>]
+}
+</code></pre>
+<p><code>.babelrc</code>为 babel 的配置文件，保存在项目的根目录下，其中<code>presets</code>用于设置开启的语法特性集合，详细介绍可参考官方文档：<a href="https://babeljs.io/docs/usage/babelrc/">https://babeljs.io/docs/usage/babelrc/</a> 和 <a href="http://babeljs.io/docs/plugins/#presets">http://babeljs.io/docs/plugins/#presets</a></p>
+<p>接下来我们还需要安装插件依赖的模块，执行以下命令安装并保存到<code>package.json</code>的<code>devDependencies</code>中：</p>
+<pre><code class="language-bash">$ npm i babel-preset-es2015 babel-preset-stage-0 --save-dev
+</code></pre>
+<p>现在再重新执行<code>test.js</code>，可看到控制台每隔 500ms 打印出一行，直到输出<code>done</code>时结束：</p>
+<pre><code class="language-bash">$ babel-node test.js
+
+i=0
+i=1
+i=2
+i=3
+i=4
+i=5
+i=6
+i=7
+i=8
+i=9
+<span class="hljs-keyword">done</span>
+</code></pre>
+<h3><a id="3_149"></a>3、编译程序</h3>
+<p>在发布项目时，要求可以在不依赖 babel 编译器的环境下运行，因此我们需要将 ES2015 的程序编译成 ES5 的：</p>
+<pre><code class="language-bash">$ babel test.js --out-file test.compiled.js
+</code></pre>
+<p>执行上面的命令后，生成了编译后的文件<code>test.compiled.js</code>，我们尝试执行它看看：</p>
+<pre><code class="language-bash">$ node test.compiled.js
+</code></pre>
+<p>在我的系统环境下提示以下出错信息：</p>
+<pre><code>/private/tmp/es2015_demo/test.compiled.js:4
+  var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+                              ^
+
+ReferenceError: regeneratorRuntime is not defined
+    at /private/tmp/es2015_demo/test.compiled.js:4:31
+
+...
+</code></pre>
+<p>经阅读官方文档可知，编译后的 JavaScript 程序有时候需要依赖一些运行时<code>polyfill</code>，通过安装<code>babel-polyfill</code>模块来获得：</p>
+<pre><code class="language-bash">$ npm i babel-polyfill --save
+</code></pre>
+<p>然后，我们需要修改编译后的文件<code>test.compiled.js</code>，在其首行加上以下代码来载入<code>babel-polyfill</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">require</span>(<span class="hljs-string">'babel-polyfill'</span>);
+</code></pre>
+<p>再次执行<code>test.compiled.js</code>便可看到与<code>$ babel-node test.js</code>一样的结果。</p>
+<p><code>polyfill</code>的详细介绍可参考官方文档：<a href="http://babeljs.io/docs/usage/polyfill/">http://babeljs.io/docs/usage/polyfill/</a></p>
+<p>至此，我们已经配置了一个能使用 ES2015 语法的 Node.js 运行环境了。</p>
+<h3><a id="4_194"></a>4、重要提示</h3>
+<p>在一个 Node.js 进程中只能载入一个版本的<code>babel-polyfill</code>，不同的模块所<code>require('babel-polyfill')</code>很可能不是同一个版本，此时进程会抛出一个异常并退出，所以一般建议在打包的 NPM 模块中不要有<code>require('babel-polyfill')</code>，而是要求在使用该模块的最终项目自行编写<code>require('babel-polyfill')</code>，这样可以保证一个进程中只会有一个<code>babel-polyfill</code>版本。</p>
+<h2><a id="_199"></a>编写模块</h2>
+<h3><a id="1_201"></a>1、功能描述</h3>
+<p>本文以<a href="https://github.com/leizongmin/node-lei-download">lei-download</a>模块为例，该模块是一个主要功能是根据一个 URL 来下载文件到本地，或者本地直接文件的复制，同时提供下载/复制进度信息。其使用方法如下：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> download = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-download'</span>);
+
+<span class="hljs-keyword">let</span> source = <span class="hljs-string">'一个 URL 或者本地文件名'</span>;
+<span class="hljs-keyword">let</span> target = <span class="hljs-string">'要存储到的本地位置，null|false|undefined 表示自动生成一个临时文件'</span>;
+<span class="hljs-comment">// 用于获取进度通知的函数，可以省略</span>
+<span class="hljs-keyword">let</span> progress = (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度：<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>);
+
+download(source, target, progress)
+  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到：<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
+
+<span class="hljs-comment">// 也可以使用 callback 模式</span>
+download(source, target, progress, (err, filename) =&gt; {
+  <span class="hljs-keyword">if</span> (err) <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>);
+  <span class="hljs-keyword">else</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到：<span class="hljs-subst">${filename}</span>`</span>);
+});
+</code></pre>
+<p>在编写模块时，我们首先要实现以下两个函数的功能：</p>
+<ul>
+<li><code>downloadFile(source, target, progress)</code> 从一个 URL 下载文件并保存到本地</li>
+<li><code>copyFile(source, target, progress)</code> 复制一个本地文件</li>
+</ul>
+<p>然后再编写一个<code>download()</code>函数来判断<code>source</code>参数，并选择使用<code>downloadFile()</code>或者<code>copyFile()</code>来完成请求。</p>
+<h3><a id="2_231"></a>2、编写程序</h3>
+<p>在本项目中，所有的 ES2015 源程序均保存在<code>src</code>目录下，发布项目时会执行相应的命令将其编译并输出到<code>lib</code>目录，具体方法在 <strong>「发布模块」</strong> 小节中介绍。</p>
+<p>实现<code>copyFile()</code>函数，新建文件<code>src/copy.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">copyFile</span>(<span class="hljs-params">source, target, progress</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+
+    fs.stat(source, (err, stats) =&gt; {
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> reject(err);
+
+      <span class="hljs-keyword">let</span> ss = fs.createReadStream(source);
+      <span class="hljs-keyword">let</span> ts = fs.createWriteStream(target);
+      ss.on(<span class="hljs-string">'error'</span>, reject);
+      ts.on(<span class="hljs-string">'error'</span>, reject);
+
+      <span class="hljs-keyword">let</span> copySize = <span class="hljs-number">0</span>;
+      ss.on(<span class="hljs-string">'data'</span>, data =&gt; {
+        copySize += data.length;
+        progress &amp;&amp; progress(copySize, stats.size);
+      });
+
+      ss.on(<span class="hljs-string">'end'</span>, () =&gt; resolve(target));
+
+      ss.pipe(ts);
+    });
+
+  });
+}
+</code></pre>
+<p>说明：</p>
+<ul>
+<li><code>import fs from 'fs'</code>为 ES2015 模块系统加载模块的方式，可理解为<code>var fs = require('fs')</code>，具体在下文「模块系统」一节中介绍。</li>
+<li>通过<code>fs.createReadStream(source)</code>和<code>fs.createWriteStream(target)</code>来创建读取文件流和写入文件流，并监听读取文件流的<code>data</code>事件获得当前进度信息。</li>
+<li><code>export default function copyFile() {}</code>将函数<code>copyFile()</code>作为模块输出，相当于<code>module.exports = function copyFile() {}</code>，具体在下文「模块系统」一节中介绍。</li>
+<li>函数执行后返回一个<code>Promise</code>对象，通过其<code>.then()</code>和<code>.catch()</code>来获取执行结果，关于 Promise 的详细介绍可阅读<a href="http://www.ruanyifeng.com">阮一峰</a>所著的<a href="http://es6.ruanyifeng.com/">「ECMAScript 6 入门 」</a>中<a href="http://es6.ruanyifeng.com/#docs/promise">「 Promise 对象」</a>一章。</li>
+</ul>
+<p>为了测试该代码能否正常工作，可在文件末尾增加以下测试程序（在编写单元测试时将删除）：</p>
+<pre><code class="language-javascript">copyFile(__filename, <span class="hljs-string">'/tmp/copy.js'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
+  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
+</code></pre>
+<p>以上程序的作用是将当前 JavaScript 文件复制到<code>/tmp/copy.js</code>，使用<code>babel-node</code>执行该文件将得到以下结果：</p>
+<pre><code class="language-bash">$ babel-node src/copy.js
+
+进度 749/749
+已保存到/tmp/copy.js
+</code></pre>
+<p>实现<code>downloadFile()</code>函数，新建文件<code>src/download.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
+<span class="hljs-keyword">import</span> request <span class="hljs-keyword">from</span> <span class="hljs-string">'request'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">downloadFile</span>(<span class="hljs-params">url, target, progress</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+
+    <span class="hljs-keyword">let</span> s = fs.createWriteStream(target);
+    s.on(<span class="hljs-string">'error'</span>, reject);
+
+    <span class="hljs-keyword">let</span> totalSize = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">let</span> downloadSize = <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">let</span> req = request
+      .get({
+        url: url,
+        encoding: <span class="hljs-literal">null</span>
+      })
+      .on(<span class="hljs-string">'response'</span>, res =&gt; {
+        <span class="hljs-keyword">if</span> (res.statusCode !== <span class="hljs-number">200</span>) {
+          <span class="hljs-keyword">return</span> reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'status #'</span> + res.statusCode));
+        }
+        totalSize = <span class="hljs-built_in">Number</span>(res.headers[<span class="hljs-string">'content-length'</span>]) || <span class="hljs-literal">null</span>;
+
+        res.on(<span class="hljs-string">'data'</span>, data =&gt; {
+          downloadSize += data.length;
+          progress &amp;&amp; progress(downloadSize, totalSize);
+        });
+        res.on(<span class="hljs-string">'end'</span>, () =&gt; resolve(target));
+      })
+      .pipe(s);
+
+  });
+}
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>程序使用<code>request</code>模块来下载 URL 的内容，使用时执行命令<code>$ npm i request --save</code>安装该模块。</li>
+<li>通过<code>request</code>模块的<code>pipe()</code>方法将收到的数据写入到<code>fs.createWriteStream(target)</code>创建的写入文件流中，<code>request</code>模块的详细使用方法可参考其文档：<a href="https://www.npmjs.com/package/request">https://www.npmjs.com/package/request</a></li>
+</ul>
+<p>为了测试该代码能否正常工作，可在文件末尾增加以下测试程序（在编写单元测试时将删除）：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">let</span> url = <span class="hljs-string">'http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg'</span>;
+downloadFile(url, <span class="hljs-string">'/tmp/avatar.jpg'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
+  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
+</code></pre>
+<p>以上程序的作用是将 URL 为<code>http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg</code>的文件复制到<code>/tmp/avatar.jpg</code>，使用<code>babel-node</code>执行该文件将得到以下结果：</p>
+<pre><code class="language-bash">$ babel-node src/download.js
+
+进度 5944/5944
+已保存到/tmp/avatar.jpg
+</code></pre>
+<p>实现<code>download()</code>函数，新建文件<code>src/index.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> os <span class="hljs-keyword">from</span> <span class="hljs-string">'os'</span>;
+<span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> mkdirp <span class="hljs-keyword">from</span> <span class="hljs-string">'mkdirp'</span>;
+<span class="hljs-keyword">import</span> copyFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./copy'</span>;
+<span class="hljs-keyword">import</span> downloadFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./download'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">source, target, progress</span>) </span>{
+  target = target || randomFilename(download.tmpDir);
+  progress = progress || noop;
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+
+    mkdirp(path.dirname(target), err =&gt; {
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> callback(err);
+
+      resolve((isURL(source) ? downloadFile : copyFile)
+        (source, target, progress));
+    });
+
+  });
+}
+
+<span class="hljs-keyword">let</span> getTmpDir = os.tmpdir || os.tmpDir;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789'</span>) </span>{
+  <span class="hljs-keyword">let</span> max = chars.length + <span class="hljs-number">1</span>;
+  <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>;
+  <span class="hljs-keyword">while</span> (size &gt; <span class="hljs-number">0</span>) {
+    str += chars.charAt(<span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * max));
+    size--;
+  }
+  <span class="hljs-keyword">return</span> str;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomFilename</span>(<span class="hljs-params">tmpDir = getTmpDir(</span>)) </span>{
+  <span class="hljs-keyword">return</span> path.resolve(tmpDir, randomString(<span class="hljs-number">20</span>));
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isURL</span> (<span class="hljs-params">url</span>) </span>{
+  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">7</span>) === <span class="hljs-string">'http://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>) === <span class="hljs-string">'https://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">noop</span>(<span class="hljs-params"></span>) </span>{ }
+</code></pre>
+<p>说明：</p>
+<ul>
+<li><code>import copyFile from './copy'</code>用于载入模块，相当于<code>var copyFile = require('./copy')</code>。</li>
+<li><code>download(...args)</code>函数中的<code>...args</code>相当于<code>var args = Array.prototype.call(arguments);</code>。</li>
+<li>程序使用<code>mkdirp</code>模块来创建目标文件的上级目录，使用时执行命令<code>$ npm i mkdirp --save</code>安装该模块。</li>
+<li><code>getTmpDir()</code>函数用于取得当前系统的临时目录，通过<code>os.tmpDir()</code>获得。</li>
+<li><code>randomString(size)</code>函数用于生成指定长度的随机字符串。</li>
+<li><code>randomFilename(tmpDir)</code>用于生成临时文件名，默认存储在系统临时目录下，可通过<code>tmpDir</code>参数指定。</li>
+<li><code>isURL(url)</code>函数用于判断参数是否为一个 URL。</li>
+</ul>
+<p>为了验证程序是否正确，我们可以将上文的<code>src/copy.js</code>和<code>src/download.js</code>中的测试程序放到<code>src/index.js</code>文件的末尾并执行（需要将旧的程序程序删除），比如：</p>
+<pre><code class="language-javascript">download(__filename, <span class="hljs-string">'/tmp/copy.js'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
+  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
+</code></pre>
+<p>正常情况下，其执行结果应该跟上文中的结果是一致的。</p>
+<h3><a id="3_419"></a>3、模块系统</h3>
+<p>Node.js 使用的是 CommonJS 模块系统，模块的输出我们一般通过给<code>exports</code>对象设置属性来做：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 输出变量或函数</span>
+exports.x = <span class="hljs-number">123</span>;
+exports.y = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'hello'</span>);
+};
+</code></pre>
+<p>可以通过以下方式来操作：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> mod = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
+
+<span class="hljs-built_in">console</span>.log(mod.x);
+mod.y();
+</code></pre>
+<p>也可以通过覆盖<code>module.exports</code>来输出一个函数或者其他数据类型：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'hello'</span>);
+};
+</code></pre>
+<p>通过以下方式来操作：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
+
+fn();
+</code></pre>
+<p>而在 ES2015 中，模块通过<code>export</code>语句来输出：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 普通输出，相当于 exports.x = y;</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> a = <span class="hljs-number">123</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{ }
+<span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">d</span> </span>{ }
+
+<span class="hljs-comment">// 默认输出，相当于 module.exports = z;</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{ }
+</code></pre>
+<p>通过<code>import</code>语句来引入模块，不同的引入方式其含义是不一样的，比如：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 操作 export var x = y 方式的输出</span>
+<span class="hljs-keyword">import</span> {a, b, c, d} <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+<span class="hljs-comment">// 通过相应的变量名称 a, b, c, d 来操作</span>
+
+<span class="hljs-comment">// 或者将所有输出指向一个对象</span>
+<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> mod <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+<span class="hljs-comment">// 通过 mod.a, mod.b, mod.c, mod.d 来操作</span>
+
+<span class="hljs-comment">// 操作 export default x 方式的输出</span>
+<span class="hljs-keyword">import</span> y <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+</code></pre>
+<p>对于非 ES2015 程序输出的模块，<code>import * as mod</code>和<code>import mod</code>其结果是一样的，比如：</p>
+<pre><code>import * as fs1 from 'fs';
+import fs2 from 'fs';
+
+// fs1.readFile() 和 fs2.readFile() 是一样的
+</code></pre>
+<p>为了更容易理解 ES2015 的模块系统原理，我们可以通过阅读编译后的 JavaScript 程序来了解。访问<a href="http://babeljs.io/repl/">babel 的在线 REPL</a>或将程序保存到本地，并执行<code>babel file.js</code>来查看编译后的程序。</p>
+<p>以下 ES2015 代码：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> a = <span class="hljs-number">123</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{ }
+<span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">d</span> </span>{ }
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{ }
+</code></pre>
+<p>编译后结果如下：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">"use strict"</span>;
+
+<span class="hljs-built_in">Object</span>.defineProperty(exports, <span class="hljs-string">"__esModule"</span>, {
+  value: <span class="hljs-literal">true</span>
+});
+exports.c = c;
+exports[<span class="hljs-string">"default"</span>] = y;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_classCallCheck</span>(<span class="hljs-params">instance, Constructor</span>) </span>{
+  <span class="hljs-keyword">if</span> (!(instance <span class="hljs-keyword">instanceof</span> Constructor)) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>(<span class="hljs-string">"Cannot call a class as a function"</span>);
+  }
+}
+
+<span class="hljs-keyword">var</span> a = <span class="hljs-number">123</span>;
+exports.a = a;
+<span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
+exports.b = b;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{}
+
+<span class="hljs-keyword">var</span> d = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">d</span>(<span class="hljs-params"></span>) </span>{
+  _classCallCheck(<span class="hljs-keyword">this</span>, d);
+};
+
+exports.d = d;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{}
+</code></pre>
+<p>由上面的代码可以看出，<code>export var b = 456</code>这样的输出方式，实际上相当于<code>var b = exports.b = 456</code>，即直接设置<code>exports</code>对象的属性来完成。而<code>export default y</code>则是设置<code>exports</code>对象的<code>default</code>属性。</p>
+<p>另外，还设置了<code>exports.__esModule = true</code>来标记这是一个 ES2015 输出的模块，在通过<code>import</code>来引入模块时会判断此属性来执行相应的规则，下文将详细介绍。</p>
+<p>再看看以下的 ES2015 代码：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {a, b, c, d} <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> mod <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+<span class="hljs-keyword">import</span> y <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
+
+a;
+mod.a;
+y;
+</code></pre>
+<p>其编译后的 JavaScript 代码如下：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_interopRequireDefault</span>(<span class="hljs-params">obj</span>) </span>{
+  <span class="hljs-keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : {
+    <span class="hljs-string">'default'</span>: obj
+  };
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_interopRequireWildcard</span>(<span class="hljs-params">obj</span>) </span>{
+  <span class="hljs-keyword">if</span> (obj &amp;&amp; obj.__esModule) {
+    <span class="hljs-keyword">return</span> obj;
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">var</span> newObj = {};
+    <span class="hljs-keyword">if</span> (obj != <span class="hljs-literal">null</span>) {
+      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> key <span class="hljs-keyword">in</span> obj) {
+        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+      }
+    }
+    newObj[<span class="hljs-string">'default'</span>] = obj;
+    <span class="hljs-keyword">return</span> newObj;
+  }
+}
+
+<span class="hljs-keyword">var</span> _my_module = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
+
+<span class="hljs-keyword">var</span> mod = _interopRequireWildcard(_my_module);
+
+<span class="hljs-keyword">var</span> _my_module2 = _interopRequireDefault(_my_module);
+
+_my_module.a;
+mod.a;
+_my_module2[<span class="hljs-string">'default'</span>];
+</code></pre>
+<p>首先，<code>a</code>是通过<code>import {a} from './my_module'</code>来引入的，编译后的代码中访问<code>a</code>使用的是<code>_my_module.a</code>，而<code>_my_module = require('./my_module')</code>，所以其对应的是<code>export var a = 123</code>这样的输出。</p>
+<p><code>mod</code>是通过<code>import * as mod from './my_module'</code>来引入的，其编译后的代码为<code>_interopRequireWildcard(require('./my_module'))</code>。在<code>_interopRequireWildcard()</code>函数中，如果载入的模块是由 ES2015 输出的，那么不做任何处理，否则会生成一个输入模块的拷贝，并且设置其<code>default</code>属性为自身。</p>
+<p><code>y</code>是通过<code>import y from './my_module'</code>来引入的，对<code>y</code>的访问被编译成了<code>_my_module2['default']</code>，所以<code>y</code>实际上是<code>export default</code>的输出。而<code>_my_module2 = _interopRequireDefault(require('./my_module'))</code>，函数<code>_interopRequireDefault()</code>对载入的非 ES2015 模块做了处理，会返回一个<code>default</code>属性指向该模块的新对象。</p>
+<p>当然模块系统的还有更复杂的语法规则，详细说明可参考：<a href="http://www.ruanyifeng.com">阮一峰</a>所著的<a href="http://es6.ruanyifeng.com/">「ECMAScript 6 入门」</a>中<a href="http://es6.ruanyifeng.com/#docs/module">「Module」</a>一章。</p>
+<h3><a id="4_600"></a>4、封装模块</h3>
+<p>上文例子中的<code>download()</code>函数所在的文件<code>src/index.js</code>中用到<code>randomFilename()</code>和<code>isURL()</code>这两个函数，为了使得代码结构更清晰，我们尝试把这些工具函数转移到<code>src/utils.js</code>中。</p>
+<p>新建文件<code>src/utils.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> os <span class="hljs-keyword">from</span> <span class="hljs-string">'os'</span>;
+
+<span class="hljs-keyword">let</span> getTmpDir = os.tmpdir || os.tmpDir;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789'</span>) </span>{
+  <span class="hljs-keyword">let</span> max = chars.length + <span class="hljs-number">1</span>;
+  <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>;
+  <span class="hljs-keyword">while</span> (size &gt; <span class="hljs-number">0</span>) {
+    str += chars.charAt(<span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * max));
+    size--;
+  }
+  <span class="hljs-keyword">return</span> str;
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomFilename</span>(<span class="hljs-params">tmpDir = getTmpDir(</span>)) </span>{
+  <span class="hljs-keyword">return</span> path.resolve(tmpDir, randomString(<span class="hljs-number">20</span>));
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isURL</span> (<span class="hljs-params">url</span>) </span>{
+  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">7</span>) === <span class="hljs-string">'http://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>) === <span class="hljs-string">'https://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">noop</span>(<span class="hljs-params"></span>) </span>{ }
+</code></pre>
+<p>说明：<code>getTmpDir()</code>和<code>randomString()</code>仅在函数<code>randomFilename()</code>函数中用到，所以不需要使用<code>export</code>输出。</p>
+<p>修改文件<code>src/index.js</code>，将相应的代码删掉，并在文件首部<code>import</code>语句后面增加以下代码：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {randomFilename, isURL, noop} <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>;
+</code></pre>
+<h2><a id="_644"></a>单元测试</h2>
+<p>本文将以<code>mocha</code>测试框架为例，单元测试程序也将使用 ES2015 来写。</p>
+<p>首先执行以下命令安装<code>mocha</code>：</p>
+<pre><code class="language-bash">$ npm i -g mocha
+</code></pre>
+<p>安装完成后可执行以下命令验证是否安装成功：</p>
+<pre><code>$ mocha --version
+
+2.3.4
+</code></pre>
+<p>通过阅读<code>babel</code>的官方文档（访问 <a href="http://babeljs.io/docs/setup/#mocha">http://babeljs.io/docs/setup/#mocha</a> ）可知，为了让 Node.js 中的<code>require()</code>函数能直接载入 ES2015 程序，需要依赖<code>babel-core</code>模块，执行以下命令安装：</p>
+<pre><code class="language-bash">$ npm i babel-core mocha --save-dev
+</code></pre>
+<p>运行<code>mocha</code>命令的时候，需要增加额外的参数<code>--compilers js:babel-core/register</code>让其使用<code>babel</code>来载入 JavaScript 程序。为了方便，我们可以修改<code>package.json</code>文件，增加以下内容：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"mocha --compilers js:babel-core/register"</span>
+  }
+}
+</code></pre>
+<p>说明：我们通过<code>npm init</code>命令生成<code>package.json</code>文件时，已经自动生成了<code>test</code>命令，其默认值为<code>echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1</code>，直接将其改为<code>mocha --compilers js:babel-core/register</code>即可。</p>
+<p>以上准备工作完成后，便可以开始写单元测试程序了。新建文件<code>test/test.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> assert <span class="hljs-keyword">from</span> <span class="hljs-string">'assert'</span>;
+<span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
+<span class="hljs-keyword">import</span> download <span class="hljs-keyword">from</span> <span class="hljs-string">'../src'</span>;
+<span class="hljs-keyword">import</span> {randomFilename} <span class="hljs-keyword">from</span> <span class="hljs-string">'../src/utils'</span>;
+
+<span class="hljs-keyword">let</span> readFile = f =&gt; fs.readFileSync(f).toString();
+<span class="hljs-keyword">let</span> getFileSize = f =&gt; fs.statSync(f).size;
+
+describe(<span class="hljs-string">'es2015_demo'</span>, () =&gt; {
+
+  it(<span class="hljs-string">'复制本地文件成功'</span>, done =&gt; {
+
+    <span class="hljs-keyword">let</span> source = __filename;
+    <span class="hljs-keyword">let</span> target = randomFilename();
+    <span class="hljs-keyword">let</span> onProgress = <span class="hljs-literal">false</span>;
+
+    download(source, target, (size, total) =&gt; {
+
+      onProgress = <span class="hljs-literal">true</span>;
+      assert.equal(size, total);
+      assert.equal(total, getFileSize(source));
+
+    }).then(filename =&gt; {
+
+      assert.equal(onProgress, <span class="hljs-literal">true</span>);
+      assert.equal(target, filename);
+      assert.equal(readFile(source), readFile(target));
+
+      done();
+
+    }).catch(err =&gt; {
+      <span class="hljs-keyword">throw</span> err;
+    });
+  });
+
+});
+</code></pre>
+<p>说明：本文只为了演示如何配置<code>mocha</code>和编写单元测试程序，所以没有给<code>download()</code>函数编写完整的单元测试，仅编写一个测试用例作为演示。</p>
+<p>好了，现在执行<code>$ npm test</code>命令看看：</p>
+<pre><code class="language-bash">$ npm <span class="hljs-built_in">test</span>
+
+&gt; es2015_demo@1.0.0 <span class="hljs-built_in">test</span> /private/tmp/es2015_demo
+&gt; mocha --compilers js:babel-core/register
+
+
+
+  es2015_demo
+    ✓ 复制本地文件成功
+
+
+  1 passing (51ms)
+
+</code></pre>
+<p>至此，我们已经完成了使用 ES2015 编写模块，并使用<code>mocha</code>来进行单元测试，下文将介绍如何通过<code>babel</code>编译程序，并发布模块。</p>
+<h2><a id="_745"></a>发布模块</h2>
+<h3><a id="1_747"></a>1、编译</h3>
+<p>上文已提到，为了让使用 ES2015 编写的代码能在 Node.js 上正常运行，需要先将其编译成 ES5 标准的代码，然后还需要在程序入口载入<code>babel-polyfill</code>模块。</p>
+<p>我们可以修改文件<code>package.json</code>，为其增加<code>compile</code>命令：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel src -d lib"</span>
+  }
+}
+</code></pre>
+<p>说明：<code>$ babel src -d lib</code>命令表示<code>lib</code>目录下的所有文件，并保存到<code>src</code>目录下。</p>
+<p>配置完成后，可以执行<code>$ npm run compile</code>命令编译试试：</p>
+<pre><code class="language-bash">$ npm run compile
+
+&gt; @isnc/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
+&gt; babel src <span class="hljs-_">-d</span> lib
+
+src/copy.js -&gt; lib/copy.js
+src/download.js -&gt; lib/download.js
+src/index.js -&gt; lib/index.js
+src/utils.js -&gt; lib/utils.js
+</code></pre>
+<p>此时，我们还不能直接载入<code>lib/index.js</code>文件，因为在此之前需要载入<code>babel-polyfill</code>模块。编辑文件<code>package.json</code>，设置模块入口文件：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"main"</span>: <span class="hljs-string">"index.js"</span>
+}
+</code></pre>
+<p>说明：使用<code>$ npm init</code>生成<code>package.json</code>文件时，<code>main</code>的默认值即为<code>index.js</code>，可无需修改。</p>
+<p>新建文件<code>index.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">require</span>(<span class="hljs-string">'babel-polyfill'</span>);
+<span class="hljs-built_in">module</span>.exports = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./lib'</span>).default;
+</code></pre>
+<p>说明：在<code>src/index.js</code>中<code>download()</code>函数使用的是<code>export default</code>输出，所以在 Node.js 中需要读取模块输出的<code>default</code>属性。</p>
+<p>上文中我们的测试程序是直接载入<code>src</code>目录下的程序，但模块最终发布的却是编译后的程序，为了避免因 babel 的 Bug 而导致编译后的程序与源程序功能有差异，我们的单元测试需要改用编译后的代码。</p>
+<p>编辑文件<code>test/test.js</code>，将引入<code>src</code>目录的模块：</p>
+<pre><code>import download from '../src';
+import {randomFilename} from '../src/utils';
+</code></pre>
+<p>改为：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> download <span class="hljs-keyword">from</span> <span class="hljs-string">'../'</span>;
+<span class="hljs-keyword">import</span> {randomFilename} <span class="hljs-keyword">from</span> <span class="hljs-string">'../lib/utils'</span>;
+</code></pre>
+<p>在编辑<code>package.json</code>文件，将<code>test</code>命令改为先执行<code>compile</code>编译代码后再执行<code>mocha</code>测试：</p>
+<pre><code>{
+  &quot;scripts&quot;: {
+    &quot;test&quot;: &quot;npm run compile &amp;&amp; mocha --compilers js:babel-core/register&quot;
+  }
+}
+</code></pre>
+<p>重新执行<code>$ npm test</code>可看到如下结果：</p>
+<pre><code>$ npm test
+
+&gt; es2015_demo@1.0.0 test /private/tmp/es2015_demo
+&gt; npm run compile &amp;&amp; mocha --compilers js:babel-core/register
+
+
+&gt; es2015_demo@1.0.0 compile /private/tmp/es2015_demo
+&gt; babel src -d lib
+
+src/copy.js -&gt; lib/copy.js
+src/download.js -&gt; lib/download.js
+src/index.js -&gt; lib/index.js
+src/utils.js -&gt; lib/utils.js
+
+
+  es2015_demo
+    ✓ 复制本地文件成功
+
+
+  1 passing (42ms)
+
+</code></pre>
+<h3><a id="2_848"></a>2、发布</h3>
+<p>在开发项目时，一般都会使用 Git 这样的源代码版本管理工具。上文例子中，<code>lib</code>目录的文件是编译生成的，可以不需要纳入到版本管理中。Node.js 项目在安装模块时会将其保存到<code>node_modules</code>目录下，这些内容也是不应该纳入版本管理的。可以添加文件<code>.gitignore</code>来将其排除：</p>
+<pre><code>*.log
+node_modules
+lib
+</code></pre>
+<p>如果要将模块发布到 NPM 上，ES2015 编写的源程序也是不需要的，可以添加文件<code>.npmignore</code>来将其排除：</p>
+<pre><code>src
+</code></pre>
+<p>在使用<code>$ npm publish</code>命令发布模块时，可以设置<code>prepublish</code>命令来让其自动执行编译。编辑文件<code>package.json</code>，增加以下内容：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"prepublish"</span>: <span class="hljs-string">"npm run compile"</span>
+  }
+}
+</code></pre>
+<p>现在我们执行<code>$ npm publish</code>就可以发布模块了：</p>
+<pre><code>$ npm publish
+
+&gt; @leizongmin/es2015_demo@1.0.0 prepublish /Users/glen/work/tmp/es2015_demo
+&gt; npm run compile
+
+
+&gt; @leizongmin/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
+&gt; babel src -d lib
+
+src/copy.js -&gt; lib/copy.js
+src/download.js -&gt; lib/download.js
+src/index.js -&gt; lib/index.js
+src/utils.js -&gt; lib/utils.js
++ @leizongmin/es2015_demo@1.0.0
+</code></pre>
+<h3><a id="3_893"></a>3、善后</h3>
+<p>上文例子中需要依赖<code>mocha</code>和<code>babel</code>两个工具，当我们开发多个项目或将其作为开源项目发布出去时，可能不同的项目所依赖<code>babel</code>的版本是不一样的，为了开发环境一致，一般我们需要在当前项目中执行其开发时所指定的<code>babel</code>版本。</p>
+<p>首先执行以下命令安装<code>babel-cli</code>和<code>mocha</code>：</p>
+<pre><code class="language-bash">$ npm i babel-cli mocha --save-dev
+</code></pre>
+<p>安装完成后，对于上文中使用的<code>babel</code>和<code>mocha</code>命令，可以使用<code>./node_modules/.bin/babel</code>和<code>./node_modules/.bin/mocha</code>来执行。编辑<code>package.json</code>文件，更改<code>compile</code>和<code>test</code>命令：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"scripts"</span>: {
+    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel src -d lib"</span>,
+    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"npm run compile &amp;&amp; mocha --compilers js:babel-core/register"</span>
+  }
+}
+</code></pre>
+<p>说明：在<code>package.json</code>文件的<code>scripts</code>里面，要执行的命令如果是在<code>./node_modules/.bin</code>目录内，可以省略<code>./node_modules/.bin/</code>前缀，比如<code>./node_modules/.bin/mocha</code>可以简写为
+<code>mocha</code>。</p>
+<p>本文示例模块输出的<code>download()</code>函数使用的是 Promise 的异步模式，对于习惯使用 callback 模式的用户，我们也可以通过简单的修改来使其支持 callback 模式。</p>
+<p>编辑文件<code>src/utils.js</code>，增加<code>callbackify()</code>函数：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callbackify</span>(<span class="hljs-params">fn</span>) </span>{
+  <span class="hljs-keyword">let</span> argc = fn.length;
+  <span class="hljs-keyword">return</span> (...args) =&gt; {
+    <span class="hljs-keyword">let</span> callback = args[argc];
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> callback !== <span class="hljs-string">'function'</span>) callback = <span class="hljs-literal">null</span>;
+    <span class="hljs-keyword">return</span> fn(...args)
+      .then(ret =&gt; {
+        callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve(ret);
+      })
+      .catch(err =&gt; {
+        callback &amp;&amp; callback(err);
+        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.reject(err);
+      });
+  }
+}
+</code></pre>
+<p>编辑文件<code>src/index.js</code>，将其改为以下内容：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
+<span class="hljs-keyword">import</span> mkdirp <span class="hljs-keyword">from</span> <span class="hljs-string">'mkdirp'</span>;
+<span class="hljs-keyword">import</span> copyFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./copy'</span>;
+<span class="hljs-keyword">import</span> downloadFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./download'</span>;
+<span class="hljs-keyword">import</span> {randomFilename, isURL, noop, callbackify} <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> callbackify(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">source, target, progress</span>) </span>{
+  target = target || randomFilename(download.tmpDir);
+  progress = progress || noop;
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+
+    mkdirp(path.dirname(target), err =&gt; {
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> callback(err);
+
+      resolve((isURL(source) ? downloadFile : copyFile)
+        (source, target, progress));
+    });
+
+  });
+});
+</code></pre>
+<p>说明：<code>callbackify()</code>函数的作用是返回一个新的函数，这个函数可以支持原函数的 Promise 模式，同时支持 callback 模式。</p>
+<p>现在再给<code>test/test.js</code>增加一个测试用例：</p>
+<pre><code class="language-javascript">  it(<span class="hljs-string">'复制本地文件成功 callback'</span>, done =&gt; {
+
+    <span class="hljs-keyword">let</span> source = __filename;
+    <span class="hljs-keyword">let</span> target = randomFilename();
+    <span class="hljs-keyword">let</span> onProgress = <span class="hljs-literal">false</span>;
+
+    download(source, target, (size, total) =&gt; {
+
+      onProgress = <span class="hljs-literal">true</span>;
+      assert.equal(size, total);
+      assert.equal(total, getFileSize(source));
+
+    }, (err, filename) =&gt; {
+
+      assert.equal(err, <span class="hljs-literal">null</span>);
+      assert.equal(onProgress, <span class="hljs-literal">true</span>);
+      assert.equal(target, filename);
+      assert.equal(readFile(source), readFile(target));
+
+      done();
+
+    });
+  });
+</code></pre>
+<p>如无意外，重新执行<code>$ npm test</code>是可以测试通过的。</p>
+<h2><a id="_998"></a>后记</h2>
+<p>本文的初稿在一个星期之前已经完成，一开始看到 ES2015 的新语法特性时眼前一亮，接着又觉得使用的时候有点繁琐，比如每次运行程序都有先使用 babel 编译，程序运行出错时定位的位置跟 ES2015 源码的位置不同等等。后来经过几天的摸索，发觉新的语法特性确实可以少打了很多代码，而且程序的表现力也更强了，与 babel 编译所耗的那几秒时间相比还是很值得的。</p>
+<p>本文的示例代码可通过 <a href="https://github.com/leizongmin/morning.work/blob/gh-pages/demo/es2015_npm_package">https://github.com/leizongmin/morning.work/blob/gh-pages/demo/es2015_npm_package</a> 获得。</p>
+<h2><a id="_1005"></a>扩展阅读</h2>
+<ul>
+<li><a href="http://gank.io/post/564151c1f1df1210001c9161">给 JavaScript 初心者的 ES2015 实战</a></li>
+<li><a href="http://es6.ruanyifeng.com/">ECMAScript 6 入门</a></li>
+<li><a href="https://blog.leancloud.cn/3910/">「大概可能也许是」目前最好的 JavaScript 异步方案 async/await</a></li>
+<li><a href="http://babeljs.io/docs/learn-es2015/">Learn ES2015 - A detailed overview of ECMAScript 6 features</a></li>
+<li><a href="http://mammal.io/articles/using-es6-today/">Using ES6 with npm today</a></li>
+<li><a href="http://jamesknelson.com/using-es6-in-the-browser-with-babel-6-and-webpack/">Using ES6 and ES7 in the Browser, with Babel 6 and Webpack</a></li>
+<li><a href="http://jamesknelson.com/writing-npm-packages-with-es6-using-the-babel-6-cli/">Writing NPM packages with ES6 using the Babel 6 CLI</a></li>
+<li><a href="http://info.meteor.com/blog/set-up-sublime-text-for-meteor-es6-es2015-and-jsx-syntax-and-linting">Set up Sublime Text for Meteor ES6 (ES2015) and JSX Syntax and Linting</a></li>
+<li><a href="http://exploringjs.com/es6/ch_modules.html">Exploring ES6 - Modules</a></li>
+<li><a href="https://www.zybuluo.com/yangfch3/note/249328">npm scripts 入门</a></li>
+<li><a href="http://www.qcyoung.com/2016/02/28/%E4%BD%BF%E7%94%A8npm%20scripts%E6%9E%84%E5%BB%BA%E9%A1%B9%E7%9B%AE/">使用 npm scripts 构建项目</a></li>
+</ul>
+]]></description><link>http://morning.work/page/2015-11/es6-es7-develop-npm-module-using-babel.html</link><guid isPermaLink="true">http://morning.work/page/2015-11/es6-es7-develop-npm-module-using-babel.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Fri, 24 Jun 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何编写一个简单的 Redis 客户端]]></title><description><![CDATA[<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这 <em>不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块</em> ，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
 <p>这次要写的这个 Redis 客户端应该算是个客户端了，需要直接发起<code>TCP/IP</code>连接去跟服务器通讯，需要自己解析客户端返回的结果，还要做一些简单的容错处理，如果要做到足够健壮也不容易，不过就本文要实现一个基本可用的例子来说，还是简单了点。</p>
 <p>无论是实现 REST 的 API 客户端还是这样一个 Redis 客户端，虽然具体实现的细节不同，但是，<strong>套路</strong>还是<strong>一样</strong>的。二十一世纪行走江湖最重要的是什么？套路！套路！套路！所以呢，本文还是跟之前一样的套路。</p>
 <h2><a id="Redis__9"></a>Redis 协议</h2>
@@ -1226,774 +1999,7 @@ method:      aes-256-cfb
 <li><a href="http://stackoverflow.com/questions/13322485/how-to-i-get-the-primary-ip-address-of-the-local-machine-on-linux-and-os-x">How to I get the primary IP address of the local machine on Linux and OS X?</a></li>
 <li><a href="http://stackoverflow.com/questions/5735666/execute-bash-script-from-url">Execute bash script from URL</a></li>
 </ul>
-]]></description><link>http://morning.work/page/2015-12/install-shadowsocks-on-centos-7.html</link><guid isPermaLink="true">http://morning.work/page/2015-12/install-shadowsocks-on-centos-7.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 22 Dec 2015 00:00:00 GMT</pubDate></item><item><title><![CDATA[ES2015 & babel 实战：开发 NPM 模块]]></title><description><![CDATA[<h2><a id="_3"></a>前言</h2>
-<p>近一年来，JavaScript 界关于 ES6（ECMAScript 6，本文简称 ES6）的讨论越来激烈，作为未来要统一全宇宙的语言（<strong>PHP 是世界上最好的语言，但 JavaScript 终将统一全宇宙</strong>），JavaScript 的运行环境众多，对 ECMAScript 标准的支持程度不一，所以对于 ES6 我一直处于观望状态。</p>
-<p>前不久 ES6 标准正式发布，而 Node.js 也在最近刚刚发布了 5.1.0 版本，对 ES6 标准的支持也越来越完善，babel（一个将 ES6/ES7 写的代码转换为 ES5 代码的编译器）也发布了 6.0 版本，近期也涌现出了不少好文章（比如<a href="http://lifemap.in/">小问</a>写的<a href="http://gank.io/post/564151c1f1df1210001c9161">「给 JavaScript 初心者的 ES2015 实战」</a>），种种迹象表明 ES6 真的要火了，而我也终于按耐不住了……</p>
-<p>这几天正在写一个<a href="https://github.com/leizongmin/node-lei-download">方便下载文件的模块</a>（可以得到下载进度信息），正好可以使用 ES6 新语法特性来改写，作为我写下的第一个使用 ES6 语法的 NPM 模块。本文内容将分为以下几部分：</p>
-<ul>
-<li>配置 babel 编译环境</li>
-<li>编写模块</li>
-<li>单元测试</li>
-<li>发布模块</li>
-</ul>
-<p>本文的重点是介绍借助 babel 开发 Node.js 项目的基本方法，同时会简略介绍文中出现的 ES2015 新语法，具体介绍可阅读<a href="http://www.ruanyifeng.com">阮一峰</a>所著的<a href="http://es6.ruanyifeng.com/">「ECMAScript 6 入门」</a>或 babel 官方文档中的<a href="http://babeljs.io/docs/learn-es2015/">「Learn ES2015」</a>。</p>
-<p>babel 官方提供了一个<a href="http://babeljs.io/repl">在线 REPL</a>，可以实时输出转换后的 JavaScript 代码，并且看到其运行结果，对于初学者尤为有用。访问网址 <a href="http://babeljs.io/repl">http://babeljs.io/repl</a> ，其界面如下：</p>
-<p><img src="../../images/2015-11/babel_online_repl.jpg" alt="babel online repl"></p>
-<p>说明：使用时勾选左边的<code>Experimental</code>可使用最新的语法特性。</p>
-<h2><a id="_25"></a>软件环境</h2>
-<p>由于相关软件和模块正处于高速发展期，无法保证你阅读这篇文章的时候还能照着一步一步<strong>准确无误</strong>地运行下去，以下列出在编写本文时所用到的软件和模块的版本：</p>
-<ul>
-<li><strong>Node.js</strong> <code>v5.1.0</code></li>
-<li><strong>npm</strong> <code>3.3.12</code></li>
-<li><strong>babel</strong> <code>6.2.0 (babel-core 6.2.1)</code></li>
-<li><strong>mocha</strong> <code>2.3.4</code></li>
-</ul>
-<h2><a id="_babel__34"></a>配置 babel 编译环境</h2>
-<h3><a id="1_babel_36"></a>1、安装 babel</h3>
-<blockquote>
-<p>Babel is a JavaScript compiler. Use next generation JavaScript, today</p>
-</blockquote>
-<p>目前最新版的 Node.js（v5.1.0）还未完全支持 ES2015 的新语法特性，而且我们编写的模块可能要在 Node v0.12.x 或更低版本下运行，因此需要借助 babel 将 ES2015 标准的 JavaScript 程序转换成 ES5 标准的。</p>
-<p>执行以下命令安装 babel：</p>
-<pre><code class="language-bash">$ npm i -g babel-cli
-</code></pre>
-<p>由于 babel 依赖的模块比较多，可能会花费比较长的时间甚至安装不成功，可以尝试使用 cnpmjs 的 NPM 镜像，比如（简单在安装命令末尾添加<code>--registry=http://registry.npm.taobao.org</code>）：</p>
-<pre><code class="language-bash">$ npm i -g babel-cli --registry=http://registry.npm.taobao.org
-</code></pre>
-<p><a href="http://cnpmjs.org/">cnpmjs</a>镜像的详细介绍可访问其官网：<a href="http://cnpmjs.org/">http://cnpmjs.org/</a></p>
-<p>安装完成后，系统将获得以下两个命令：</p>
-<ul>
-<li><code>babel</code> 编译器</li>
-<li><code>babel-node</code> 可以直接运行 ES2015 程序的 Node 命令</li>
-</ul>
-<p><code>babel-cli</code>的详细用法可以参考其文档：<a href="https://babeljs.io/docs/usage/cli/">https://babeljs.io/docs/usage/cli/</a></p>
-<h3><a id="2_63"></a>2、初始化项目</h3>
-<p>执行以下命令初始化项目（执行<code>npm init</code>时需要按提示输入相应信息，可直接按回车跳过）：</p>
-<pre><code class="language-bash">$ mkdir es2015_demo &amp;&amp; <span class="hljs-built_in">cd</span> es2015_demo &amp;&amp; git init &amp;&amp; npm init
-</code></pre>
-<p>现在我们新建一个文件<code>test.js</code>试试是否能正常运行：</p>
-<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms = 0</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; setTimeout(resolve, ms));
-}
-
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {
-    <span class="hljs-keyword">await</span> sleep(<span class="hljs-number">500</span>);
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`i=<span class="hljs-subst">${i}</span>`</span>);
-  }
-}
-
-test().then(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>));
-</code></pre>
-<p>执行以下命令运行<code>test.js</code>：</p>
-<pre><code class="language-bash">$ babel-node test.js
-</code></pre>
-<p>在我本机的环境下显示以下错误信息：</p>
-<pre><code>/usr/local/lib/node_modules/babel-cli/node_modules/babel-core/lib/transformation/file/index.js:540
-      throw err;
-      ^
-
-SyntaxError: /private/tmp/es2015_demo/test.js: Unexpected token (5:6)
-  3 | }
-  4 |
-&gt; 5 | async function test() {
-    |       ^
-  6 |   for (let i = 0; i &lt; 10; i++) {
-  7 |     await sleep(500);
-  8 |     console.log(`i=${i}`);
-
-...
-</code></pre>
-<p>由提示信息可判断出，应该是不支持<code>async function</code>导致的，因为这是 ES7 标准中定义的新语法，需要配置相应的 babel 插件才能支持它。本文为了方面使用最新的 JavaScript 语法，暂时不考虑 babel 的编译性能，直接开启所有可能用到的插件，具体可以自行研究 babel 的官方文档。</p>
-<p>新建文件<code>.babelrc</code>：</p>
-<pre><code class="language-json">{
-  <span class="hljs-attr">"presets"</span>: [<span class="hljs-string">"es2015"</span>, <span class="hljs-string">"stage-0"</span>]
-}
-</code></pre>
-<p><code>.babelrc</code>为 babel 的配置文件，保存在项目的根目录下，其中<code>presets</code>用于设置开启的语法特性集合，详细介绍可参考官方文档：<a href="https://babeljs.io/docs/usage/babelrc/">https://babeljs.io/docs/usage/babelrc/</a> 和 <a href="http://babeljs.io/docs/plugins/#presets">http://babeljs.io/docs/plugins/#presets</a></p>
-<p>接下来我们还需要安装插件依赖的模块，执行以下命令安装并保存到<code>package.json</code>的<code>devDependencies</code>中：</p>
-<pre><code class="language-bash">$ npm i babel-preset-es2015 babel-preset-stage-0 --save-dev
-</code></pre>
-<p>现在再重新执行<code>test.js</code>，可看到控制台每隔 500ms 打印出一行，直到输出<code>done</code>时结束：</p>
-<pre><code class="language-bash">$ babel-node test.js
-
-i=0
-i=1
-i=2
-i=3
-i=4
-i=5
-i=6
-i=7
-i=8
-i=9
-<span class="hljs-keyword">done</span>
-</code></pre>
-<h3><a id="3_149"></a>3、编译程序</h3>
-<p>在发布项目时，要求可以在不依赖 babel 编译器的环境下运行，因此我们需要将 ES2015 的程序编译成 ES5 的：</p>
-<pre><code class="language-bash">$ babel test.js --out-file test.compiled.js
-</code></pre>
-<p>执行上面的命令后，生成了编译后的文件<code>test.compiled.js</code>，我们尝试执行它看看：</p>
-<pre><code class="language-bash">$ node test.compiled.js
-</code></pre>
-<p>在我的系统环境下提示以下出错信息：</p>
-<pre><code>/private/tmp/es2015_demo/test.compiled.js:4
-  var ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
-                              ^
-
-ReferenceError: regeneratorRuntime is not defined
-    at /private/tmp/es2015_demo/test.compiled.js:4:31
-
-...
-</code></pre>
-<p>经阅读官方文档可知，编译后的 JavaScript 程序有时候需要依赖一些运行时<code>polyfill</code>，通过安装<code>babel-polyfill</code>模块来获得：</p>
-<pre><code class="language-bash">$ npm i babel-polyfill --save
-</code></pre>
-<p>然后，我们需要修改编译后的文件<code>test.compiled.js</code>，在其首行加上以下代码来载入<code>babel-polyfill</code>：</p>
-<pre><code class="language-javascript"><span class="hljs-built_in">require</span>(<span class="hljs-string">'babel-polyfill'</span>);
-</code></pre>
-<p>再次执行<code>test.compiled.js</code>便可看到与<code>$ babel-node test.js</code>一样的结果。</p>
-<p><code>polyfill</code>的详细介绍可参考官方文档：<a href="http://babeljs.io/docs/usage/polyfill/">http://babeljs.io/docs/usage/polyfill/</a></p>
-<p>至此，我们已经配置了一个能使用 ES2015 语法的 Node.js 运行环境了。</p>
-<h2><a id="_195"></a>编写模块</h2>
-<h3><a id="1_197"></a>1、功能描述</h3>
-<p>本文以<a href="https://github.com/leizongmin/node-lei-download">lei-download</a>模块为例，该模块是一个主要功能是根据一个 URL 来下载文件到本地，或者本地直接文件的复制，同时提供下载/复制进度信息。其使用方法如下：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">let</span> download = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-download'</span>);
-
-<span class="hljs-keyword">let</span> source = <span class="hljs-string">'一个 URL 或者本地文件名'</span>;
-<span class="hljs-keyword">let</span> target = <span class="hljs-string">'要存储到的本地位置，null|false|undefined 表示自动生成一个临时文件'</span>;
-<span class="hljs-comment">// 用于获取进度通知的函数，可以省略</span>
-<span class="hljs-keyword">let</span> progress = (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度：<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>);
-
-download(source, target, progress)
-  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到：<span class="hljs-subst">${filename}</span>`</span>))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
-
-<span class="hljs-comment">// 也可以使用 callback 模式</span>
-download(source, target, progress, (err, filename) =&gt; {
-  <span class="hljs-keyword">if</span> (err) <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>);
-  <span class="hljs-keyword">else</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到：<span class="hljs-subst">${filename}</span>`</span>);
-});
-</code></pre>
-<p>在编写模块时，我们首先要实现以下两个函数的功能：</p>
-<ul>
-<li><code>downloadFile(source, target, progress)</code> 从一个 URL 下载文件并保存到本地</li>
-<li><code>copyFile(source, target, progress)</code> 复制一个本地文件</li>
-</ul>
-<p>然后再编写一个<code>download()</code>函数来判断<code>source</code>参数，并选择使用<code>downloadFile()</code>或者<code>copyFile()</code>来完成请求。</p>
-<h3><a id="2_227"></a>2、编写程序</h3>
-<p>在本项目中，所有的 ES2015 源程序均保存在<code>src</code>目录下，发布项目时会执行相应的命令将其编译并输出到<code>lib</code>目录，具体方法在 <strong>「发布模块」</strong> 小节中介绍。</p>
-<p>实现<code>copyFile()</code>函数，新建文件<code>src/copy.js</code>：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">copyFile</span>(<span class="hljs-params">source, target, progress</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-
-    fs.stat(source, (err, stats) =&gt; {
-      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> reject(err);
-
-      <span class="hljs-keyword">let</span> ss = fs.createReadStream(source);
-      <span class="hljs-keyword">let</span> ts = fs.createWriteStream(target);
-      ss.on(<span class="hljs-string">'error'</span>, reject);
-      ts.on(<span class="hljs-string">'error'</span>, reject);
-
-      <span class="hljs-keyword">let</span> copySize = <span class="hljs-number">0</span>;
-      ss.on(<span class="hljs-string">'data'</span>, data =&gt; {
-        copySize += data.length;
-        progress &amp;&amp; progress(copySize, stats.size);
-      });
-
-      ss.on(<span class="hljs-string">'end'</span>, () =&gt; resolve(target));
-
-      ss.pipe(ts);
-    });
-
-  });
-}
-</code></pre>
-<p>说明：</p>
-<ul>
-<li><code>import fs from 'fs'</code>为 ES2015 模块系统加载模块的方式，可理解为<code>var fs = require('fs')</code>，具体在下文「模块系统」一节中介绍。</li>
-<li>通过<code>fs.createReadStream(source)</code>和<code>fs.createWriteStream(target)</code>来创建读取文件流和写入文件流，并监听读取文件流的<code>data</code>事件获得当前进度信息。</li>
-<li><code>export default function copyFile() {}</code>将函数<code>copyFile()</code>作为模块输出，相当于<code>module.exports = function copyFile() {}</code>，具体在下文「模块系统」一节中介绍。</li>
-<li>函数执行后返回一个<code>Promise</code>对象，通过其<code>.then()</code>和<code>.catch()</code>来获取执行结果，关于 Promise 的详细介绍可阅读<a href="http://www.ruanyifeng.com">阮一峰</a>所著的<a href="http://es6.ruanyifeng.com/">「ECMAScript 6 入门 」</a>中<a href="http://es6.ruanyifeng.com/#docs/promise">「 Promise 对象」</a>一章。</li>
-</ul>
-<p>为了测试该代码能否正常工作，可在文件末尾增加以下测试程序（在编写单元测试时将删除）：</p>
-<pre><code class="language-javascript">copyFile(__filename, <span class="hljs-string">'/tmp/copy.js'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
-  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
-</code></pre>
-<p>以上程序的作用是将当前 JavaScript 文件复制到<code>/tmp/copy.js</code>，使用<code>babel-node</code>执行该文件将得到以下结果：</p>
-<pre><code class="language-bash">$ babel-node src/copy.js
-
-进度 749/749
-已保存到/tmp/copy.js
-</code></pre>
-<p>实现<code>downloadFile()</code>函数，新建文件<code>src/download.js</code>：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
-<span class="hljs-keyword">import</span> request <span class="hljs-keyword">from</span> <span class="hljs-string">'request'</span>;
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">downloadFile</span>(<span class="hljs-params">url, target, progress</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-
-    <span class="hljs-keyword">let</span> s = fs.createWriteStream(target);
-    s.on(<span class="hljs-string">'error'</span>, reject);
-
-    <span class="hljs-keyword">let</span> totalSize = <span class="hljs-number">0</span>;
-    <span class="hljs-keyword">let</span> downloadSize = <span class="hljs-number">0</span>;
-    <span class="hljs-keyword">let</span> req = request
-      .get({
-        url: url,
-        encoding: <span class="hljs-literal">null</span>
-      })
-      .on(<span class="hljs-string">'response'</span>, res =&gt; {
-        <span class="hljs-keyword">if</span> (res.statusCode !== <span class="hljs-number">200</span>) {
-          <span class="hljs-keyword">return</span> reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'status #'</span> + res.statusCode));
-        }
-        totalSize = <span class="hljs-built_in">Number</span>(res.headers[<span class="hljs-string">'content-length'</span>]) || <span class="hljs-literal">null</span>;
-
-        res.on(<span class="hljs-string">'data'</span>, data =&gt; {
-          downloadSize += data.length;
-          progress &amp;&amp; progress(downloadSize, totalSize);
-        });
-        res.on(<span class="hljs-string">'end'</span>, () =&gt; resolve(target));
-      })
-      .pipe(s);
-
-  });
-}
-</code></pre>
-<p>说明：</p>
-<ul>
-<li>程序使用<code>request</code>模块来下载 URL 的内容，使用时执行命令<code>$ npm i request --save</code>安装该模块。</li>
-<li>通过<code>request</code>模块的<code>pipe()</code>方法将收到的数据写入到<code>fs.createWriteStream(target)</code>创建的写入文件流中，<code>request</code>模块的详细使用方法可参考其文档：<a href="https://www.npmjs.com/package/request">https://www.npmjs.com/package/request</a></li>
-</ul>
-<p>为了测试该代码能否正常工作，可在文件末尾增加以下测试程序（在编写单元测试时将删除）：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">let</span> url = <span class="hljs-string">'http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg'</span>;
-downloadFile(url, <span class="hljs-string">'/tmp/avatar.jpg'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
-  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
-</code></pre>
-<p>以上程序的作用是将 URL 为<code>http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg</code>的文件复制到<code>/tmp/avatar.jpg</code>，使用<code>babel-node</code>执行该文件将得到以下结果：</p>
-<pre><code class="language-bash">$ babel-node src/download.js
-
-进度 5944/5944
-已保存到/tmp/avatar.jpg
-</code></pre>
-<p>实现<code>download()</code>函数，新建文件<code>src/index.js</code>：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> os <span class="hljs-keyword">from</span> <span class="hljs-string">'os'</span>;
-<span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
-<span class="hljs-keyword">import</span> mkdirp <span class="hljs-keyword">from</span> <span class="hljs-string">'mkdirp'</span>;
-<span class="hljs-keyword">import</span> copyFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./copy'</span>;
-<span class="hljs-keyword">import</span> downloadFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./download'</span>;
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">source, target, progress</span>) </span>{
-  target = target || randomFilename(download.tmpDir);
-  progress = progress || noop;
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-
-    mkdirp(path.dirname(target), err =&gt; {
-      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> callback(err);
-
-      resolve((isURL(source) ? downloadFile : copyFile)
-        (source, target, progress));
-    });
-
-  });
-}
-
-<span class="hljs-keyword">let</span> getTmpDir = os.tmpdir || os.tmpDir;
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789'</span>) </span>{
-  <span class="hljs-keyword">let</span> max = chars.length + <span class="hljs-number">1</span>;
-  <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>;
-  <span class="hljs-keyword">while</span> (size &gt; <span class="hljs-number">0</span>) {
-    str += chars.charAt(<span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * max));
-    size--;
-  }
-  <span class="hljs-keyword">return</span> str;
-}
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomFilename</span>(<span class="hljs-params">tmpDir = getTmpDir(</span>)) </span>{
-  <span class="hljs-keyword">return</span> path.resolve(tmpDir, randomString(<span class="hljs-number">20</span>));
-}
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isURL</span> (<span class="hljs-params">url</span>) </span>{
-  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">7</span>) === <span class="hljs-string">'http://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
-  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>) === <span class="hljs-string">'https://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
-  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
-}
-
-<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">noop</span>(<span class="hljs-params"></span>) </span>{ }
-</code></pre>
-<p>说明：</p>
-<ul>
-<li><code>import copyFile from './copy'</code>用于载入模块，相当于<code>var copyFile = require('./copy')</code>。</li>
-<li><code>download(...args)</code>函数中的<code>...args</code>相当于<code>var args = Array.prototype.call(arguments);</code>。</li>
-<li>程序使用<code>mkdirp</code>模块来创建目标文件的上级目录，使用时执行命令<code>$ npm i mkdirp --save</code>安装该模块。</li>
-<li><code>getTmpDir()</code>函数用于取得当前系统的临时目录，通过<code>os.tmpDir()</code>获得。</li>
-<li><code>randomString(size)</code>函数用于生成指定长度的随机字符串。</li>
-<li><code>randomFilename(tmpDir)</code>用于生成临时文件名，默认存储在系统临时目录下，可通过<code>tmpDir</code>参数指定。</li>
-<li><code>isURL(url)</code>函数用于判断参数是否为一个 URL。</li>
-</ul>
-<p>为了验证程序是否正确，我们可以将上文的<code>src/copy.js</code>和<code>src/download.js</code>中的测试程序放到<code>src/index.js</code>文件的末尾并执行（需要将旧的程序程序删除），比如：</p>
-<pre><code class="language-javascript">download(__filename, <span class="hljs-string">'/tmp/copy.js'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
-  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
-</code></pre>
-<p>正常情况下，其执行结果应该跟上文中的结果是一致的。</p>
-<h3><a id="3_415"></a>3、模块系统</h3>
-<p>Node.js 使用的是 CommonJS 模块系统，模块的输出我们一般通过给<code>exports</code>对象设置属性来做：</p>
-<pre><code class="language-javascript"><span class="hljs-comment">// 输出变量或函数</span>
-exports.x = <span class="hljs-number">123</span>;
-exports.y = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'hello'</span>);
-};
-</code></pre>
-<p>可以通过以下方式来操作：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">var</span> mod = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
-
-<span class="hljs-built_in">console</span>.log(mod.x);
-mod.y();
-</code></pre>
-<p>也可以通过覆盖<code>module.exports</code>来输出一个函数或者其他数据类型：</p>
-<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'hello'</span>);
-};
-</code></pre>
-<p>通过以下方式来操作：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">var</span> fn = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
-
-fn();
-</code></pre>
-<p>而在 ES2015 中，模块通过<code>export</code>语句来输出：</p>
-<pre><code class="language-javascript"><span class="hljs-comment">// 普通输出，相当于 exports.x = y;</span>
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> a = <span class="hljs-number">123</span>;
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
-<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{ }
-<span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">d</span> </span>{ }
-
-<span class="hljs-comment">// 默认输出，相当于 module.exports = z;</span>
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{ }
-</code></pre>
-<p>通过<code>import</code>语句来引入模块，不同的引入方式其含义是不一样的，比如：</p>
-<pre><code class="language-javascript"><span class="hljs-comment">// 操作 export var x = y 方式的输出</span>
-<span class="hljs-keyword">import</span> {a, b, c, d} <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
-<span class="hljs-comment">// 通过相应的变量名称 a, b, c, d 来操作</span>
-
-<span class="hljs-comment">// 或者将所有输出指向一个对象</span>
-<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> mod <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
-<span class="hljs-comment">// 通过 mod.a, mod.b, mod.c, mod.d 来操作</span>
-
-<span class="hljs-comment">// 操作 export default x 方式的输出</span>
-<span class="hljs-keyword">import</span> y <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
-</code></pre>
-<p>对于非 ES2015 程序输出的模块，<code>import * as mod</code>和<code>import mod</code>其结果是一样的，比如：</p>
-<pre><code>import * as fs1 from 'fs';
-import fs2 from 'fs';
-
-// fs1.readFile() 和 fs2.readFile() 是一样的
-</code></pre>
-<p>为了更容易理解 ES2015 的模块系统原理，我们可以通过阅读编译后的 JavaScript 程序来了解。访问<a href="http://babeljs.io/repl/">babel 的在线 REPL</a>或将程序保存到本地，并执行<code>babel file.js</code>来查看编译后的程序。</p>
-<p>以下 ES2015 代码：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> a = <span class="hljs-number">123</span>;
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
-<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{ }
-<span class="hljs-keyword">export</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">d</span> </span>{ }
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{ }
-</code></pre>
-<p>编译后结果如下：</p>
-<pre><code class="language-javascript"><span class="hljs-meta">"use strict"</span>;
-
-<span class="hljs-built_in">Object</span>.defineProperty(exports, <span class="hljs-string">"__esModule"</span>, {
-  value: <span class="hljs-literal">true</span>
-});
-exports.c = c;
-exports[<span class="hljs-string">"default"</span>] = y;
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_classCallCheck</span>(<span class="hljs-params">instance, Constructor</span>) </span>{
-  <span class="hljs-keyword">if</span> (!(instance <span class="hljs-keyword">instanceof</span> Constructor)) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>(<span class="hljs-string">"Cannot call a class as a function"</span>);
-  }
-}
-
-<span class="hljs-keyword">var</span> a = <span class="hljs-number">123</span>;
-exports.a = a;
-<span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
-exports.b = b;
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">c</span>(<span class="hljs-params"></span>) </span>{}
-
-<span class="hljs-keyword">var</span> d = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">d</span>(<span class="hljs-params"></span>) </span>{
-  _classCallCheck(<span class="hljs-keyword">this</span>, d);
-};
-
-exports.d = d;
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">y</span>(<span class="hljs-params"></span>) </span>{}
-</code></pre>
-<p>由上面的代码可以看出，<code>export var b = 456</code>这样的输出方式，实际上相当于<code>var b = exports.b = 456</code>，即直接设置<code>exports</code>对象的属性来完成。而<code>export default y</code>则是设置<code>exports</code>对象的<code>default</code>属性。</p>
-<p>另外，还设置了<code>exports.__esModule = true</code>来标记这是一个 ES2015 输出的模块，在通过<code>import</code>来引入模块时会判断此属性来执行相应的规则，下文将详细介绍。</p>
-<p>再看看以下的 ES2015 代码：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {a, b, c, d} <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
-<span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> mod <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
-<span class="hljs-keyword">import</span> y <span class="hljs-keyword">from</span> <span class="hljs-string">'./my_module'</span>;
-
-a;
-mod.a;
-y;
-</code></pre>
-<p>其编译后的 JavaScript 代码如下：</p>
-<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_interopRequireDefault</span>(<span class="hljs-params">obj</span>) </span>{
-  <span class="hljs-keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : {
-    <span class="hljs-string">'default'</span>: obj
-  };
-}
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_interopRequireWildcard</span>(<span class="hljs-params">obj</span>) </span>{
-  <span class="hljs-keyword">if</span> (obj &amp;&amp; obj.__esModule) {
-    <span class="hljs-keyword">return</span> obj;
-  } <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">var</span> newObj = {};
-    <span class="hljs-keyword">if</span> (obj != <span class="hljs-literal">null</span>) {
-      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> key <span class="hljs-keyword">in</span> obj) {
-        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">Object</span>.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-      }
-    }
-    newObj[<span class="hljs-string">'default'</span>] = obj;
-    <span class="hljs-keyword">return</span> newObj;
-  }
-}
-
-<span class="hljs-keyword">var</span> _my_module = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./my_module'</span>);
-
-<span class="hljs-keyword">var</span> mod = _interopRequireWildcard(_my_module);
-
-<span class="hljs-keyword">var</span> _my_module2 = _interopRequireDefault(_my_module);
-
-_my_module.a;
-mod.a;
-_my_module2[<span class="hljs-string">'default'</span>];
-</code></pre>
-<p>首先，<code>a</code>是通过<code>import {a} from './my_module'</code>来引入的，编译后的代码中访问<code>a</code>使用的是<code>_my_module.a</code>，而<code>_my_module = require('./my_module')</code>，所以其对应的是<code>export var a = 123</code>这样的输出。</p>
-<p><code>mod</code>是通过<code>import * as mod from './my_module'</code>来引入的，其编译后的代码为<code>_interopRequireWildcard(require('./my_module'))</code>。在<code>_interopRequireWildcard()</code>函数中，如果载入的模块是由 ES2015 输出的，那么不做任何处理，否则会生成一个输入模块的拷贝，并且设置其<code>default</code>属性为自身。</p>
-<p><code>y</code>是通过<code>import y from './my_module'</code>来引入的，对<code>y</code>的访问被编译成了<code>_my_module2['default']</code>，所以<code>y</code>实际上是<code>export default</code>的输出。而<code>_my_module2 = _interopRequireDefault(require('./my_module'))</code>，函数<code>_interopRequireDefault()</code>对载入的非 ES2015 模块做了处理，会返回一个<code>default</code>属性指向该模块的新对象。</p>
-<p>当然模块系统的还有更复杂的语法规则，详细说明可参考：<a href="http://www.ruanyifeng.com">阮一峰</a>所著的<a href="http://es6.ruanyifeng.com/">「ECMAScript 6 入门」</a>中<a href="http://es6.ruanyifeng.com/#docs/module">「Module」</a>一章。</p>
-<h3><a id="4_596"></a>4、封装模块</h3>
-<p>上文例子中的<code>download()</code>函数所在的文件<code>src/index.js</code>中用到<code>randomFilename()</code>和<code>isURL()</code>这两个函数，为了使得代码结构更清晰，我们尝试把这些工具函数转移到<code>src/utils.js</code>中。</p>
-<p>新建文件<code>src/utils.js</code>：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
-<span class="hljs-keyword">import</span> os <span class="hljs-keyword">from</span> <span class="hljs-string">'os'</span>;
-
-<span class="hljs-keyword">let</span> getTmpDir = os.tmpdir || os.tmpDir;
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789'</span>) </span>{
-  <span class="hljs-keyword">let</span> max = chars.length + <span class="hljs-number">1</span>;
-  <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>;
-  <span class="hljs-keyword">while</span> (size &gt; <span class="hljs-number">0</span>) {
-    str += chars.charAt(<span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Math</span>.random() * max));
-    size--;
-  }
-  <span class="hljs-keyword">return</span> str;
-}
-
-<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomFilename</span>(<span class="hljs-params">tmpDir = getTmpDir(</span>)) </span>{
-  <span class="hljs-keyword">return</span> path.resolve(tmpDir, randomString(<span class="hljs-number">20</span>));
-}
-
-<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isURL</span> (<span class="hljs-params">url</span>) </span>{
-  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">7</span>) === <span class="hljs-string">'http://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
-  <span class="hljs-keyword">if</span> (url.substr(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>) === <span class="hljs-string">'https://'</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
-  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
-}
-
-<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">noop</span>(<span class="hljs-params"></span>) </span>{ }
-</code></pre>
-<p>说明：<code>getTmpDir()</code>和<code>randomString()</code>仅在函数<code>randomFilename()</code>函数中用到，所以不需要使用<code>export</code>输出。</p>
-<p>修改文件<code>src/index.js</code>，将相应的代码删掉，并在文件首部<code>import</code>语句后面增加以下代码：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> {randomFilename, isURL, noop} <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>;
-</code></pre>
-<h2><a id="_640"></a>单元测试</h2>
-<p>本文将以<code>mocha</code>测试框架为例，单元测试程序也将使用 ES2015 来写。</p>
-<p>首先执行以下命令安装<code>mocha</code>：</p>
-<pre><code class="language-bash">$ npm i -g mocha
-</code></pre>
-<p>安装完成后可执行以下命令验证是否安装成功：</p>
-<pre><code>$ mocha --version
-
-2.3.4
-</code></pre>
-<p>通过阅读<code>babel</code>的官方文档（访问 <a href="http://babeljs.io/docs/setup/#mocha">http://babeljs.io/docs/setup/#mocha</a> ）可知，为了让 Node.js 中的<code>require()</code>函数能直接载入 ES2015 程序，需要依赖<code>babel-core</code>模块，执行以下命令安装：</p>
-<pre><code class="language-bash">$ npm i babel-core mocha --save-dev
-</code></pre>
-<p>运行<code>mocha</code>命令的时候，需要增加额外的参数<code>--compilers js:babel-core/register</code>让其使用<code>babel</code>来载入 JavaScript 程序。为了方便，我们可以修改<code>package.json</code>文件，增加以下内容：</p>
-<pre><code class="language-json">{
-  <span class="hljs-attr">"scripts"</span>: {
-    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"mocha --compilers js:babel-core/register"</span>
-  }
-}
-</code></pre>
-<p>说明：我们通过<code>npm init</code>命令生成<code>package.json</code>文件时，已经自动生成了<code>test</code>命令，其默认值为<code>echo \&quot;Error: no test specified\&quot; &amp;&amp; exit 1</code>，直接将其改为<code>mocha --compilers js:babel-core/register</code>即可。</p>
-<p>以上准备工作完成后，便可以开始写单元测试程序了。新建文件<code>test/test.js</code>：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> assert <span class="hljs-keyword">from</span> <span class="hljs-string">'assert'</span>;
-<span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
-<span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
-<span class="hljs-keyword">import</span> download <span class="hljs-keyword">from</span> <span class="hljs-string">'../src'</span>;
-<span class="hljs-keyword">import</span> {randomFilename} <span class="hljs-keyword">from</span> <span class="hljs-string">'../src/utils'</span>;
-
-<span class="hljs-keyword">let</span> readFile = f =&gt; fs.readFileSync(f).toString();
-<span class="hljs-keyword">let</span> getFileSize = f =&gt; fs.statSync(f).size;
-
-describe(<span class="hljs-string">'es2015_demo'</span>, () =&gt; {
-
-  it(<span class="hljs-string">'复制本地文件成功'</span>, done =&gt; {
-
-    <span class="hljs-keyword">let</span> source = __filename;
-    <span class="hljs-keyword">let</span> target = randomFilename();
-    <span class="hljs-keyword">let</span> onProgress = <span class="hljs-literal">false</span>;
-
-    download(source, target, (size, total) =&gt; {
-
-      onProgress = <span class="hljs-literal">true</span>;
-      assert.equal(size, total);
-      assert.equal(total, getFileSize(source));
-
-    }).then(filename =&gt; {
-
-      assert.equal(onProgress, <span class="hljs-literal">true</span>);
-      assert.equal(target, filename);
-      assert.equal(readFile(source), readFile(target));
-
-      done();
-
-    }).catch(err =&gt; {
-      <span class="hljs-keyword">throw</span> err;
-    });
-  });
-
-});
-</code></pre>
-<p>说明：本文只为了演示如何配置<code>mocha</code>和编写单元测试程序，所以没有给<code>download()</code>函数编写完整的单元测试，仅编写一个测试用例作为演示。</p>
-<p>好了，现在执行<code>$ npm test</code>命令看看：</p>
-<pre><code class="language-bash">$ npm <span class="hljs-built_in">test</span>
-
-&gt; es2015_demo@1.0.0 <span class="hljs-built_in">test</span> /private/tmp/es2015_demo
-&gt; mocha --compilers js:babel-core/register
-
-
-
-  es2015_demo
-    ✓ 复制本地文件成功
-
-
-  1 passing (51ms)
-
-</code></pre>
-<p>至此，我们已经完成了使用 ES2015 编写模块，并使用<code>mocha</code>来进行单元测试，下文将介绍如何通过<code>babel</code>编译程序，并发布模块。</p>
-<h2><a id="_741"></a>发布模块</h2>
-<h3><a id="1_743"></a>1、编译</h3>
-<p>上文已提到，为了让使用 ES2015 编写的代码能在 Node.js 上正常运行，需要先将其编译成 ES5 标准的代码，然后还需要在程序入口载入<code>babel-polyfill</code>模块。</p>
-<p>我们可以修改文件<code>package.json</code>，为其增加<code>compile</code>命令：</p>
-<pre><code class="language-json">{
-  <span class="hljs-attr">"scripts"</span>: {
-    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"babel -d lib/ src/"</span>
-  }
-}
-</code></pre>
-<p>说明：<code>$ babel -d lib/ src/</code>命令表示<code>lib</code>目录下的所有文件，并保存到<code>src</code>目录下。</p>
-<p>配置完成后，可以执行<code>$ npm run compile</code>命令编译试试：</p>
-<pre><code class="language-bash">$ npm run compile
-
-&gt; @isnc/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
-&gt; babel <span class="hljs-_">-d</span> lib/ src/
-
-src/copy.js -&gt; lib/copy.js
-src/download.js -&gt; lib/download.js
-src/index.js -&gt; lib/index.js
-src/utils.js -&gt; lib/utils.js
-</code></pre>
-<p>此时，我们还不能直接载入<code>lib/index.js</code>文件，因为在此之前需要载入<code>babel-polyfill</code>模块。编辑文件<code>package.json</code>，设置模块入口文件：</p>
-<pre><code class="language-json">{
-  <span class="hljs-attr">"main"</span>: <span class="hljs-string">"index.js"</span>
-}
-</code></pre>
-<p>说明：使用<code>$ npm init</code>生成<code>package.json</code>文件时，<code>main</code>的默认值即为<code>index.js</code>，可无需修改。</p>
-<p>新建文件<code>index.js</code>：</p>
-<pre><code class="language-javascript"><span class="hljs-built_in">require</span>(<span class="hljs-string">'babel-polyfill'</span>);
-<span class="hljs-built_in">module</span>.exports = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./lib'</span>).default;
-</code></pre>
-<p>说明：在<code>src/index.js</code>中<code>download()</code>函数使用的是<code>export default</code>输出，所以在 Node.js 中需要读取模块输出的<code>default</code>属性。</p>
-<p>上文中我们的测试程序是直接载入<code>src</code>目录下的程序，但模块最终发布的却是编译后的程序，为了避免因 babel 的 Bug 而导致编译后的程序与源程序功能有差异，我们的单元测试需要改用编译后的代码。</p>
-<p>编辑文件<code>test/test.js</code>，将引入<code>src</code>目录的模块：</p>
-<pre><code>import download from '../src';
-import {randomFilename} from '../src/utils';
-</code></pre>
-<p>改为：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> download <span class="hljs-keyword">from</span> <span class="hljs-string">'../'</span>;
-<span class="hljs-keyword">import</span> {randomFilename} <span class="hljs-keyword">from</span> <span class="hljs-string">'../lib/utils'</span>;
-</code></pre>
-<p>在编辑<code>package.json</code>文件，将<code>test</code>命令改为先执行<code>compile</code>编译代码后再执行<code>mocha</code>测试：</p>
-<pre><code>{
-  &quot;scripts&quot;: {
-    &quot;test&quot;: &quot;npm run compile &amp;&amp; mocha --compilers js:babel-core/register&quot;
-  }
-}
-</code></pre>
-<p>重新执行<code>$ npm test</code>可看到如下结果：</p>
-<pre><code>$ npm test
-
-&gt; es2015_demo@1.0.0 test /private/tmp/es2015_demo
-&gt; npm run compile &amp;&amp; mocha --compilers js:babel-core/register
-
-
-&gt; es2015_demo@1.0.0 compile /private/tmp/es2015_demo
-&gt; babel -d lib/ src/
-
-src/copy.js -&gt; lib/copy.js
-src/download.js -&gt; lib/download.js
-src/index.js -&gt; lib/index.js
-src/utils.js -&gt; lib/utils.js
-
-
-  es2015_demo
-    ✓ 复制本地文件成功
-
-
-  1 passing (42ms)
-
-</code></pre>
-<h3><a id="2_844"></a>2、发布</h3>
-<p>在开发项目时，一般都会使用 Git 这样的源代码版本管理工具。上文例子中，<code>lib</code>目录的文件是编译生成的，可以不需要纳入到版本管理中。Node.js 项目在安装模块时会将其保存到<code>node_modules</code>目录下，这些内容也是不应该纳入版本管理的。可以添加文件<code>.gitignore</code>来将其排除：</p>
-<pre><code>*.log
-node_modules
-lib
-</code></pre>
-<p>如果要将模块发布到 NPM 上，ES2015 编写的源程序也是不需要的，可以添加文件<code>.npmignore</code>来将其排除：</p>
-<pre><code>src
-</code></pre>
-<p>在使用<code>$ npm publish</code>命令发布模块时，可以设置<code>prepublish</code>命令来让其自动执行编译。编辑文件<code>package.json</code>，增加以下内容：</p>
-<pre><code class="language-json">{
-  <span class="hljs-attr">"scripts"</span>: {
-    <span class="hljs-attr">"prepublish"</span>: <span class="hljs-string">"npm run compile"</span>
-  }
-}
-</code></pre>
-<p>现在我们执行<code>$ npm publish</code>就可以发布模块了：</p>
-<pre><code>$ npm publish
-
-&gt; @leizongmin/es2015_demo@1.0.0 prepublish /Users/glen/work/tmp/es2015_demo
-&gt; npm run compile
-
-
-&gt; @leizongmin/es2015_demo@1.0.0 compile /Users/glen/work/tmp/es2015_demo
-&gt; babel -d lib/ src/
-
-src/copy.js -&gt; lib/copy.js
-src/download.js -&gt; lib/download.js
-src/index.js -&gt; lib/index.js
-src/utils.js -&gt; lib/utils.js
-+ @leizongmin/es2015_demo@1.0.0
-</code></pre>
-<h3><a id="3_889"></a>3、善后</h3>
-<p>上文例子中需要依赖<code>mocha</code>和<code>babel</code>两个工具，当我们开发多个项目或将其作为开源项目发布出去时，可能不同的项目所依赖<code>babel</code>的版本是不一样的，为了开发环境一致，一般我们需要在当前项目中执行其开发时所指定的<code>babel</code>版本。</p>
-<p>首先执行以下命令安装<code>babel-cli</code>和<code>mocha</code>：</p>
-<pre><code class="language-bash">$ npm i babel-cli mocha --save-dev
-</code></pre>
-<p>安装完成后，对于上文中使用的<code>babel</code>和<code>mocha</code>命令，可以使用<code>./node_modules/.bin/babel</code>和<code>./node_modules/.bin/mocha</code>来执行。编辑<code>package.json</code>文件，更改<code>compile</code>和<code>test</code>命令：</p>
-<pre><code class="language-json">{
-  <span class="hljs-attr">"scripts"</span>: {
-    <span class="hljs-attr">"compile"</span>: <span class="hljs-string">"./node_modules/.bin/babel -d lib/ src/"</span>,
-    <span class="hljs-attr">"test"</span>: <span class="hljs-string">"npm run compile &amp;&amp; ./node_modules/.bin/mocha --compilers js:babel-core/register"</span>
-  }
-}
-</code></pre>
-<p>本文示例模块输出的<code>download()</code>函数使用的是 Promise 的异步模式，对于习惯使用 callback 模式的用户，我们也可以通过简单的修改来使其支持 callback 模式。</p>
-<p>编辑文件<code>src/utils.js</code>，增加<code>callbackify()</code>函数：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callbackify</span>(<span class="hljs-params">fn</span>) </span>{
-  <span class="hljs-keyword">let</span> argc = fn.length;
-  <span class="hljs-keyword">return</span> (...args) =&gt; {
-    <span class="hljs-keyword">let</span> callback = args[argc];
-    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> callback !== <span class="hljs-string">'function'</span>) callback = <span class="hljs-literal">null</span>;
-    <span class="hljs-keyword">return</span> fn(...args)
-      .then(ret =&gt; {
-        callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
-        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve(ret);
-      })
-      .catch(err =&gt; {
-        callback &amp;&amp; callback(err);
-        <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.reject(err);
-      });
-  }
-}
-</code></pre>
-<p>编辑文件<code>src/index.js</code>，将其改为以下内容：</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> path <span class="hljs-keyword">from</span> <span class="hljs-string">'path'</span>;
-<span class="hljs-keyword">import</span> mkdirp <span class="hljs-keyword">from</span> <span class="hljs-string">'mkdirp'</span>;
-<span class="hljs-keyword">import</span> copyFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./copy'</span>;
-<span class="hljs-keyword">import</span> downloadFile <span class="hljs-keyword">from</span> <span class="hljs-string">'./download'</span>;
-<span class="hljs-keyword">import</span> {randomFilename, isURL, noop, callbackify} <span class="hljs-keyword">from</span> <span class="hljs-string">'./utils'</span>;
-
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> callbackify(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">source, target, progress</span>) </span>{
-  target = target || randomFilename(download.tmpDir);
-  progress = progress || noop;
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-
-    mkdirp(path.dirname(target), err =&gt; {
-      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> callback(err);
-
-      resolve((isURL(source) ? downloadFile : copyFile)
-        (source, target, progress));
-    });
-
-  });
-});
-</code></pre>
-<p>说明：<code>callbackify()</code>函数的作用是返回一个新的函数，这个函数可以支持原函数的 Promise 模式，同时支持 callback 模式。</p>
-<p>现在再给<code>test/test.js</code>增加一个测试用例：</p>
-<pre><code class="language-javascript">  it(<span class="hljs-string">'复制本地文件成功 callback'</span>, done =&gt; {
-
-    <span class="hljs-keyword">let</span> source = __filename;
-    <span class="hljs-keyword">let</span> target = randomFilename();
-    <span class="hljs-keyword">let</span> onProgress = <span class="hljs-literal">false</span>;
-
-    download(source, target, (size, total) =&gt; {
-
-      onProgress = <span class="hljs-literal">true</span>;
-      assert.equal(size, total);
-      assert.equal(total, getFileSize(source));
-
-    }, (err, filename) =&gt; {
-
-      assert.equal(err, <span class="hljs-literal">null</span>);
-      assert.equal(onProgress, <span class="hljs-literal">true</span>);
-      assert.equal(target, filename);
-      assert.equal(readFile(source), readFile(target));
-
-      done();
-
-    });
-  });
-</code></pre>
-<p>如无意外，重新执行<code>$ npm test</code>是可以测试通过的。</p>
-<h2><a id="_991"></a>后记</h2>
-<p>本文的初稿在一个星期之前已经完成，一开始看到 ES2015 的新语法特性时眼前一亮，接着又觉得使用的时候有点繁琐，比如每次运行程序都有先使用 babel 编译，程序运行出错时定位的位置跟 ES2015 源码的位置不同等等。后来经过几天的摸索，发觉新的语法特性确实可以少打了很多代码，而且程序的表现力也更强了，与 babel 编译所耗的那几秒时间相比还是很值得的。</p>
-<p>本文的示例代码可通过 <a href="https://github.com/leizongmin/morning.work/blob/gh-pages/demo/es2015_npm_package">https://github.com/leizongmin/morning.work/blob/gh-pages/demo/es2015_npm_package</a> 获得。</p>
-<h2><a id="_998"></a>扩展阅读</h2>
-<ul>
-<li><a href="http://gank.io/post/564151c1f1df1210001c9161">给 JavaScript 初心者的 ES2015 实战</a></li>
-<li><a href="http://es6.ruanyifeng.com/">ECMAScript 6 入门</a></li>
-<li><a href="https://blog.leancloud.cn/3910/">「大概可能也许是」目前最好的 JavaScript 异步方案 async/await</a></li>
-<li><a href="http://babeljs.io/docs/learn-es2015/">Learn ES2015 - A detailed overview of ECMAScript 6 features</a></li>
-<li><a href="http://mammal.io/articles/using-es6-today/">Using ES6 with npm today</a></li>
-<li><a href="http://jamesknelson.com/using-es6-in-the-browser-with-babel-6-and-webpack/">Using ES6 and ES7 in the Browser, with Babel 6 and Webpack</a></li>
-<li><a href="http://jamesknelson.com/writing-npm-packages-with-es6-using-the-babel-6-cli/">Writing NPM packages with ES6 using the Babel 6 CLI</a></li>
-<li><a href="http://info.meteor.com/blog/set-up-sublime-text-for-meteor-es6-es2015-and-jsx-syntax-and-linting">Set up Sublime Text for Meteor ES6 (ES2015) and JSX Syntax and Linting</a></li>
-<li><a href="http://exploringjs.com/es6/ch_modules.html">Exploring ES6 - Modules</a></li>
-</ul>
-]]></description><link>http://morning.work/page/2015-11/es6-es7-develop-npm-module-using-babel.html</link><guid isPermaLink="true">http://morning.work/page/2015-11/es6-es7-develop-npm-module-using-babel.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Mon, 30 Nov 2015 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 的 Buffer 那些你可能不知道的用法]]></title><description><![CDATA[<p><h3>目录</h3><ul><ul><li><a href="#_5">前言</a></li><li><a href="#_114">操作结构化数据</a></li><li><a href="#leiproto__214">lei-proto 模块介绍</a></li><li><a href="#_267">扩展阅读</a></li></ul></ul></p>
+]]></description><link>http://morning.work/page/2015-12/install-shadowsocks-on-centos-7.html</link><guid isPermaLink="true">http://morning.work/page/2015-12/install-shadowsocks-on-centos-7.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 22 Dec 2015 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 的 Buffer 那些你可能不知道的用法]]></title><description><![CDATA[<p><h3>目录</h3><ul><ul><li><a href="#_5">前言</a></li><li><a href="#_114">操作结构化数据</a></li><li><a href="#leiproto__214">lei-proto 模块介绍</a></li><li><a href="#_267">扩展阅读</a></li></ul></ul></p>
 <h2><a id="_5"></a>前言</h2>
 <p>在大多数介绍 Buffer 的文章中，主要是围绕数据拼接和内存分配这两方面的。比如我们使用<code>fs</code>模块来读取文件内容的时候，返回的就是一个 Buffer：</p>
 <pre><code class="language-javascript">fs.readFile(<span class="hljs-string">'filename'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, buf</span>) </span>{
