@@ -906,8 +906,8 @@ $ npm i babel-cli mocha --save-dev
 ```json
 {
   "scripts": {
-    "compile": "./node_modules/.bin/babel -d lib/ src/",
-    "test": "npm run compile && ./node_modules/.bin/mocha --compilers js:babel-core/register"
+    "compile": "babel -d lib/ src/",
+    "test": "npm run compile && mocha --compilers js:babel-core/register"
   }
 }
 ```
