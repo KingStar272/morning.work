@@ -342,8 +342,41 @@ const s = new TailStream({file, position: 'end'});
 
 ## 停止监听
 
+上文我们实现的`TailStream`一旦开始就会源源不断地读取文件新增的内容，有时候就像没了脚刹的汽车，一旦加了油飙了车就根本停不下来了，想想还是很危险的。所以，接下来我们实现一个`close()`方法，这样就可以在合适的时候停车了：
 
-## 还要做得更完美
+```javascript
+// 关闭
+close() {
+  // 关闭文件watcher
+  this._watcher.close();
+  // 关闭文件操作句柄
+  fs.close(this._fd, err => {
+    if (err) return this.emit('error', err);
+    // 结束stream
+    this.push(null);
+  });
+}
+```
+
+
+## 还要暂停
+
+当文章读到这里的时候，你会想，现在已经完美地实现`TailStream`了吧？毕竟该有的功能都有了。可是，既然我们有了`close()`用来停止监听，为什么不能有一个暂停功能呢？
+
+当然，熟悉`Stream`的同学都知道，`readable.pause()`和`readable.resume()`这两个方法就可以用来暂停和继续，实际上在上文的代码不经任何修改也可以在各种使用`pause()`和`resume()`良好地工作。
+
+在经过详细阅读 Node.js 相关的API文档之后，我们发现这三个概念：
+
++ [缓冲](https://nodejs.org/api/stream.html#stream_buffering)
++ [Readable Stream 的两种模式](https://nodejs.org/api/stream.html#stream_two_modes)
++ [Readable Stream 的三种状态](https://nodejs.org/api/stream.html#stream_three_states)
+
+从文档得知，当使用`readable.pause()`暂停之后，如果我们还继续使用`readable.push()`来往
+
+
+## 日志文件处理
+
+## 谁更机智
 
 
 ## 小结
