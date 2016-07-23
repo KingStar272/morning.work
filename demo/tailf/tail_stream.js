@@ -83,6 +83,14 @@ class TailStream extends stream.Readable {
     }
   }
 
+  // 关闭
+  close() {
+    this._watcher.close();
+    fs.close(this._fd, err => {
+      if (err) return this.emit('error', err);
+    });
+  }
+
 }
 
 

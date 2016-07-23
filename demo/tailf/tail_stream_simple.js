@@ -24,6 +24,8 @@ class TailStream extends stream.Readable {
     this._ready = false;
     // 开始打开文件
     this._openFile();
+    // 当触发resume事件时尝试读取数据
+    this.on('resume', () => this._tryRead());
   }
 
   // 打开文件
@@ -72,7 +74,10 @@ class TailStream extends stream.Readable {
 
   // 尝试读取数据
   _tryRead() {
-    this._read(this._getHighWaterMark());
+    if (this._readableState.flowing) {
+      // 仅当flowing=true时才读取数据
+      this._read(this._getHighWaterMark());
+    }
   }
 
   // 读取数据
@@ -88,9 +93,22 @@ class TailStream extends stream.Readable {
           // 将数据推送到队列
           this._position += bytesRead;
           this.push(buf.slice(0, bytesRead));
+          console.log('read', bytesRead);
         }
       });
     }
+  }
+
+  // 关闭
+  close() {
+    // 关闭文件watcher
+    this._watcher.close();
+    // 关闭文件操作句柄
+    fs.close(this._fd, err => {
+      if (err) return this.emit('error', err);
+      // 结束stream
+      this.push(null);
+    });
   }
 
 }
@@ -107,12 +125,29 @@ s.on('data', data => {
 s.on('readable', () => {
   console.log('readable');
 });
+s.on('close', () => {
+  console.log('close');
+});
+s.on('end', () => {
+  console.log('end');
+});
+
+s.pause();
+console.log(s._readableState.flowing);
+setTimeout(() => {
+  s.resume();
+  console.log(s._readableState.flowing);
+}, 2000);
 
 // setTimeout(() => {
+//   console.log('flowing', s._readableState.flowing);
 //   console.log('pause');
 //   s.pause();
+//   console.log('flowing', s._readableState.flowing);
 //   setTimeout(() => {
+//     console.log('flowing', s._readableState.flowing);
 //     console.log('resume');
 //     s.resume();
-//   }, 2000);
-// }, 2000);
+//     console.log('flowing', s._readableState.flowing);
+//   }, 3000);
+// }, 3000);

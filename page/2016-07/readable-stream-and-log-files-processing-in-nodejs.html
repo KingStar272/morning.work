@@ -194,7 +194,7 @@ li > p {
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
     创作于 2016-07-23            </div>
   <div id="remaining-time">
-    全文约 5543 字，预计阅读时间为 0 时 28 分钟
+    全文约 5830 字，预计阅读时间为 0 时 30 分钟
   </div>
 
   <article id="content">
@@ -474,7 +474,7 @@ _goToEnd(callback) {
   });
 }
 </code></pre>
-<p>相应地我们还有修改<code>_openFile()</code>方法：</p>
+<p>相应地我们还要修改<code>_openFile()</code>方法：</p>
 <pre><code class="language-javascript"><span class="hljs-comment">// 打开文件</span>
 _openFile() {
   fs.open(<span class="hljs-keyword">this</span>._file, <span class="hljs-string">'r'</span>, (err, fd) =&gt; {
@@ -502,7 +502,25 @@ _openFile() {
 <span class="hljs-keyword">const</span> s = <span class="hljs-keyword">new</span> TailStream({file, position: <span class="hljs-string">'end'</span>});
 </code></pre>
 <p>重新运行测试程序时，我们应该能发现启动后并没有输出任何信息，因为此时已经定位到末尾，并不会输出文件前部分的内容，仅当继续往文件写入内容时测试程序才会将内容显示出来。</p>
-<h2><a id="_339"></a>相关链接</h2>
+<h2><a id="_338"></a>停止监听</h2>
+<p>上文我们实现的<code>TailStream</code>一旦开始就会源源不断地读取文件新增的内容，有时候就像没了脚刹的汽车，一旦加了油飙了车就根本停不下来了，想想还是很危险的。所以，接下来我们实现一个<code>close()</code>方法，这样就可以在合适的时候停车了：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 关闭</span>
+close() {
+  <span class="hljs-comment">// 关闭文件 watcher</span>
+  <span class="hljs-keyword">this</span>._watcher.close();
+  <span class="hljs-comment">// 关闭文件操作句柄</span>
+  fs.close(<span class="hljs-keyword">this</span>._fd, err =&gt; {
+    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+    <span class="hljs-comment">// 结束 stream</span>
+    <span class="hljs-keyword">this</span>.push(<span class="hljs-literal">null</span>);
+  });
+}
+</code></pre>
+<h2><a id="_359"></a>还要做得更完美</h2>
+<h2><a id="_361"></a>日志文件处理</h2>
+<h2><a id="_363"></a>谁更机智</h2>
+<h2><a id="_366"></a>小结</h2>
+<h2><a id="_369"></a>相关链接</h2>
 <ul>
 <li><a href="http://tech.meituan.com/stream-basics.html">Node.js Stream - 基础篇</a></li>
 </ul>
