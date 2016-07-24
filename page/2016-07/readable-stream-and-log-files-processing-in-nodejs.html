@@ -194,7 +194,7 @@ li > p {
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
     创作于 2016-07-23            </div>
   <div id="remaining-time">
-    全文约 5830 字，预计阅读时间为 0 时 30 分钟
+    全文约 8400 字，预计阅读时间为 0 时 42 分钟
   </div>
 
   <article id="content">
@@ -516,11 +516,100 @@ close() {
   });
 }
 </code></pre>
-<h2><a id="_359"></a>还要做得更完美</h2>
-<h2><a id="_361"></a>日志文件处理</h2>
-<h2><a id="_363"></a>谁更机智</h2>
-<h2><a id="_366"></a>小结</h2>
-<h2><a id="_369"></a>相关链接</h2>
+<h2><a id="_357"></a>还要暂停</h2>
+<p>当文章读到这里的时候，你会想，现在已经完美地实现<code>TailStream</code>了吧？毕竟该有的功能都有了。可是，既然我们有了<code>close()</code>用来停止监听，为什么不能有一个暂停功能呢？</p>
+<p>当然，熟悉<code>Stream</code>的同学都知道，<code>readable.pause()</code>和<code>readable.resume()</code>这两个方法就可以用来暂停和继续，实际上，上文的代码不经任何修改也可以在各种使用<code>pause()</code>和<code>resume()</code>良好地工作。</p>
+<p>在经过详细阅读 Node.js 相关的 API 文档之后，我们发现这三个概念：</p>
+<ul>
+<li><a href="https://nodejs.org/api/stream.html#stream_buffering">缓冲</a></li>
+<li><a href="https://nodejs.org/api/stream.html#stream_two_modes">Readable Stream 的两种模式</a></li>
+<li><a href="https://nodejs.org/api/stream.html#stream_three_states">Readable Stream 的三种状态</a></li>
+</ul>
+<p>从文档得知，<code>Readable Stream</code>有两种模式：流动（<strong>flowing</strong>）和暂停（<strong>paused</strong>）。初始状态下，<code>readable._readableState.flowing = null</code>，此时流处于暂停状态，并不会主动调用<code>readable._read(size)</code>来请求读取数据。</p>
+<p>当执行以下操作时才切换到流动（<strong>flowing</strong>）状态：</p>
+<ul>
+<li>添加了一个<code>data</code>事件的监听器</li>
+<li>执行了<code>readable.resume()</code></li>
+<li>执行了<code>readable.pipe()</code></li>
+</ul>
+<p>如果执行了以上的任一操作，此时<code>readable._readableState.flowing = true</code>，流开始尝试调用<code>readable._read(size)</code>底层资源中读取数据，并通过<code>data</code>消费这些数据，或者将其<code>pipe</code>到另一个流中。</p>
+<p>当使用<code>readable.pause()</code>暂停之后，此时<code>readable._readableState.flowing = false</code>，如果我们还继续使用<code>readable.push()</code>来推送数据，数据实际上是被存储到缓冲区里面。当程序执行<code>readable.resume()</code>后，此时<code>readable._readableState.flowing = true</code>才会继续消费缓冲区内的数据。</p>
+<p>在暂停状态下，我们也可以通过<code>readable.read()</code>去手动消费数据。</p>
+<p>好了，我们现在来说说上文的程序存在的问题。在<code>_read()</code>里面，我们已经可以通过一个<code>this._ready</code>标记来判断流是否处于就绪状态从而决定是否要从文件种读取数据，而在暂停的情况下<code>Readable Stream</code>也不会胡乱调用<code>_read()</code>请求读取数据。</p>
+<p>当文件内容改变时，会执行<code>_tryRead()</code>，在这个方法里面我们主动去调用<code>_read()</code>请求读取数据了。假如此时流正处于暂停状态，我们<strong>读取资源的操作还是不会被暂停，数据仍然会不停地推送到缓冲区，尽管从外表上看流还是处于暂停状态</strong>。</p>
+<p>所以我们还要做的修改是，在调用<code>_read()</code>之前先判断一下<code>this._readableState.flowing</code>的状态：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 尝试读取数据</span>
+_tryRead() {
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._readableState.flowing) {
+    <span class="hljs-comment">// 仅当 flowing=true 时才读取数据</span>
+    <span class="hljs-keyword">this</span>._read(<span class="hljs-keyword">this</span>._getHighWaterMark());
+  }
+}
+</code></pre>
+<h2><a id="_400"></a>日志文件处理</h2>
+<p>前面铺垫了那么多，终于要说到日志文件处理了。一般情况下，日志都是按行存储到文件里面的，在本文的例子中，我们要监听这个日志文件，把它新增的日志内容按行读取出来，简单处理之后实时地打印到屏幕上。</p>
+<p>假如每一行都是一个 JSON 字符串，我们借助<code>lei-stream</code>模块编写一个用于模拟生成日志的程序<code>make_logs.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> os = <span class="hljs-built_in">require</span>(<span class="hljs-string">'os'</span>);
+<span class="hljs-keyword">const</span> writeLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).writeLine;
+
+<span class="hljs-comment">// 创建写日志文件流</span>
+<span class="hljs-keyword">const</span> s = writeLine(<span class="hljs-string">'test.log'</span>, {encoding: <span class="hljs-string">'json'</span>});
+
+<span class="hljs-comment">// 模拟日志输出</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">nextLog</span>(<span class="hljs-params"></span>) </span>{
+  s.write({
+    time: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(),
+    loadavg: os.loadavg(),
+    memoryUsage: process.memoryUsage(),
+  });
+}
+setInterval(nextLog, <span class="hljs-number">1000</span>);
+</code></pre>
+<p>在执行程序之前，我们还要安装<code>lei-stream</code>模块：</p>
+<pre><code class="language-bash">$ npm install lei-stream
+</code></pre>
+<p>然后执行程序：</p>
+<pre><code class="language-bash">$ node make_logs
+</code></pre>
+<p>此时程序已经在给我们生成日志了。现在开始编写处理日志的程序<code>watch_logs.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> readLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).readLine;
+<span class="hljs-keyword">const</span> TailStream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./tail_stream'</span>);
+
+<span class="hljs-comment">// 创建按行读取日志文件流</span>
+<span class="hljs-keyword">const</span> s = readLine(<span class="hljs-keyword">new</span> TailStream({
+  file: <span class="hljs-string">'test.log'</span>,  <span class="hljs-comment">// 日志文件名</span>
+  position: <span class="hljs-string">'end'</span>,   <span class="hljs-comment">// 定位到尾部</span>
+}), {
+  encoding: <span class="hljs-string">'json'</span>,  <span class="hljs-comment">// 使用 JSON 编码</span>
+  autoNext: <span class="hljs-literal">false</span>,   <span class="hljs-comment">// 不自动读下一行</span>
+});
+
+s.on(<span class="hljs-string">'data'</span>, data =&gt; {
+  <span class="hljs-comment">// 将日志打印到屏幕</span>
+  <span class="hljs-built_in">console</span>.log(data);
+  <span class="hljs-comment">// 处理完后调用 next()继续读取下一行</span>
+  s.next();
+});
+</code></pre>
+<p>执行以下命令启动日志监听程序：</p>
+<pre><code class="language-bash">$ node watch_logs
+</code></pre>
+<p>稍等几秒，应该会看到屏幕不断地打印出这样的信息出来：</p>
+<pre><code>{ time: '2016-07-24T02:18:11.325Z',
+  loadavg: [ 2.31494140625, 2.4052734375, 2.19775390625 ],
+  memoryUsage: { rss: 22818816, heapTotal: 8384512, heapUsed: 5224824 } }
+{ time: '2016-07-24T02:18:12.331Z',
+  loadavg: [ 2.31494140625, 2.4052734375, 2.19775390625 ],
+  memoryUsage: { rss: 22818816, heapTotal: 8384512, heapUsed: 5226688 } }
+</code></pre>
+<p><strong>注意：在这个实例种，我们是直接定位到日志文件末尾开始，在新增日志数据量较大的情况下，有可能定位到的位置是在一行日志数据的中间部分，也就是说可能出现读取出来的第一条日志是不完整的（只有后半部分），因此要根据实际情况做相应的容错处理。</strong></p>
+<h2><a id="_483"></a>谁更机智</h2>
+<h2><a id="_486"></a>总结</h2>
+<h2><a id="_489"></a>相关链接</h2>
 <ul>
 <li><a href="http://tech.meituan.com/stream-basics.html">Node.js Stream - 基础篇</a></li>
 </ul>

@@ -363,7 +363,7 @@ close() {
 
 当文章读到这里的时候，你会想，现在已经完美地实现`TailStream`了吧？毕竟该有的功能都有了。可是，既然我们有了`close()`用来停止监听，为什么不能有一个暂停功能呢？
 
-当然，熟悉`Stream`的同学都知道，`readable.pause()`和`readable.resume()`这两个方法就可以用来暂停和继续，实际上在上文的代码不经任何修改也可以在各种使用`pause()`和`resume()`良好地工作。
+当然，熟悉`Stream`的同学都知道，`readable.pause()`和`readable.resume()`这两个方法就可以用来暂停和继续，实际上，上文的代码不经任何修改也可以在各种使用`pause()`和`resume()`良好地工作。
 
 在经过详细阅读 Node.js 相关的API文档之后，我们发现这三个概念：
 
@@ -371,15 +371,124 @@ close() {
 + [Readable Stream 的两种模式](https://nodejs.org/api/stream.html#stream_two_modes)
 + [Readable Stream 的三种状态](https://nodejs.org/api/stream.html#stream_three_states)
 
-从文档得知，当使用`readable.pause()`暂停之后，如果我们还继续使用`readable.push()`来往
+从文档得知，`Readable Stream`有两种模式：流动（**flowing**）和暂停（**paused**）。初始状态下，`readable._readableState.flowing = null`，此时流处于暂停状态，并不会主动调用`readable._read(size)`来请求读取数据。
+
+当执行以下操作时才切换到流动（**flowing**）状态：
+
++ 添加了一个`data`事件的监听器
++ 执行了`readable.resume()`
++ 执行了`readable.pipe()`
+
+如果执行了以上的任一操作，此时`readable._readableState.flowing = true`，流开始尝试调用`readable._read(size)`底层资源中读取数据，并通过`data`消费这些数据，或者将其`pipe`到另一个流中。
+
+当使用`readable.pause()`暂停之后，此时`readable._readableState.flowing = false`，如果我们还继续使用`readable.push()`来推送数据，数据实际上是被存储到缓冲区里面。当程序执行`readable.resume()`后，此时`readable._readableState.flowing = true`才会继续消费缓冲区内的数据。
+
+在暂停状态下，我们也可以通过`readable.read()`去手动消费数据。
+
+好了，我们现在来说说上文的程序存在的问题。在`_read()`里面，我们已经可以通过一个`this._ready`标记来判断流是否处于就绪状态从而决定是否要从文件种读取数据，而在暂停的情况下`Readable Stream`也不会胡乱调用`_read()`请求读取数据。
+
+当文件内容改变时，会执行`_tryRead()`，在这个方法里面我们主动去调用`_read()`请求读取数据了。假如此时流正处于暂停状态，我们**读取资源的操作还是不会被暂停，数据仍然会不停地推送到缓冲区，尽管从外表上看流还是处于暂停状态**。
+
+所以我们还要做的修改是，在调用`_read()`之前先判断一下`this._readableState.flowing`的状态：
+
+```javascript
+// 尝试读取数据
+_tryRead() {
+  if (this._readableState.flowing) {
+    // 仅当flowing=true时才读取数据
+    this._read(this._getHighWaterMark());
+  }
+}
+```
 
 
 ## 日志文件处理
 
+前面铺垫了那么多，终于要说到日志文件处理了。一般情况下，日志都是按行存储到文件里面的，在本文的例子中，我们要监听这个日志文件，把它新增的日志内容按行读取出来，简单处理之后实时地打印到屏幕上。
+
+假如每一行都是一个JSON字符串，我们借助`lei-stream`模块编写一个用于模拟生成日志的程序`make_logs.js`：
+
+```javascript
+'use strict';
+
+const os = require('os');
+const writeLine = require('lei-stream').writeLine;
+
+// 创建写日志文件流
+const s = writeLine('test.log', {encoding: 'json'});
+
+// 模拟日志输出
+function nextLog() {
+  s.write({
+    time: new Date(),
+    loadavg: os.loadavg(),
+    memoryUsage: process.memoryUsage(),
+  });
+}
+setInterval(nextLog, 1000);
+```
+
+在执行程序之前，我们还要安装`lei-stream`模块：
+
+```bash
+$ npm install lei-stream
+```
+
+然后执行程序：
+
+```bash
+$ node make_logs
+```
+
+此时程序已经在给我们生成日志了。现在开始编写处理日志的程序`watch_logs.js`：
+
+```javascript
+'use strict';
+
+const readLine = require('lei-stream').readLine;
+const TailStream = require('./tail_stream');
+
+// 创建按行读取日志文件流
+const s = readLine(new TailStream({
+  file: 'test.log',  // 日志文件名
+  position: 'end',   // 定位到尾部
+}), {
+  encoding: 'json',  // 使用JSON编码
+  autoNext: false,   // 不自动读下一行
+});
+
+s.on('data', data => {
+  // 将日志打印到屏幕
+  console.log(data);
+  // 处理完后调用next()继续读取下一行
+  s.next();
+});
+```
+
+执行以下命令启动日志监听程序：
+
+```bash
+$ node watch_logs
+```
+
+稍等几秒，应该会看到屏幕不断地打印出这样的信息出来：
+
+```
+{ time: '2016-07-24T02:18:11.325Z',
+  loadavg: [ 2.31494140625, 2.4052734375, 2.19775390625 ],
+  memoryUsage: { rss: 22818816, heapTotal: 8384512, heapUsed: 5224824 } }
+{ time: '2016-07-24T02:18:12.331Z',
+  loadavg: [ 2.31494140625, 2.4052734375, 2.19775390625 ],
+  memoryUsage: { rss: 22818816, heapTotal: 8384512, heapUsed: 5226688 } }
+```
+
+**注意：在这个实例种，我们是直接定位到日志文件末尾开始，在新增日志数据量较大的情况下，有可能定位到的位置是在一行日志数据的中间部分，也就是说可能出现读取出来的第一条日志是不完整的（只有后半部分），因此要根据实际情况做相应的容错处理。**
+
+
 ## 谁更机智
 
 
-## 小结
+## 总结
 
 
 ## 相关链接
