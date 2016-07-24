@@ -194,7 +194,7 @@ li > p {
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
     创作于 2016-07-23            </div>
   <div id="remaining-time">
-    全文约 5105 字，预计阅读时间为 0 时 26 分钟
+    全文约 5185 字，预计阅读时间为 0 时 26 分钟
   </div>
 
   <article id="content">
@@ -342,7 +342,7 @@ String line;
 </code></pre>
 <p>说明：</p>
 <ul>
-<li>所以操作文件的方法去掉<code>Sync</code>后缀，改用回调函数获取结果</li>
+<li>所有操作文件的方法去掉<code>Sync</code>后缀，改用回调函数获取结果</li>
 <li><code>tailf</code>新增了两个参数<code>onError</code>和<code>onData</code>，分别用来回调操作时发生错误和检测到文件内容更新，其中<code>onData</code>会被执行多次</li>
 </ul>
 <p>现在可以这样使用<code>tailf()</code>：</p>
@@ -366,8 +366,8 @@ String line;
 <p>更好的是，因为 inotify 通过传统的文件描述符工作，您可以利用传统的 select 系统调用来被动地监控监视器和许多其他输入源。两种方法 — 阻塞文件描述符和使用 select— 都避免了繁忙轮询。</p>
 </blockquote>
 <p>简而言之，在本文实现的例子中，我们可以借助 Inotify 来监听文件的变化，如果文件内容有改变就立即尝试取读取，从而避免通过<code>setTimeout(loop, delay)</code>来轮询，这样看起来会更高效一些吧。</p>
-<p>在 NPM 上有有一个 <a href="https://www.npmjs.com/package/inotify">inotify 模块</a>，其简介为<strong>inotify bindings for v8 javascript engine</strong>，由此可以确定这正式我们需要的一个模块。</p>
-<p>但当尝试在我的 Mac 上安装此模块时并未成功，有出错信息判断应该是这个模块并不兼容 Mac 系统：</p>
+<p>在 NPM 上有有一个 <a href="https://www.npmjs.com/package/inotify">inotify 模块</a>，其简介为<strong>inotify bindings for v8 javascript engine</strong>，由此可以确定这正是我们需要的一个模块。</p>
+<p>但当尝试在我的 Mac 上安装此模块时并没成功，由出错信息判断应该是这个模块并不兼容 Mac 系统：</p>
 <pre><code>npm ERR! notsup Not compatible with your operating system or architecture: inotify@1.4.1
 npm ERR! notsup Valid OS:    linux
 npm ERR! notsup Valid Arch:  any
@@ -408,10 +408,13 @@ fs.watch(filename, (event, filename) =&gt; {
 <li>去掉了读取到文件末尾后的<code>setTimeout(loop, delay)</code></li>
 <li>增加<code>fs.watch()</code>来监听文件的变化，如果发现有<code>change</code>事件则调用<code>loop()</code>尝试读取文件</li>
 </ul>
-<p>再重新按照上文的方法来测试时，发现新的程序在我的 Mac 系统上也能工作良好。</p>
-<h2><a id="_265"></a>小结</h2>
+<p>另外我们也可以去掉<code>tailf</code>函数的<code>delay</code>参数：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">tailf</span>(<span class="hljs-params">filename, onError, onData</span>) </span>{
+</code></pre>
+<p>测试程序也不需要传递相应的参数。再重新按照上文的方法来测试时，发现新的程序在我的 Mac 系统上也能工作良好。</p>
+<h2><a id="_271"></a>小结</h2>
 <p>在文章前半部分，我们使用最简单的轮询方法实现了<code>tailf</code>，但是在效率上可能并不能满足我们对效率的要求。此时我们可以尝试使用一些系统 API 来监听到文件被修改的事件，从而代替低效的轮询。但是使用这些高级的 API 可能在不同的操作系统上得不到完整的支持，当然使用 Node.js 内置的 API 应该是兼容性最好的，本文的例子并没有在 Windows 上运行测试过。</p>
-<h2><a id="_270"></a>相关链接</h2>
+<h2><a id="_276"></a>相关链接</h2>
 <ul>
 <li><a href="http://stackoverflow.com/questions/557844/java-io-implementation-of-unix-linux-tail-f">Java IO implementation of unix/linux “tail -f”</a></li>
 <li><a href="http://stackoverflow.com/questions/1703640/how-to-implement-a-pythonic-equivalent-of-tail-f">How to implement a pythonic equivalent of tail -F?</a></li>

@@ -1,6 +1,6 @@
 ```
 title: Node.js 的 Readable Stream 与日志文件处理
-date: 2016-07-23
+date: 2016-07-24
 author: 老雷
 ```
 
@@ -11,9 +11,9 @@ author: 老雷
 > 所以，我们要实现一个实现了`Readable Stream`接口的`tailf`，在本文中我给它起了个名字叫`TailStream`。
 
 
-## Readable Stream
+## 关于 Readable Stream
 
-Node.js 的 stream 模块提供了四种形式的流，分别适用于不同的场景：
+Node.js 的`stream`模块提供了四种形式的流，分别适用于不同的场景：
 
 适用场景          | Class                        | 需要实现的方法
 -----------------|------------------------------|------------
@@ -119,7 +119,13 @@ s.on('data', data => {
 });
 ```
 
-假如将上面的代码保存为文件`tail_stream.js`，而我们要监听的文件名为`test.log`，可以执行以下命令启动：
+假如将上面的代码保存为文件`tail_stream.js`，而我们要监听的文件名为`test.log`，可以执行以下命令先新建一个`test.log`文件：
+
+```bash
+$ echo "" > test.log
+```
+
+在可以执行以下命令启动监听程序：
 
 ```bash
 $ node tail_stream test.log
@@ -131,7 +137,7 @@ $ node tail_stream test.log
 $ echo "$(date) hello, world" >> test.log
 ```
 
-如果一切顺利，我们上文所写的程序应该是能很好地工作的。
+如果一切顺利，我们所写的程序应该是能很好地工作的。
 
 
 ## 不止于玩具
@@ -140,7 +146,7 @@ $ echo "$(date) hello, world" >> test.log
 
 我先来上文的代码存在的一些问题吧：
 
-+ 在`_read(size)`里，由于`fs.read()`是使用异步读取的，`_position`只会在读取完成后的回调函数中更新，当读取过程中`_watchFile()`中有文件被更改的事件触发时，假如此时有一个`fs.read()`读取还未完成，再进行一个`fs.read()`就会导致数据错乱
++ 在`_read(size)`里，由于`fs.read()`是使用异步读取的，`_position`只会在读取完成后的回调函数中更新，当读取过程中`_watchFile()`所监听的文件有被更改的事件触发时，假如此时有一个`fs.read()`读取还未完成，再进行一个`fs.read()`就会导致数据错乱
 + 打开文件用的是`fs.openSync()`，为了保持实现的一致，还是需要使用异步方法来实现的
 
 下面我们尝试将`_openFile()`改为异步实现：
@@ -176,9 +182,9 @@ TypeError: fd must be a file descriptor
     at startup (bootstrap_node.js:144:9)
 ```
 
-由于**在注册`data`事件监听器后，Readable Stream 立刻尝试执行`_read()`从底层读取数据**，而此时我们的异步打开文件的操作可能还没有执行回调，还没有获得文件操作句柄`this._fd`，所以程序报错了。
+由于**在注册`data`事件监听器后，Readable Stream 立刻执行`_read()`尝试从底层读取数据**，而此时我们的异步打开文件的操作可能还没有执行回调，还没有获得文件操作句柄`this._fd`，所以程序报错了。
 
-我们可以尝试使用一个`this._ready`来标记是否准备就绪，在`_read(size)`方法内首先判断如果`this._ready = true`才正在调用`fs.read()`读取文件。由于改动的位置较多，以下直接贴出完整的代码：
+我们可以尝试使用一个`this._ready`标记来表示是否准备就绪，在`_read(size)`方法内首先判断如果`this._ready = true`才正在调用`fs.read()`读取文件。由于改动的位置较多，以下直接贴出完整的代码：
 
 ```javascript
 'use strict';
@@ -297,6 +303,7 @@ constructor(options) {
 _goToEnd(callback) {
   fs.fstat(this._fd, (err, stats) => {
     if (err) return this.emit('error', err);
+    // stats.size即为文件末尾的位置
     this._position = stats.size;
     callback();
   });
@@ -313,6 +320,7 @@ _openFile() {
     this._fd = fd;
 
     const done = () => {
+      // 定位完成后开始监听文件变化和尝试读取数据
       this._watchFile();
       this._ready = true;
       this._tryRead();
@@ -340,7 +348,7 @@ const s = new TailStream({file, position: 'end'});
 重新运行测试程序时，我们应该能发现启动后并没有输出任何信息，因为此时已经定位到末尾，并不会输出文件前部分的内容，仅当继续往文件写入内容时测试程序才会将内容显示出来。
 
 
-## 停止监听
+## 停止
 
 上文我们实现的`TailStream`一旦开始就会源源不断地读取文件新增的内容，有时候就像没了脚刹的汽车，一旦加了油飙了车就根本停不下来了，想想还是很危险的。所以，接下来我们实现一个`close()`方法，这样就可以在合适的时候停车了：
 
@@ -359,11 +367,11 @@ close() {
 ```
 
 
-## 还要暂停
+## 暂停
 
 当文章读到这里的时候，你会想，现在已经完美地实现`TailStream`了吧？毕竟该有的功能都有了。可是，既然我们有了`close()`用来停止监听，为什么不能有一个暂停功能呢？
 
-当然，熟悉`Stream`的同学都知道，`readable.pause()`和`readable.resume()`这两个方法就可以用来暂停和继续，实际上，上文的代码不经任何修改也可以在各种使用`pause()`和`resume()`良好地工作。
+熟悉`Stream`的同学都知道，`readable.pause()`和`readable.resume()`这两个方法就可以用来暂停和继续，实际上，上文的代码不经任何修改也可以在各种使用`pause()`和`resume()`良好地工作。
 
 在经过详细阅读 Node.js 相关的API文档之后，我们发现这三个概念：
 
@@ -379,9 +387,9 @@ close() {
 + 执行了`readable.resume()`
 + 执行了`readable.pipe()`
 
-如果执行了以上的任一操作，此时`readable._readableState.flowing = true`，流开始尝试调用`readable._read(size)`底层资源中读取数据，并通过`data`消费这些数据，或者将其`pipe`到另一个流中。
+如果执行了以上的任一操作，此时`readable._readableState.flowing = true`，流开始尝试调用`readable._read(size)`从底层资源中读取数据，并通过触发`data`事件消费这些数据，或者将其`pipe`到另一个流中。
 
-当使用`readable.pause()`暂停之后，此时`readable._readableState.flowing = false`，如果我们还继续使用`readable.push()`来推送数据，数据实际上是被存储到缓冲区里面。当程序执行`readable.resume()`后，此时`readable._readableState.flowing = true`才会继续消费缓冲区内的数据。
+当使用`readable.pause()`暂停之后，此时`readable._readableState.flowing = false`，如果我们还继续使用`readable.push()`来推送数据，数据实际上是被存储到缓冲区`readable._readableState.buffer`里面。当程序执行`readable.resume()`后，此时`readable._readableState.flowing = true`才会继续消费缓冲区内的数据。
 
 在暂停状态下，我们也可以通过`readable.read()`去手动消费数据。
 
@@ -404,7 +412,7 @@ _tryRead() {
 
 ## 日志文件处理
 
-前面铺垫了那么多，终于要说到日志文件处理了。一般情况下，日志都是按行存储到文件里面的，在本文的例子中，我们要监听这个日志文件，把它新增的日志内容按行读取出来，简单处理之后实时地打印到屏幕上。
+前面铺垫了那么多，终于要说到日志文件处理了。一般情况下，日志都是按行存储到文件里面的，在本文的例子中，我们要监听一个日志文件，把它新增的日志内容按行读取出来，简单处理之后实时地打印到屏幕上。
 
 假如每一行都是一个JSON字符串，我们借助`lei-stream`模块编写一个用于模拟生成日志的程序`make_logs.js`：
 
@@ -487,11 +495,75 @@ $ node watch_logs
 
 ## 谁更机智
 
+当我编写完文章[《如何实时监听文件的新增内容：一个简单 tailf 命令的实现》](http://morning.work/page/2016-07/how-to-implement-a-tail-f-command-in-nodejs.html)之后，机智的小伙伴指出，要完成这样的功能最简单的方法是用`child_process`，我想象出来的代码应该是这样的：
+
+```javascript
+'use strict';
+
+const stream = require('stream');
+const child_process = require('child_process');
+
+class TailStream extends stream.Readable {
+
+  /**
+   * TailStream
+   *
+   * @param {Object} options
+   *   - {String} file 文件名
+   */
+  constructor(options) {
+    options = options || {};
+    // 调用基类的构造函数
+    super(options);
+    // 文件名
+    this._file = options.file;
+    // 执行tail命令
+    this._process = child_process.spawn('tail', ['-c', '0', '-f', options.file], {
+      cwd: __dirname,
+    });
+    this._process.on('error', err => this.emit('error', err));
+    // 将收到的数据推送到缓冲区
+    this._process.stdout.on('data', data => {
+      this.push(data);
+    });
+    // 如果进程执行结束则关闭流
+    this._process.on('exit', () => {
+      this.push(null);
+    });
+  }
+
+  // 读取数据
+  _read(size) {
+    // 不需要做任何事情
+  }
+
+  // 关闭
+  close() {
+    this._process.kill();
+  }
+
+}
+
+module.exports = TailStream;
+```
+
+说明：
+
++ 使用`child_process.spawn()`来执行`tail`命令监听文件，并将进程的输出作为`TailStream`的数据推送出去
++ 这种实现方式只适用于有`tail`命令的系统，比如 Windows 这种是没有自动该命令的
++ 这种方式看起来简单，但是程序执行的开销会比完全使用 Node.js 来实现要大
+
 
 ## 总结
+
+本文首先实现了一个简单的`TailStream`来监听文件的新增内容，另外针对可能存在的问题给出了相应的解决方案，最后结合`lei-stream`实现了一个处理日志文件的例子。对于实现一个`Readable Stream`而言，简单地实现一个`_read(size)`方法即可，但是为了让这个`Stream`表现的更好，我们可能还有根据各自不同的场景去做一些处理。
+
+**实现一个`Readable Stream`的重要意义是，通过这些已被大家熟知的标准来让不同系统模块之间的协作变得更简单，而不是实现各自五花八门的接口。**
 
 
 ## 相关链接
 
 + [Node.js Stream - 基础篇](http://tech.meituan.com/stream-basics.html)
-
++ [Stream - Node.js API](https://nodejs.org/api/stream.html)
++ [如何实时监听文件的新增内容：一个简单 tailf 命令的实现](http://morning.work/page/2016-07/how-to-implement-a-tail-f-command-in-nodejs.html)
++ [在 Node.js 中读写大文件](http://morning.work/page/2015-07/read_and_write_big_file_in_nodejs.html)

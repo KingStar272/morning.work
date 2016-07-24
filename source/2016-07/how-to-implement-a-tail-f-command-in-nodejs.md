@@ -181,7 +181,7 @@ function tailf(filename, delay, onError, onData) {
 
 说明：
 
-+ 所以操作文件的方法去掉`Sync`后缀，改用回调函数获取结果
++ 所有操作文件的方法去掉`Sync`后缀，改用回调函数获取结果
 + `tailf`新增了两个参数`onError`和`onData`，分别用来回调操作时发生错误和检测到文件内容更新，其中`onData`会被执行多次
 
 现在可以这样使用`tailf()`：
@@ -214,9 +214,9 @@ if (filename) {
 
 简而言之，在本文实现的例子中，我们可以借助 Inotify 来监听文件的变化，如果文件内容有改变就立即尝试取读取，从而避免通过`setTimeout(loop, delay)`来轮询，这样看起来会更高效一些吧。
 
-在 NPM 上有有一个 [inotify 模块](https://www.npmjs.com/package/inotify)，其简介为**inotify bindings for v8 javascript engine**，由此可以确定这正式我们需要的一个模块。
+在 NPM 上有有一个 [inotify 模块](https://www.npmjs.com/package/inotify)，其简介为**inotify bindings for v8 javascript engine**，由此可以确定这正是我们需要的一个模块。
 
-但当尝试在我的 Mac 上安装此模块时并未成功，有出错信息判断应该是这个模块并不兼容 Mac 系统：
+但当尝试在我的 Mac 上安装此模块时并没成功，由出错信息判断应该是这个模块并不兼容 Mac 系统：
 
 ```
 npm ERR! notsup Not compatible with your operating system or architecture: inotify@1.4.1
@@ -264,7 +264,13 @@ fs.watch(filename, (event, filename) => {
 + 去掉了读取到文件末尾后的`setTimeout(loop, delay)`
 + 增加`fs.watch()`来监听文件的变化，如果发现有`change`事件则调用`loop()`尝试读取文件
 
-再重新按照上文的方法来测试时，发现新的程序在我的 Mac 系统上也能工作良好。
+另外我们也可以去掉`tailf`函数的`delay`参数：
+
+```javascript
+function tailf(filename, onError, onData) {
+```
+
+测试程序也不需要传递相应的参数。再重新按照上文的方法来测试时，发现新的程序在我的 Mac 系统上也能工作良好。
 
 
 ## 小结

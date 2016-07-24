@@ -1,4 +1,484 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Sat, 23 Jul 2016 06:13:23 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[如何实时监听文件的新增内容：一个简单 tailf 命令的实现]]></title><description><![CDATA[<blockquote>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Sun, 24 Jul 2016 07:11:50 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[Node.js 的 Readable Stream 与日志文件处理]]></title><description><![CDATA[<blockquote>
+<p>在上一篇文章<a href="http://morning.work/page/2016-07/how-to-implement-a-tail-f-command-in-nodejs.html">《如何实时监听文件的新增内容：一个简单 tailf 命令的实现》</a>里面，我们已经实现了一个<code>tailf</code>函数用来监听文件的新增内容，看起来它也工作良好。然而当我想把它应用到手头正要做的日志文件处理时，却发现这样一个<strong>非标准的接口很难与之前编写的模块愉快地合作</strong>。</p>
+<p>我在去年的文章<a href="http://morning.work/page/2015-07/read_and_write_big_file_in_nodejs.html">《在 Node.js 中读写大文件》</a>中实现了一个<code>readLine(stream)</code>函数，其接收的参数是一个<code>Readable Stream</code>对象，能按照给定的规则（比如使用<code>\n</code>换行）来<code>emit</code>出每一行的内容，再结合<code>tailf</code>来监听文件的新增内容，我们就可以很轻易地对新增的内容进行按行切分。</p>
+<p>所以，我们要实现一个实现了<code>Readable Stream</code>接口的<code>tailf</code>，在本文中我给它起了个名字叫<code>TailStream</code>。</p>
+</blockquote>
+<h2><a id="_Readable_Stream_9"></a>关于 Readable Stream</h2>
+<p>Node.js 的<code>stream</code>模块提供了四种形式的流，分别适用于不同的场景：</p>
+<table>
+<thead>
+<tr>
+<th>适用场景</th>
+<th>Class</th>
+<th>需要实现的方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只读</td>
+<td><a href="https://nodejs.org/api/stream.html#stream_class_stream_readable">Readable</a></td>
+<td><code>_read</code></td>
+</tr>
+<tr>
+<td>只写</td>
+<td><a href="https://nodejs.org/api/stream.html#stream_class_stream_writable">Writable</a></td>
+<td><code>_write</code>, <code>_writev</code></td>
+</tr>
+<tr>
+<td>读写</td>
+<td><a href="https://nodejs.org/api/stream.html#stream_class_stream_duplex">Duplex</a></td>
+<td><code>_read</code>, <code>_write</code>, <code>_writev</code></td>
+</tr>
+<tr>
+<td>处理写入的数据供读取</td>
+<td><a href="https://nodejs.org/api/stream.html#stream_class_stream_transform">Transform</a></td>
+<td><code>_transform</code>, <code>_flush</code></td>
+</tr>
+</tbody>
+</table>
+<p>从表格可以得知，要实现一个<code>Readable</code>的流，只需要实现一个<code>_read()</code>方法即可。然后我们再来看看<a href="https://nodejs.org/api/stream.html#stream_readable_read_size_1">_read() 的定义</a>：</p>
+<p><code>readable._read(size)</code></p>
+<ul>
+<li><code>size</code> 参数表示需要异步读取的字节数</li>
+<li>当<code>_read(size)</code>被调用时，尝试从底层资源中读取指定长度的数据，如果读取到数据则使用<code>this.push(data)</code>将数据推送到队列中</li>
+<li>当底层资源已读取到末尾时，通过<code>this.push(null)</code>来表示结束</li>
+<li>如果在操作过程中发生错误，通过<code>this.emit('error', err)</code>来触发<code>error</code>事件</li>
+</ul>
+<h2><a id="_TailStream__35"></a>简单的 TailStream 实现</h2>
+<p>由此官方文档中对 Readable Stream 的介绍，再结合文章<a href="http://morning.work/page/2016-07/how-to-implement-a-tail-f-command-in-nodejs.html">《如何实时监听文件的新增内容：一个简单 tailf 命令的实现》</a>中监控文件变化的方法，我们可以编写以下代码来实现一个<code>tailf</code>的<code>stream</code>版本：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">const</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>);
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TailStream</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">stream</span>.<span class="hljs-title">Readable</span> </span>{
+
+  <span class="hljs-comment">/**
+   * TailStream
+   *
+   * @param {Object} options
+   *   - {String} file 文件名
+   */</span>
+  <span class="hljs-keyword">constructor</span>(options) {
+    options = options || {};
+    <span class="hljs-comment">// 调用基类的构造函数</span>
+    <span class="hljs-keyword">super</span>(options);
+    <span class="hljs-comment">// 文件名</span>
+    <span class="hljs-keyword">this</span>._file = options.file;
+    <span class="hljs-comment">// 起始位置</span>
+    <span class="hljs-keyword">this</span>._position = <span class="hljs-number">0</span>;
+    <span class="hljs-comment">// 开始打开文件</span>
+    <span class="hljs-keyword">this</span>._openFile();
+  }
+
+  <span class="hljs-comment">// 打开文件</span>
+  _openFile() {
+    <span class="hljs-keyword">this</span>._fd = fs.openSync(<span class="hljs-keyword">this</span>._file, <span class="hljs-string">'r'</span>);
+    <span class="hljs-keyword">this</span>._watchFile();
+  }
+
+  <span class="hljs-comment">// 监听文件内容变化</span>
+  _watchFile() {
+    <span class="hljs-keyword">this</span>._watcher = fs.watch(<span class="hljs-keyword">this</span>._file, (event, filename) =&gt; {
+      <span class="hljs-keyword">if</span> (event === <span class="hljs-string">'change'</span>) {
+        <span class="hljs-keyword">this</span>._read(<span class="hljs-keyword">this</span>._getHighWaterMark());
+      }
+    });
+  }
+
+  <span class="hljs-comment">// 获取每次合适的读取字节数</span>
+  _getHighWaterMark() {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>._readableState.highWaterMark;
+  }
+
+  <span class="hljs-comment">// 读取数据</span>
+  _read(size) {
+    fs.read(<span class="hljs-keyword">this</span>._fd, <span class="hljs-keyword">new</span> Buffer(size), <span class="hljs-number">0</span>, size, <span class="hljs-keyword">this</span>._position,
+    (err, bytesRead, buf) =&gt; {
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+      <span class="hljs-keyword">if</span> (bytesRead &gt; <span class="hljs-number">0</span>) {
+        <span class="hljs-comment">// 将数据推送到队列</span>
+        <span class="hljs-keyword">this</span>._position += bytesRead;
+        <span class="hljs-keyword">this</span>.push(buf.slice(<span class="hljs-number">0</span>, bytesRead));
+      }
+    });
+  }
+
+}
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>为了让程序逻辑显得尽可能简单，在打开文件时是使用<code>fs.openSync()</code>这样的阻塞方法，在下文将会对此进行改造</li>
+<li><code>_getHighWaterMark()</code>用来获取每次要尝试读取的字节数，其实就是在<code>_read(size)</code>时传入的默认<code>size</code>值</li>
+<li>如果操作过程中出错，使用<code>this.emit('error', err)</code>来抛出错误</li>
+</ul>
+<p>对于上面的代码，可以编写以下程序来测试：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> file = process.argv[<span class="hljs-number">2</span>];
+<span class="hljs-keyword">const</span> s = <span class="hljs-keyword">new</span> TailStream({file});
+s.on(<span class="hljs-string">'data'</span>, data =&gt; {
+  process.stdout.write(data);
+});
+</code></pre>
+<p>假如将上面的代码保存为文件<code>tail_stream.js</code>，而我们要监听的文件名为<code>test.log</code>，可以执行以下命令先新建一个<code>test.log</code>文件：</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">""</span> &gt; test.log
+</code></pre>
+<p>在可以执行以下命令启动监听程序：</p>
+<pre><code class="language-bash">$ node tail_stream test.log
+</code></pre>
+<p>然后再在另一个控制台窗口下执行命令测试：</p>
+<pre><code class="language-bash">$ <span class="hljs-built_in">echo</span> <span class="hljs-string">"<span class="hljs-variable">$(date)</span> hello, world"</span> &gt;&gt; test.log
+</code></pre>
+<p>如果一切顺利，我们所写的程序应该是能很好地工作的。</p>
+<h2><a id="_138"></a>不止于玩具</h2>
+<p>当你兴高采烈地开始使用上面的代码时，<strong>「我跟你讲，你会踩坑的」</strong>。我都不好意思说当我不小心掉坑里的时候，整整花了一个多小时才回过神来。</p>
+<p>我先来上文的代码存在的一些问题吧：</p>
+<ul>
+<li>在<code>_read(size)</code>里，由于<code>fs.read()</code>是使用异步读取的，<code>_position</code>只会在读取完成后的回调函数中更新，当读取过程中<code>_watchFile()</code>所监听的文件有被更改的事件触发时，假如此时有一个<code>fs.read()</code>读取还未完成，再进行一个<code>fs.read()</code>就会导致数据错乱</li>
+<li>打开文件用的是<code>fs.openSync()</code>，为了保持实现的一致，还是需要使用异步方法来实现的</li>
+</ul>
+<p>下面我们尝试将<code>_openFile()</code>改为异步实现：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 打开文件</span>
+_openFile() {
+  fs.open(<span class="hljs-keyword">this</span>._file, <span class="hljs-string">'r'</span>, (err, fd) =&gt; {
+    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+    <span class="hljs-keyword">this</span>._fd = fd;
+    <span class="hljs-keyword">this</span>._watchFile();
+  });
+}
+</code></pre>
+<p>虽然仅仅是去掉了个<code>Sync</code>，但是变化却出乎意料。当尝试运行程序时，报错了：</p>
+<pre><code>fs.js:687
+  binding.read(fd, buffer, offset, length, position, req);
+          ^
+
+TypeError: fd must be a file descriptor
+    at TypeError (native)
+    at Object.fs.read (fs.js:687:11)
+    at TailStream._read (~/tail_stream.js:49:8)
+    at TailStream.Readable.read (_stream_readable.js:349:10)
+    at resume_ (_stream_readable.js:738:12)
+    at _combinedTickCallback (internal/process/next_tick.js:74:11)
+    at process._tickCallback (internal/process/next_tick.js:98:9)
+    at Module.runMain (module.js:577:11)
+    at run (bootstrap_node.js:352:7)
+    at startup (bootstrap_node.js:144:9)
+</code></pre>
+<p>由于<strong>在注册<code>data</code>事件监听器后，Readable Stream 立刻执行<code>_read()</code>尝试从底层读取数据</strong>，而此时我们的异步打开文件的操作可能还没有执行回调，还没有获得文件操作句柄<code>this._fd</code>，所以程序报错了。</p>
+<p>我们可以尝试使用一个<code>this._ready</code>标记来表示是否准备就绪，在<code>_read(size)</code>方法内首先判断如果<code>this._ready = true</code>才正在调用<code>fs.read()</code>读取文件。由于改动的位置较多，以下直接贴出完整的代码：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
+<span class="hljs-keyword">const</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>);
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TailStream</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">stream</span>.<span class="hljs-title">Readable</span> </span>{
+
+  <span class="hljs-comment">/**
+   * TailStream
+   *
+   * @param {Object} options
+   *   - {String} file 文件名
+   */</span>
+  <span class="hljs-keyword">constructor</span>(options) {
+    options = options || {};
+    <span class="hljs-comment">// 调用基类的构造函数</span>
+    <span class="hljs-keyword">super</span>(options);
+    <span class="hljs-comment">// 文件名</span>
+    <span class="hljs-keyword">this</span>._file = options.file;
+    <span class="hljs-comment">// 起始位置</span>
+    <span class="hljs-keyword">this</span>._position = <span class="hljs-number">0</span>;
+    <span class="hljs-comment">// 标记是否准备就绪</span>
+    <span class="hljs-keyword">this</span>._ready = <span class="hljs-literal">false</span>;
+    <span class="hljs-comment">// 开始打开文件</span>
+    <span class="hljs-keyword">this</span>._openFile();
+  }
+
+  <span class="hljs-comment">// 打开文件</span>
+  _openFile() {
+    fs.open(<span class="hljs-keyword">this</span>._file, <span class="hljs-string">'r'</span>, (err, fd) =&gt; {
+      <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+      <span class="hljs-keyword">this</span>._fd = fd;
+      <span class="hljs-keyword">this</span>._watchFile();
+      <span class="hljs-keyword">this</span>._ready = <span class="hljs-literal">true</span>;
+      <span class="hljs-keyword">this</span>._tryRead();
+    });
+  }
+
+  <span class="hljs-comment">// 监听文件内容变化</span>
+  _watchFile() {
+    <span class="hljs-keyword">this</span>._watcher = fs.watch(<span class="hljs-keyword">this</span>._file, (event, filename) =&gt; {
+      <span class="hljs-keyword">if</span> (event === <span class="hljs-string">'change'</span>) {
+        <span class="hljs-keyword">this</span>._tryRead();
+      }
+    });
+  }
+
+  <span class="hljs-comment">// 获取每次合适的读取字节数</span>
+  _getHighWaterMark() {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>._readableState.highWaterMark;
+  }
+
+  <span class="hljs-comment">// 尝试读取数据</span>
+  _tryRead() {
+    <span class="hljs-keyword">this</span>._read(<span class="hljs-keyword">this</span>._getHighWaterMark());
+  }
+
+  <span class="hljs-comment">// 读取数据</span>
+  _read(size) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._ready) {
+      <span class="hljs-comment">// 仅当_ready=true 时才尝试读取数据</span>
+      <span class="hljs-keyword">this</span>._ready = <span class="hljs-literal">false</span>;
+      fs.read(<span class="hljs-keyword">this</span>._fd, <span class="hljs-keyword">new</span> Buffer(size), <span class="hljs-number">0</span>, size, <span class="hljs-keyword">this</span>._position,
+      (err, bytesRead, buf) =&gt; {
+        <span class="hljs-comment">// 设置_ready=true 以便可以再次读取数据</span>
+        <span class="hljs-keyword">this</span>._ready = <span class="hljs-literal">true</span>;
+        <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+        <span class="hljs-keyword">if</span> (bytesRead &gt; <span class="hljs-number">0</span>) {
+          <span class="hljs-comment">// 将数据推送到队列</span>
+          <span class="hljs-keyword">this</span>._position += bytesRead;
+          <span class="hljs-keyword">this</span>.push(buf.slice(<span class="hljs-number">0</span>, bytesRead));
+        }
+      });
+    }
+  }
+
+}
+</code></pre>
+<h2><a id="_265"></a>直接定位到文件尾部</h2>
+<p>记得在之前实现的<code>tailf()</code>函数里，我们已经实现了打开文件时立刻定位到文件尾部，所以在<code>TailStream</code>里也希望能支持这样的选项。</p>
+<p>首先修改构造函数<code>constructor</code>，增加了初始化选项<code>position</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">/**
+  * TailStream
+  *
+  * @param {Object} options
+  *   - {String} file 文件名
+  *   - {Number|String} position 位置，为"end"表示定位到尾部
+  */</span>
+<span class="hljs-keyword">constructor</span>(options) {
+  options = options || {};
+  <span class="hljs-comment">// 调用基类的构造函数</span>
+  <span class="hljs-keyword">super</span>(options);
+  <span class="hljs-comment">// 文件名</span>
+  <span class="hljs-keyword">this</span>._file = options.file;
+  <span class="hljs-comment">// 起始位置</span>
+  <span class="hljs-keyword">this</span>._position = options.position || <span class="hljs-number">0</span>;
+  <span class="hljs-comment">// 标记是否准备就绪</span>
+  <span class="hljs-keyword">this</span>._ready = <span class="hljs-literal">false</span>;
+  <span class="hljs-comment">// 开始打开文件</span>
+  <span class="hljs-keyword">this</span>._openFile();
+}
+</code></pre>
+<p>然后增加一个方法用于定位文件到文件尾部：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 定位到文件尾部</span>
+_goToEnd(callback) {
+  fs.fstat(<span class="hljs-keyword">this</span>._fd, (err, stats) =&gt; {
+    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+    <span class="hljs-comment">// stats.size 即为文件末尾的位置</span>
+    <span class="hljs-keyword">this</span>._position = stats.size;
+    callback();
+  });
+}
+</code></pre>
+<p>相应地我们还要修改<code>_openFile()</code>方法：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 打开文件</span>
+_openFile() {
+  fs.open(<span class="hljs-keyword">this</span>._file, <span class="hljs-string">'r'</span>, (err, fd) =&gt; {
+    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+    <span class="hljs-keyword">this</span>._fd = fd;
+
+    <span class="hljs-keyword">const</span> done = () =&gt; {
+      <span class="hljs-comment">// 定位完成后开始监听文件变化和尝试读取数据</span>
+      <span class="hljs-keyword">this</span>._watchFile();
+      <span class="hljs-keyword">this</span>._ready = <span class="hljs-literal">true</span>;
+      <span class="hljs-keyword">this</span>._tryRead();
+    };
+
+    <span class="hljs-comment">// 判断如果 this._position='end'则定位到文件尾部</span>
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._position === <span class="hljs-string">'end'</span>) {
+      <span class="hljs-keyword">this</span>._goToEnd(done);
+    } <span class="hljs-keyword">else</span> {
+      done();
+    }
+  });
+}
+</code></pre>
+<p>说明：这里主要的改动为，打开文件后先判断如果<code>this._position = 'end'</code>，则调用<code>this._goToEnd()</code>定位到文件尾部，否则就可以直接尝试读取文件了。</p>
+<p>如果在创建<code>TailStream</code>实例的时候指定<code>position = 'end'</code>，比如这样：</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> file = process.argv[<span class="hljs-number">2</span>];
+<span class="hljs-keyword">const</span> s = <span class="hljs-keyword">new</span> TailStream({file, position: <span class="hljs-string">'end'</span>});
+</code></pre>
+<p>重新运行测试程序时，我们应该能发现启动后并没有输出任何信息，因为此时已经定位到末尾，并不会输出文件前部分的内容，仅当继续往文件写入内容时测试程序才会将内容显示出来。</p>
+<h2><a id="_346"></a>停止</h2>
+<p>上文我们实现的<code>TailStream</code>一旦开始就会源源不断地读取文件新增的内容，有时候就像没了脚刹的汽车，一旦加了油飙了车就根本停不下来了，想想还是很危险的。所以，接下来我们实现一个<code>close()</code>方法，这样就可以在合适的时候停车了：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 关闭</span>
+close() {
+  <span class="hljs-comment">// 关闭文件 watcher</span>
+  <span class="hljs-keyword">this</span>._watcher.close();
+  <span class="hljs-comment">// 关闭文件操作句柄</span>
+  fs.close(<span class="hljs-keyword">this</span>._fd, err =&gt; {
+    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
+    <span class="hljs-comment">// 结束 stream</span>
+    <span class="hljs-keyword">this</span>.push(<span class="hljs-literal">null</span>);
+  });
+}
+</code></pre>
+<h2><a id="_365"></a>暂停</h2>
+<p>当文章读到这里的时候，你会想，现在已经完美地实现<code>TailStream</code>了吧？毕竟该有的功能都有了。可是，既然我们有了<code>close()</code>用来停止监听，为什么不能有一个暂停功能呢？</p>
+<p>熟悉<code>Stream</code>的同学都知道，<code>readable.pause()</code>和<code>readable.resume()</code>这两个方法就可以用来暂停和继续，实际上，上文的代码不经任何修改也可以在各种使用<code>pause()</code>和<code>resume()</code>良好地工作。</p>
+<p>在经过详细阅读 Node.js 相关的 API 文档之后，我们发现这三个概念：</p>
+<ul>
+<li><a href="https://nodejs.org/api/stream.html#stream_buffering">缓冲</a></li>
+<li><a href="https://nodejs.org/api/stream.html#stream_two_modes">Readable Stream 的两种模式</a></li>
+<li><a href="https://nodejs.org/api/stream.html#stream_three_states">Readable Stream 的三种状态</a></li>
+</ul>
+<p>从文档得知，<code>Readable Stream</code>有两种模式：流动（<strong>flowing</strong>）和暂停（<strong>paused</strong>）。初始状态下，<code>readable._readableState.flowing = null</code>，此时流处于暂停状态，并不会主动调用<code>readable._read(size)</code>来请求读取数据。</p>
+<p>当执行以下操作时才切换到流动（<strong>flowing</strong>）状态：</p>
+<ul>
+<li>添加了一个<code>data</code>事件的监听器</li>
+<li>执行了<code>readable.resume()</code></li>
+<li>执行了<code>readable.pipe()</code></li>
+</ul>
+<p>如果执行了以上的任一操作，此时<code>readable._readableState.flowing = true</code>，流开始尝试调用<code>readable._read(size)</code>从底层资源中读取数据，并通过触发<code>data</code>事件消费这些数据，或者将其<code>pipe</code>到另一个流中。</p>
+<p>当使用<code>readable.pause()</code>暂停之后，此时<code>readable._readableState.flowing = false</code>，如果我们还继续使用<code>readable.push()</code>来推送数据，数据实际上是被存储到缓冲区<code>readable._readableState.buffer</code>里面。当程序执行<code>readable.resume()</code>后，此时<code>readable._readableState.flowing = true</code>才会继续消费缓冲区内的数据。</p>
+<p>在暂停状态下，我们也可以通过<code>readable.read()</code>去手动消费数据。</p>
+<p>好了，我们现在来说说上文的程序存在的问题。在<code>_read()</code>里面，我们已经可以通过一个<code>this._ready</code>标记来判断流是否处于就绪状态从而决定是否要从文件种读取数据，而在暂停的情况下<code>Readable Stream</code>也不会胡乱调用<code>_read()</code>请求读取数据。</p>
+<p>当文件内容改变时，会执行<code>_tryRead()</code>，在这个方法里面我们主动去调用<code>_read()</code>请求读取数据了。假如此时流正处于暂停状态，我们<strong>读取资源的操作还是不会被暂停，数据仍然会不停地推送到缓冲区，尽管从外表上看流还是处于暂停状态</strong>。</p>
+<p>所以我们还要做的修改是，在调用<code>_read()</code>之前先判断一下<code>this._readableState.flowing</code>的状态：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// 尝试读取数据</span>
+_tryRead() {
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>._readableState.flowing) {
+    <span class="hljs-comment">// 仅当 flowing=true 时才读取数据</span>
+    <span class="hljs-keyword">this</span>._read(<span class="hljs-keyword">this</span>._getHighWaterMark());
+  }
+}
+</code></pre>
+<h2><a id="_408"></a>日志文件处理</h2>
+<p>前面铺垫了那么多，终于要说到日志文件处理了。一般情况下，日志都是按行存储到文件里面的，在本文的例子中，我们要监听一个日志文件，把它新增的日志内容按行读取出来，简单处理之后实时地打印到屏幕上。</p>
+<p>假如每一行都是一个 JSON 字符串，我们借助<code>lei-stream</code>模块编写一个用于模拟生成日志的程序<code>make_logs.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> os = <span class="hljs-built_in">require</span>(<span class="hljs-string">'os'</span>);
+<span class="hljs-keyword">const</span> writeLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).writeLine;
+
+<span class="hljs-comment">// 创建写日志文件流</span>
+<span class="hljs-keyword">const</span> s = writeLine(<span class="hljs-string">'test.log'</span>, {encoding: <span class="hljs-string">'json'</span>});
+
+<span class="hljs-comment">// 模拟日志输出</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">nextLog</span>(<span class="hljs-params"></span>) </span>{
+  s.write({
+    time: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(),
+    loadavg: os.loadavg(),
+    memoryUsage: process.memoryUsage(),
+  });
+}
+setInterval(nextLog, <span class="hljs-number">1000</span>);
+</code></pre>
+<p>在执行程序之前，我们还要安装<code>lei-stream</code>模块：</p>
+<pre><code class="language-bash">$ npm install lei-stream
+</code></pre>
+<p>然后执行程序：</p>
+<pre><code class="language-bash">$ node make_logs
+</code></pre>
+<p>此时程序已经在给我们生成日志了。现在开始编写处理日志的程序<code>watch_logs.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> readLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).readLine;
+<span class="hljs-keyword">const</span> TailStream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./tail_stream'</span>);
+
+<span class="hljs-comment">// 创建按行读取日志文件流</span>
+<span class="hljs-keyword">const</span> s = readLine(<span class="hljs-keyword">new</span> TailStream({
+  file: <span class="hljs-string">'test.log'</span>,  <span class="hljs-comment">// 日志文件名</span>
+  position: <span class="hljs-string">'end'</span>,   <span class="hljs-comment">// 定位到尾部</span>
+}), {
+  encoding: <span class="hljs-string">'json'</span>,  <span class="hljs-comment">// 使用 JSON 编码</span>
+  autoNext: <span class="hljs-literal">false</span>,   <span class="hljs-comment">// 不自动读下一行</span>
+});
+
+s.on(<span class="hljs-string">'data'</span>, data =&gt; {
+  <span class="hljs-comment">// 将日志打印到屏幕</span>
+  <span class="hljs-built_in">console</span>.log(data);
+  <span class="hljs-comment">// 处理完后调用 next()继续读取下一行</span>
+  s.next();
+});
+</code></pre>
+<p>执行以下命令启动日志监听程序：</p>
+<pre><code class="language-bash">$ node watch_logs
+</code></pre>
+<p>稍等几秒，应该会看到屏幕不断地打印出这样的信息出来：</p>
+<pre><code>{ time: '2016-07-24T02:18:11.325Z',
+  loadavg: [ 2.31494140625, 2.4052734375, 2.19775390625 ],
+  memoryUsage: { rss: 22818816, heapTotal: 8384512, heapUsed: 5224824 } }
+{ time: '2016-07-24T02:18:12.331Z',
+  loadavg: [ 2.31494140625, 2.4052734375, 2.19775390625 ],
+  memoryUsage: { rss: 22818816, heapTotal: 8384512, heapUsed: 5226688 } }
+</code></pre>
+<p><strong>注意：在这个实例种，我们是直接定位到日志文件末尾开始，在新增日志数据量较大的情况下，有可能定位到的位置是在一行日志数据的中间部分，也就是说可能出现读取出来的第一条日志是不完整的（只有后半部分），因此要根据实际情况做相应的容错处理。</strong></p>
+<h2><a id="_491"></a>谁更机智</h2>
+<p>当我编写完文章<a href="http://morning.work/page/2016-07/how-to-implement-a-tail-f-command-in-nodejs.html">《如何实时监听文件的新增内容：一个简单 tailf 命令的实现》</a>之后，机智的小伙伴指出，要完成这样的功能最简单的方法是用<code>child_process</code>，我想象出来的代码应该是这样的：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'stream'</span>);
+<span class="hljs-keyword">const</span> child_process = <span class="hljs-built_in">require</span>(<span class="hljs-string">'child_process'</span>);
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">TailStream</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">stream</span>.<span class="hljs-title">Readable</span> </span>{
+
+  <span class="hljs-comment">/**
+   * TailStream
+   *
+   * @param {Object} options
+   *   - {String} file 文件名
+   */</span>
+  <span class="hljs-keyword">constructor</span>(options) {
+    options = options || {};
+    <span class="hljs-comment">// 调用基类的构造函数</span>
+    <span class="hljs-keyword">super</span>(options);
+    <span class="hljs-comment">// 文件名</span>
+    <span class="hljs-keyword">this</span>._file = options.file;
+    <span class="hljs-comment">// 执行 tail 命令</span>
+    <span class="hljs-keyword">this</span>._process = child_process.spawn(<span class="hljs-string">'tail'</span>, [<span class="hljs-string">'-c'</span>, <span class="hljs-string">'0'</span>, <span class="hljs-string">'-f'</span>, options.file], {
+      cwd: __dirname,
+    });
+    <span class="hljs-keyword">this</span>._process.on(<span class="hljs-string">'error'</span>, err =&gt; <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err));
+    <span class="hljs-comment">// 将收到的数据推送到缓冲区</span>
+    <span class="hljs-keyword">this</span>._process.stdout.on(<span class="hljs-string">'data'</span>, data =&gt; {
+      <span class="hljs-keyword">this</span>.push(data);
+    });
+    <span class="hljs-comment">// 如果进程执行结束则关闭流</span>
+    <span class="hljs-keyword">this</span>._process.on(<span class="hljs-string">'exit'</span>, () =&gt; {
+      <span class="hljs-keyword">this</span>.push(<span class="hljs-literal">null</span>);
+    });
+  }
+
+  <span class="hljs-comment">// 读取数据</span>
+  _read(size) {
+    <span class="hljs-comment">// 不需要做任何事情</span>
+  }
+
+  <span class="hljs-comment">// 关闭</span>
+  close() {
+    <span class="hljs-keyword">this</span>._process.kill();
+  }
+
+}
+
+<span class="hljs-built_in">module</span>.exports = TailStream;
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>使用<code>child_process.spawn()</code>来执行<code>tail</code>命令监听文件，并将进程的输出作为<code>TailStream</code>的数据推送出去</li>
+<li>这种实现方式只适用于有<code>tail</code>命令的系统，比如 Windows 这种是没有自动该命令的</li>
+<li>这种方式看起来简单，但是程序执行的开销会比完全使用 Node.js 来实现要大</li>
+</ul>
+<h2><a id="_552"></a>总结</h2>
+<p>本文首先实现了一个简单的<code>TailStream</code>来监听文件的新增内容，另外针对可能存在的问题给出了相应的解决方案，最后结合<code>lei-stream</code>实现了一个处理日志文件的例子。对于实现一个<code>Readable Stream</code>而言，简单地实现一个<code>_read(size)</code>方法即可，但是为了让这个<code>Stream</code>表现的更好，我们可能还有根据各自不同的场景去做一些处理。</p>
+<p><strong>实现一个<code>Readable Stream</code>的重要意义是，通过这些已被大家熟知的标准来让不同系统模块之间的协作变得更简单，而不是实现各自五花八门的接口。</strong></p>
+<h2><a id="_559"></a>相关链接</h2>
+<ul>
+<li><a href="http://tech.meituan.com/stream-basics.html">Node.js Stream - 基础篇</a></li>
+<li><a href="https://nodejs.org/api/stream.html">Stream - Node.js API</a></li>
+<li><a href="http://morning.work/page/2016-07/how-to-implement-a-tail-f-command-in-nodejs.html">如何实时监听文件的新增内容：一个简单 tailf 命令的实现</a></li>
+<li><a href="http://morning.work/page/2015-07/read_and_write_big_file_in_nodejs.html">在 Node.js 中读写大文件</a></li>
+</ul>
+]]></description><link>http://morning.work/page/2016-07/readable-stream-and-log-files-processing-in-nodejs.html</link><guid isPermaLink="true">http://morning.work/page/2016-07/readable-stream-and-log-files-processing-in-nodejs.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Sun, 24 Jul 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何实时监听文件的新增内容：一个简单 tailf 命令的实现]]></title><description><![CDATA[<blockquote>
 <p>在 Linux/Uinx 系统上，有一个<code>tail</code>命令，它可以用来显示一个文件尾部的内容，比如执行<code>tail large_file.txt</code>仅仅显示该文件最后的 10 行内容（通过<code>-n</code>参数可以指定显示的行数）。</p>
 <p><code>tail</code>命令还有一个<code>-f</code>选项，可以监听文件内容的变化，当有新增的内容时会继续打印到屏幕上，因此在处理日志文件时常常会使用到它来跟踪文件变化。</p>
 </blockquote>
@@ -142,7 +622,7 @@ String line;
 </code></pre>
 <p>说明：</p>
 <ul>
-<li>所以操作文件的方法去掉<code>Sync</code>后缀，改用回调函数获取结果</li>
+<li>所有操作文件的方法去掉<code>Sync</code>后缀，改用回调函数获取结果</li>
 <li><code>tailf</code>新增了两个参数<code>onError</code>和<code>onData</code>，分别用来回调操作时发生错误和检测到文件内容更新，其中<code>onData</code>会被执行多次</li>
 </ul>
 <p>现在可以这样使用<code>tailf()</code>：</p>
@@ -166,8 +646,8 @@ String line;
 <p>更好的是，因为 inotify 通过传统的文件描述符工作，您可以利用传统的 select 系统调用来被动地监控监视器和许多其他输入源。两种方法 — 阻塞文件描述符和使用 select— 都避免了繁忙轮询。</p>
 </blockquote>
 <p>简而言之，在本文实现的例子中，我们可以借助 Inotify 来监听文件的变化，如果文件内容有改变就立即尝试取读取，从而避免通过<code>setTimeout(loop, delay)</code>来轮询，这样看起来会更高效一些吧。</p>
-<p>在 NPM 上有有一个 <a href="https://www.npmjs.com/package/inotify">inotify 模块</a>，其简介为<strong>inotify bindings for v8 javascript engine</strong>，由此可以确定这正式我们需要的一个模块。</p>
-<p>但当尝试在我的 Mac 上安装此模块时并未成功，有出错信息判断应该是这个模块并不兼容 Mac 系统：</p>
+<p>在 NPM 上有有一个 <a href="https://www.npmjs.com/package/inotify">inotify 模块</a>，其简介为<strong>inotify bindings for v8 javascript engine</strong>，由此可以确定这正是我们需要的一个模块。</p>
+<p>但当尝试在我的 Mac 上安装此模块时并没成功，由出错信息判断应该是这个模块并不兼容 Mac 系统：</p>
 <pre><code>npm ERR! notsup Not compatible with your operating system or architecture: inotify@1.4.1
 npm ERR! notsup Valid OS:    linux
 npm ERR! notsup Valid Arch:  any
@@ -208,10 +688,13 @@ fs.watch(filename, (event, filename) =&gt; {
 <li>去掉了读取到文件末尾后的<code>setTimeout(loop, delay)</code></li>
 <li>增加<code>fs.watch()</code>来监听文件的变化，如果发现有<code>change</code>事件则调用<code>loop()</code>尝试读取文件</li>
 </ul>
-<p>再重新按照上文的方法来测试时，发现新的程序在我的 Mac 系统上也能工作良好。</p>
-<h2><a id="_265"></a>小结</h2>
+<p>另外我们也可以去掉<code>tailf</code>函数的<code>delay</code>参数：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">tailf</span>(<span class="hljs-params">filename, onError, onData</span>) </span>{
+</code></pre>
+<p>测试程序也不需要传递相应的参数。再重新按照上文的方法来测试时，发现新的程序在我的 Mac 系统上也能工作良好。</p>
+<h2><a id="_271"></a>小结</h2>
 <p>在文章前半部分，我们使用最简单的轮询方法实现了<code>tailf</code>，但是在效率上可能并不能满足我们对效率的要求。此时我们可以尝试使用一些系统 API 来监听到文件被修改的事件，从而代替低效的轮询。但是使用这些高级的 API 可能在不同的操作系统上得不到完整的支持，当然使用 Node.js 内置的 API 应该是兼容性最好的，本文的例子并没有在 Windows 上运行测试过。</p>
-<h2><a id="_270"></a>相关链接</h2>
+<h2><a id="_276"></a>相关链接</h2>
 <ul>
 <li><a href="http://stackoverflow.com/questions/557844/java-io-implementation-of-unix-linux-tail-f">Java IO implementation of unix/linux “tail -f”</a></li>
 <li><a href="http://stackoverflow.com/questions/1703640/how-to-implement-a-pythonic-equivalent-of-tail-f">How to implement a pythonic equivalent of tail -F?</a></li>
