@@ -88,6 +88,10 @@ pre code {
   display: block;
   min-width: 700px;
 }
+blockquote pre {
+  border: 1px solid #ccc;
+  border-radius: 0;
+}
 h2 {
   border-bottom: 2px solid rgba(0,39,59,.08);
   margin-top: 52px;
@@ -121,7 +125,7 @@ hr {
   margin: 20px 0 40px 0;
 }
 table {
-  max-width: 100%;
+  width: 100%;
   background-color: transparent;
   border-collapse: collapse;
   border-spacing: 0;
@@ -412,7 +416,7 @@ fs.watch(filename, (event, filename) =&gt; {
 <pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">tailf</span>(<span class="hljs-params">filename, onError, onData</span>) </span>{
 </code></pre>
 <p>测试程序也不需要传递相应的参数。再重新按照上文的方法来测试时，发现新的程序在我的 Mac 系统上也能工作良好。</p>
-<h2><a id="_271"></a>小结</h2>
+<h2><a id="_271"></a>总结</h2>
 <p>在文章前半部分，我们使用最简单的轮询方法实现了<code>tailf</code>，但是在效率上可能并不能满足我们对效率的要求。此时我们可以尝试使用一些系统 API 来监听到文件被修改的事件，从而代替低效的轮询。但是使用这些高级的 API 可能在不同的操作系统上得不到完整的支持，当然使用 Node.js 内置的 API 应该是兼容性最好的，本文的例子并没有在 Windows 上运行测试过。</p>
 <h2><a id="_276"></a>相关链接</h2>
 <ul>
