@@ -9,7 +9,15 @@ author: 老雷
 > 我在去年的文章[《在 Node.js 中读写大文件》](http://morning.work/page/2015-07/read_and_write_big_file_in_nodejs.html)中实现了一个`readLine(stream)`函数，其接收的参数是一个`Readable Stream`对象，能按照给定的规则（比如使用`\n`换行）来`emit`出每一行的内容，再结合`tailf`来监听文件的新增内容，我们就可以很轻易地对新增的内容进行按行切分。
 >
 > 所以，我们要实现一个实现了`Readable Stream`接口的`tailf`，在本文中我给它起了个名字叫`TailStream`。
-
+>
+> 本文所实现的`TailStream`已加入`lei-stream`模块，使用方法为：
+>
+> ```javascript
+> // 使用前先执行 npm install lei-stream 安装模块
+> const stream = require('lei-stream').tailStream(file, {position: 'end'});
+>```
+>
+> `lei-stream`模块详细介绍请参考这里：https://github.com/leizongmin/node-lei-stream
 
 ## 关于 Readable Stream
 
@@ -393,7 +401,7 @@ close() {
 
 在暂停状态下，我们也可以通过`readable.read()`去手动消费数据。
 
-好了，我们现在来说说上文的程序存在的问题。在`_read()`里面，我们已经可以通过一个`this._ready`标记来判断流是否处于就绪状态从而决定是否要从文件种读取数据，而在暂停的情况下`Readable Stream`也不会胡乱调用`_read()`请求读取数据。
+好了，我们现在来说说上文的程序存在的问题。在`_read()`里面，我们已经可以通过一个`this._ready`标记来判断流是否处于就绪状态从而决定是否要从文件中读取数据，而在暂停的情况下`Readable Stream`也不会胡乱调用`_read()`请求读取数据。
 
 当文件内容改变时，会执行`_tryRead()`，在这个方法里面我们主动去调用`_read()`请求读取数据了。假如此时流正处于暂停状态，我们**读取资源的操作还是不会被暂停，数据仍然会不停地推送到缓冲区，尽管从外表上看流还是处于暂停状态**。
 
@@ -490,7 +498,7 @@ $ node watch_logs
   memoryUsage: { rss: 22818816, heapTotal: 8384512, heapUsed: 5226688 } }
 ```
 
-**注意：在这个实例种，我们是直接定位到日志文件末尾开始，在新增日志数据量较大的情况下，有可能定位到的位置是在一行日志数据的中间部分，也就是说可能出现读取出来的第一条日志是不完整的（只有后半部分），因此要根据实际情况做相应的容错处理。**
+**注意：在这个实例中，我们是直接定位到日志文件末尾开始，在新增日志数据量较大的情况下，有可能定位到的位置是在一行日志数据的中间部分，也就是说可能出现读取出来的第一条日志是不完整的（只有后半部分），因此要根据实际情况做相应的容错处理。**
 
 
 ## 谁更机智
