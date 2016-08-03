@@ -198,7 +198,7 @@ li > p {
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
     创作于 2016-05-07            </div>
   <div id="remaining-time">
-    全文约 4637 字，预计阅读时间为 0 时 24 分钟
+    全文约 4638 字，预计阅读时间为 0 时 24 分钟
   </div>
 
   <article id="content">
@@ -206,7 +206,7 @@ li > p {
 <p>尽管这几年来 Node.js 已经得到越来越多的关注，连市场卖菜的老太婆都能分别得出哪个是写 Node.js 的，哪个是写 PHP 的。然而，终究是不能跟老大哥 Java 比的。我们在使用一些第三方服务时常常会碰到一时半会还没有官方的 Node.js SDK 的问题，所以能自己随手撸一个刚好够用的 API 客户端来应急成了必备技能。</p>
 <p>说到这里，我忍不住要先吐槽一下：</p>
 <blockquote>
-<p>前几天在 CNodeJS 上看到一个帖子，<a href="https://cnodejs.org/topic/56ab1c0526d02fc6626bb383">拥抱 ES6——阿里云 OSS 推出 JavaScript SDK</a>，对其中的滥用<code>generator</code>还<strong>洋洋自得</strong>的行为有点不满，之前也遇到过该厂的 SDK 强行返回<code>generator</code>而放弃使用，我想说我<strong>已经忍了很久</strong>了。</p>
+<p>前几天在 CNodeJS 上看到一个帖子<a href="https://cnodejs.org/topic/56ab1c0526d02fc6626bb383">《拥抱 ES6——阿里云 OSS 推出 JavaScript SDK》</a>，对其中的滥用<code>generator</code>还<strong>洋洋自得</strong>的行为有点不满，之前也遇到过该厂的 SDK 强行返回<code>generator</code>而放弃使用，我想说我<strong>已经忍了很久</strong>了。</p>
 <p><strong>「我自己写得爽，也希望把这种“爽”带给用户」</strong>-- <em>该 SDK 的维护者如是说</em></p>
 <p><strong>作为一个 SDK（尤其是官方出品的），应该使用最 common 的技术或规范来实现</strong>。比如在 Node.js 中的异步问题，应该使用传统的<code>callback</code>或者 ES6 里面的<code>promise</code>，而不是使用比较奇葩的<code>generator</code>来做。<code>generator</code>来做不妥的地方是：</p>
 <ul>
@@ -415,7 +415,7 @@ testToken(callback) {
 }
 </code></pre>
 <p>对于其他的 API 也可以采用类似的方法一一实现。</p>
-<h2><a id="_275"></a>结尾</h2>
+<h2><a id="_275"></a>总结</h2>
 <p>由此看来编写一个简单的 API 客户端也不是一件很难的事情，本文介绍的方法已经能适用大多数的情况了。当然还有些问题是没提到的，比如阿里云 OSS 这种 SDK 还要考虑 stream 上传问题，还有断点续传。对于安全性要求较高的 SDK 可能还需要做数据签名等等。</p>
 <p>在编写本文的时候，通过阅读<code>request</code>的 API 文档我才发现原来可以通过<code>json=true</code>选项来让它自动解析返回的结果，这样确实能少写好几行代码了。</p>
 <p>另外我还是忍不住再吐槽一下，CNodeJS 的 API 接口设计得并不一致，响应成功时并不是所有数据都放在<code>data</code>里面（比如<code>testToken()</code>）。</p>
