@@ -33,6 +33,7 @@ body {
   body {
     background-color: #fff;
     padding: 0 50px;
+    padding-bottom: 1px;
   }
 }
 b, strong, h1, h2, h3, h4, h5, h6 {
@@ -203,7 +204,7 @@ li > p {
 
   <article id="content">
     <p>在使用 Node.js 编写一个完整的项目时，程序中往往需要用到一些可配置的变量，从而使得程序能在不同的环境中运行。本文将介绍几种常见的方法。</p>
-<p><h3>目录</h3><ul><ul><li><a href="#_7">通过环境变量指定配置</a></li><ul><li><a href="#_42">设置环境变量</a></li><li><a href="#_Nodejs__58">在 Node.js 中读取环境变量</a></li></ul><li><a href="#_75">通过配置文件指定配置</a></li><ul><li><a href="#_124">其他配置文件格式</a></li><ul><li><a href="#JSON__141">JSON 格式</a></li><li><a href="#YAML__196">YAML 格式</a></li></ul></ul><li><a href="#_251">根据运行环境选择不同的配置</a></li><ul><li><a href="#_255">使用单一配置文件名</a></li><li><a href="#_261">通过环境变量指定配置文件名</a></li></ul><li><a href="#_config__291">使用 config 模块来读取配置</a></li><li><a href="#_394">参考资料</a></li><li><a href="#_403">相关模块</a></li></ul></ul></p>
+<p><h3>目录</h3><ul><ul><li><a href="#_7">通过环境变量指定配置</a></li><ul><li><a href="#_42">设置环境变量</a></li><li><a href="#_Nodejs__58">在 Node.js 中读取环境变量</a></li></ul><li><a href="#_75">通过配置文件指定配置</a></li><ul><li><a href="#_124">其他配置文件格式</a></li><ul><li><a href="#JSON__141">JSON 格式</a></li><li><a href="#YAML__196">YAML 格式</a></li></ul></ul><li><a href="#_251">根据运行环境选择不同的配置</a></li><ul><li><a href="#_255">使用单一配置文件名</a></li><li><a href="#_261">通过环境变量指定配置文件名</a></li></ul><li><a href="#_config__291">使用 config 模块来读取配置</a></li><li><a href="#_394">相关链接</a></li><li><a href="#_403">相关模块</a></li></ul></ul></p>
 <h2><a id="_7"></a>通过环境变量指定配置</h2>
 <p><a href="http://baike.baidu.com/view/95930.htm">环境变量（environment variables）</a> 一般是指在操作系统中用来指定操作系统运行环境的一些参数，如：临时文件夹位置和系统文件夹位置等。比如<code>HOME</code>表示当前用户的根目录，<code>TMPDIR</code>表示系统临时目录等，我们可以通过设置一些特定的环境变量，程序在启动时可以读取这些环境变量并做相应的初始化动作。</p>
 <p>在 Node.js 中可以通过<code>process.env</code>来访问当前的环境变量信息，比如：</p>
@@ -480,7 +481,7 @@ false
 </code></pre>
 <p>其中<code>get()</code>用来获取指定配置，可以使用诸如<code>Customer.dbConfig</code>这样的格式，如果配置项不存在则会抛出异常。<code>has()</code>用来检测指定配置项是否存在，如果存在则返回<code>true</code>。</p>
 <p>关于<code>config</code>模块的详细使用方法可阅读其帮助文档。</p>
-<h2><a id="_394"></a>参考资料</h2>
+<h2><a id="_394"></a>相关链接</h2>
 <ul>
 <li><a href="http://baike.baidu.com/view/95930.htm">百度百科：环境变量</a></li>
 <li><a href="http://yijiebuyi.com/blog/1bfcf43248a873b39a3471901e764b68.html">ENV 定制开发，测试，发布环境变量</a></li>

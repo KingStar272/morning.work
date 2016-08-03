@@ -397,7 +397,7 @@ false
 关于`config`模块的详细使用方法可阅读其帮助文档。
 
 
-## 参考资料
+## 相关链接
 
 + [百度百科：环境变量](http://baike.baidu.com/view/95930.htm)
 + [ENV 定制开发，测试，发布环境变量](http://yijiebuyi.com/blog/1bfcf43248a873b39a3471901e764b68.html)

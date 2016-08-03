@@ -142,7 +142,7 @@ undefined
 + 开发基于Node.js的Shell程序
 
 
-## 参考资料
+## 相关链接
 
 + [Node.js之REPL](http://segmentfault.com/a/1190000002673137)
 + [Build Your Own App Specific REPL For Your NodeJS App](http://derickbailey.com/2014/07/02/build-your-own-app-specific-repl-for-your-nodejs-app/)

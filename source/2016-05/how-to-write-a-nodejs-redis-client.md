@@ -1,6 +1,7 @@
 ```
 title: 如何编写一个简单的 Redis 客户端
 date: 2016-05-12
+update: 2016-08-03
 author: 老雷
 ```
 
@@ -415,6 +416,7 @@ module.exports = Redis;
 + 因为命令的执行结果都是按照顺序返回的，所以我们只需要按顺序从`this._callbacks`中取出最前面的元素，直接执行回调
 + 如果连接已经断开，则不允许再执行命令，直接返回`connection has been closed`错误
 + `sendCommand()`同时支持`callback`和`promise`方式的回调，但是套路跟上一篇文章《如何用 Node.js 编写一个 API 客户端》稍有不同
++ **此处关于同时支持`promise`和`callback`的实现方式有问题，详情请阅读[《如何让异步接口同时支持 callback 和 promise》](http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html)**
 
 新建测试文件`test.js`：
 
@@ -630,7 +632,7 @@ b=undefined, err=Error: connection has been closed
 **好了，这只是随便撸一下的面试题，又不是要撸成一个轮子，剩下的就交给你啦。**
 
 
-## 参考链接
+## 相关链接
 
 + [Redis协议](http://redis.cn/topics/protocol.html)（http://redis.cn/topics/protocol.html）
-
++ [如何让异步接口同时支持 callback 和 promise](http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html)

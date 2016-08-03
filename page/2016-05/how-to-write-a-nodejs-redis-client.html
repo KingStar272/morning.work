@@ -33,6 +33,7 @@ body {
   body {
     background-color: #fff;
     padding: 0 50px;
+    padding-bottom: 1px;
   }
 }
 b, strong, h1, h2, h3, h4, h5, h6 {
@@ -196,9 +197,9 @@ li > p {
         个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
         GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
-    创作于 2016-05-12            </div>
+    创作于 2016-05-12      ,    2016-08-03 第 1 次更新   </div>
   <div id="remaining-time">
-    全文约 8746 字，预计阅读时间为 0 时 44 分钟
+    全文约 8840 字，预计阅读时间为 0 时 45 分钟
   </div>
 
   <article id="content">
@@ -556,6 +557,7 @@ $ npm init
 <li>因为命令的执行结果都是按照顺序返回的，所以我们只需要按顺序从<code>this._callbacks</code>中取出最前面的元素，直接执行回调</li>
 <li>如果连接已经断开，则不允许再执行命令，直接返回<code>connection has been closed</code>错误</li>
 <li><code>sendCommand()</code>同时支持<code>callback</code>和<code>promise</code>方式的回调，但是套路跟上一篇文章《如何用 Node.js 编写一个 API 客户端》稍有不同</li>
+<li><strong>此处关于同时支持<code>promise</code>和<code>callback</code>的实现方式有问题，详情请阅读<a href="http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html">《如何让异步接口同时支持 callback 和 promise》</a></strong></li>
 </ul>
 <p>新建测试文件<code>test.js</code>：</p>
 <pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
@@ -592,7 +594,7 @@ OOXX=undefined, err=Error: ERR unknown command 'OOXX'
 success OK
 </code></pre>
 <p>从结果中可以看出我们这个 Redis 客户端已经基本能用了。</p>
-<h2><a id="_457"></a>更友好的接口</h2>
+<h2><a id="_458"></a>更友好的接口</h2>
 <p>上文我们实现了一个<code>sendCommand()</code>方法，理论上可以通过该方法执行任意的 Redis 命令，但是我们可能更希望每条命令有一个对应的方法，比如<code>sendCommand('GET a')</code>我们可以写成<code>get('a')</code>，这样看起来会更直观。</p>
 <p>首先在<code>index.js</code>文件头部载入<code>fs</code>和<code>path</code>模块：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">'fs'</span>);
@@ -667,7 +669,7 @@ client.set(<span class="hljs-string">'a'</span>, <span class="hljs-built_in">Dat
   .then(() =&gt; client.end())
 </code></pre>
 <p>重新执行<code>node test.js</code>可看到结果跟上文还是一致的。</p>
-<h2><a id="_551"></a>简单容错处理</h2>
+<h2><a id="_552"></a>简单容错处理</h2>
 <p>假如将测试文件<code>test.js</code>改为这样：</p>
 <pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
@@ -709,7 +711,7 @@ client.get(<span class="hljs-string">'a'</span>, (err, ret) =&gt; {
 <pre><code>a=1463042964235, err=null
 b=undefined, err=Error: connection has been closed
 </code></pre>
-<h2><a id="_611"></a>还存在的问题</h2>
+<h2><a id="_612"></a>还存在的问题</h2>
 <p>看起来这个模块已经能正常使用了，但是其实并不完善。跟 NPM 上的<code>ioredis</code>模块起来还存在以下问题：</p>
 <ul>
 <li>不支持<code>multi()</code>命令</li>
@@ -723,9 +725,10 @@ b=undefined, err=Error: connection has been closed
 <li>如果连接意外断开了，我们可能希望能自动重新连接而不是直接报错</li>
 </ul>
 <p><strong>好了，这只是随便撸一下的面试题，又不是要撸成一个轮子，剩下的就交给你啦。</strong></p>
-<h2><a id="_628"></a>参考链接</h2>
+<h2><a id="_629"></a>相关链接</h2>
 <ul>
 <li><a href="http://redis.cn/topics/protocol.html">Redis 协议</a>（<a href="http://redis.cn/topics/protocol.html%EF%BC%89">http://redis.cn/topics/protocol.html）</a></li>
+<li><a href="http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html">如何让异步接口同时支持 callback 和 promise</a></li>
 </ul>
 
   </article>

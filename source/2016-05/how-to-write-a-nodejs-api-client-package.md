@@ -1,6 +1,7 @@
 ```
 title: 如何用 Node.js 编写一个 API 客户端
 date: 2016-05-07
+update: 2016-08-03
 author: 老雷
 ```
 
@@ -210,6 +211,7 @@ request(method, path, params, callback) {
 
 + 将`new Promise()`中的`resolve`和`reject`分别改名为`_resolve`和`_reject`
 + 在函数开头新建`resolve`和`reject`，其作用是调用原来的`_resolve`和`_reject`，同时判断如果有`callback`参数，则也调用该函数
++ **此处关于同时支持`promise`和`callback`的实现方式有问题，详情请阅读另一篇文章[《如何让异步接口同时支持 callback 和 promise》](http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html)**
 
 2、将文件`test.js`中`client.request()`部分改为 callback 方式调用：
 
@@ -285,4 +287,7 @@ testToken(callback) {
 
 另外我还是忍不住再吐槽一下，CNodeJS 的 API 接口设计得并不一致，响应成功时并不是所有数据都放在`data`里面（比如`testToken()`）。
 
-发觉最近有点上火了 ^_^
+
+## 相关链接
+
++ [如何让异步接口同时支持 callback 和 promise](http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html)

@@ -33,6 +33,7 @@ body {
   body {
     background-color: #fff;
     padding: 0 50px;
+    padding-bottom: 1px;
   }
 }
 b, strong, h1, h2, h3, h4, h5, h6 {
@@ -196,9 +197,9 @@ li > p {
         个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
         GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
-    创作于 2016-05-07            </div>
+    创作于 2016-05-07      ,    2016-08-03 第 1 次更新   </div>
   <div id="remaining-time">
-    全文约 4638 字，预计阅读时间为 0 时 24 分钟
+    全文约 4729 字，预计阅读时间为 0 时 24 分钟
   </div>
 
   <article id="content">
@@ -369,6 +370,7 @@ client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string"
 <ul>
 <li>将<code>new Promise()</code>中的<code>resolve</code>和<code>reject</code>分别改名为<code>_resolve</code>和<code>_reject</code></li>
 <li>在函数开头新建<code>resolve</code>和<code>reject</code>，其作用是调用原来的<code>_resolve</code>和<code>_reject</code>，同时判断如果有<code>callback</code>参数，则也调用该函数</li>
+<li><strong>此处关于同时支持<code>promise</code>和<code>callback</code>的实现方式有问题，详情请阅读另一篇文章<a href="http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html">《如何让异步接口同时支持 callback 和 promise》</a></strong></li>
 </ul>
 <p>2、将文件<code>test.js</code>中<code>client.request()</code>部分改为 callback 方式调用：</p>
 <pre><code class="language-javascript">client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, {page: <span class="hljs-number">1</span>}, (err, ret) =&gt; {
@@ -381,7 +383,7 @@ client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string"
 </code></pre>
 <p>3、重新执行<code>node test.js</code>可以看到结果跟之前是一样的。</p>
 <p>通过简单的修改我们就已经实现了同时支持<code>promise</code>和<code>callback</code>两种异步回调方式。</p>
-<h2><a id="_API_226"></a>封装 API</h2>
+<h2><a id="_API_227"></a>封装 API</h2>
 <p>前文我们实现的<code>request()</code>方法已经可以调用任意的 API 了，但是为了是方便，一般需要为每个 API 单独封装一个方法，比如：</p>
 <ul>
 <li><code>getTopics()</code>- 获取主题首页</li>
@@ -415,11 +417,14 @@ testToken(callback) {
 }
 </code></pre>
 <p>对于其他的 API 也可以采用类似的方法一一实现。</p>
-<h2><a id="_275"></a>总结</h2>
+<h2><a id="_276"></a>总结</h2>
 <p>由此看来编写一个简单的 API 客户端也不是一件很难的事情，本文介绍的方法已经能适用大多数的情况了。当然还有些问题是没提到的，比如阿里云 OSS 这种 SDK 还要考虑 stream 上传问题，还有断点续传。对于安全性要求较高的 SDK 可能还需要做数据签名等等。</p>
 <p>在编写本文的时候，通过阅读<code>request</code>的 API 文档我才发现原来可以通过<code>json=true</code>选项来让它自动解析返回的结果，这样确实能少写好几行代码了。</p>
 <p>另外我还是忍不住再吐槽一下，CNodeJS 的 API 接口设计得并不一致，响应成功时并不是所有数据都放在<code>data</code>里面（比如<code>testToken()</code>）。</p>
-<p>发觉最近有点上火了 ^_^</p>
+<h2><a id="_285"></a>相关链接</h2>
+<ul>
+<li><a href="http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html">如何让异步接口同时支持 callback 和 promise</a></li>
+</ul>
 
   </article>
 
