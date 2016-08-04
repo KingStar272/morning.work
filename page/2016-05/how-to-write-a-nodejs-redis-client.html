@@ -14,7 +14,6 @@ body {
   -webkit-tap-highlight-color: rgba(200,0,0,0.4);
 }
 body {
-  /*font-family: "Segoe UI", "Lucida Grande", Helvetica, Arial, "Microsoft YaHei", FreeSans, Arimo, "Droid Sans","wenquanyi micro hei","Hiragino Sans GB", "Hiragino Sans GB W3", Arial, sans-serif;*/
   width: 94%;
   max-width: 800px;
   margin: auto;
@@ -22,9 +21,8 @@ body {
   word-break: break-word;
   font-size: 16px;
   line-height: 1.7;
-  /*font-family: 'Lantinghei SC', 'Open Sans', Arial, 'Hiragino Sans GB', 'Microsoft YaHei', 微软雅黑, STHeiti, 'WenQuanYi Micro Hei', SimSun, Helvetica, sans-serif;*/
   -webkit-font-smoothing: antialiased;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: Exo,'-apple-system','Open Sans',HelveticaNeue-Light,'Helvetica Neue Light','Helvetica Neue','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif;
   font-weight: 350;
 }
 @media (min-width: 900px) {
@@ -38,18 +36,22 @@ body {
   }
 }
 
-b, strong, h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  color: #000;
 }
 b, strong {
+  font-weight: 600;
   text-decoration: underline;
   padding: 0 0.4em;
+  font-size: 0.925em;
 }
 blockquote b, blockquote strong {
   text-decoration: none;
 }
 em {
   font-size: 0.875em;
+  color: rgba(0,0,0,0.6);
 }
 blockquote em {
   font-size: 1em;
@@ -144,11 +146,11 @@ td, th {
   font-size: 28px;
 }
 #date {
-  font-size: 87.5%;
+  font-size: 0.875em;
   margin-top: 1em;
 }
 #remaining-time {
-  font-size: 87.5%;
+  font-size: 0.875em;
   margin-top: 0.5em;
 }
 #nav {
@@ -179,9 +181,9 @@ li > p {
 }
 
 /* 移动端页面下的阅读模式 */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   body {
-    font-size: 14px;
+    font-size: 15px;
     background-color: #F1F1EA;
   }
   #license, #about {
@@ -189,6 +191,11 @@ li > p {
   }
   pre {
     background-color: inherit;
+    border: 1px solid #ccc;
+    border-radius: 0;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 400;
   }
 }
 </style>
