@@ -6,7 +6,7 @@ author: 老雷
 
 ## 避免 unhandledRejection 事件
 
-随着 ES6 的普及，越来越多的异步接口都开始同时支持 callback 和 promise 两种方式，我在最近的两篇文章[《如何用 Node.js 编写一个 API 客户端》](http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html)和[《如何编写一个简单的 Redis 客户端》](http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html)中也使用**一个简单的小技巧**来实现这样的功能：
+随着 ES6 的普及，越来越多的异步接口都开始同时支持`callback`和`promise`两种方式，我在最近的两篇文章[《如何用 Node.js 编写一个 API 客户端》](http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html)和[《如何编写一个简单的 Redis 客户端》](http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html)中也使用**一个简单的小技巧**来实现这样的功能：
 
 ```javascript
 request(method, path, params, callback) {
@@ -264,7 +264,7 @@ null 'hello, test'
 
 结合上下文我们可以理解为，在上文我们通过判断是否传入了一个`callback`参数来判断异步方式，在合适的时候再返回`promise`。但是，假如我们仅仅是想触发一个副作用（执行异步函数，但并不关心它的回调结果），由于没有传入`callback`参数，此时会被自动识别为`promise`方式调用，于是它返回了一个`promise`对象。而当函数执行时回调了一个`err`对象时，我们又重新掉进了前文所说的`unhandledRejection`的坑里面。
 
-通过判断参数数量这样的方式来实现不同异步方式的转换并**不严谨**。所以，针对**不同的异步方式应该使用不同的接口**，比如我们可以规定所有异步方法默认都是`callback`方式（如`request`），而`promise`方式都有`P`前缀（如`requestP`）。
+通过判断参数数量这样的方式来实现不同异步方式的转换并**不严谨**。所以，针对**不同的异步方式应该使用不同的接口**，比如我们可以规定所有异步方法默认都是`callback`方式（如`request`），而`promise`方式都有`P`后缀（如`requestP`）。
 
 [@Hax](http://weibo.com/haxy)继续评论道：
 
