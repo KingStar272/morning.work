@@ -222,7 +222,7 @@ li > p {
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
     创作于 2016-08-03            </div>
   <div id="remaining-time">
-    全文约 4635 字，预计阅读时间为 0 时 24 分钟
+    全文约 5212 字，预计阅读时间为 0 时 27 分钟
   </div>
 
   <article id="content">
@@ -426,9 +426,25 @@ Error: haha
 </code></pre>
 <p>说明：在<code>.then()</code>的回调函数内，我们先输出结果，在<code>throw</code>出一个错误时，并<code>.catch()</code>捕捉到并打印了出来，这符合<code>promise</code>的行为。</p>
 <p><strong>如果你要问「原始函数是基于 promise 实现的，想支持 callback 怎么办」，我建议你最好放弃这个想法。</strong></p>
-<h2><a id="_254"></a>总结</h2>
+<h2><a id="_254"></a>接口设计的哲学</h2>
+<p>在本文发出去之后，得到了大神<a href="http://weibo.com/haxy">@Hax</a>的点评：</p>
+<blockquote>
+<p>有些代码直接调，不传<code>cb</code>因为它想触发副作用，结果你改成了<code>p</code>，然后还是掉坑了……</p>
+</blockquote>
+<p>结合上下文我们可以理解为，在上文我们通过判断是否传入了一个<code>callback</code>参数来判断异步方式，在合适的时候再返回<code>promise</code>。但是，假如我们仅仅是想触发一个副作用（执行异步函数，但并不关心它的回调结果），由于没有传入<code>callback</code>参数，此时会被自动识别为<code>promise</code>方式调用，于是它返回了一个<code>promise</code>对象。而当函数执行时回调了一个<code>err</code>对象时，我们又重新掉进了前文所说的<code>unhandledRejection</code>的坑里面。</p>
+<p>通过判断参数数量这样的方式来实现不同异步方式的转换并<strong>不严谨</strong>。所以，针对<strong>不同的异步方式应该使用不同的接口</strong>，比如我们可以规定所有异步方法默认都是<code>callback</code>方式（如<code>request</code>），而<code>promise</code>方式都有<code>P</code>前缀（如<code>requestP</code>）。</p>
+<p><a href="http://weibo.com/haxy">@Hax</a>继续评论道：</p>
+<blockquote>
+<p>是的，这是为啥 Node.js 的人最后决定把<code>promise</code>化的 API 单独分开</p>
+<p>我个人觉得<code>xxxP</code>名字也不是很友好。其实用不同的包就好了。</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/callback'</span>
+<span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/promise'</span>
+</code></pre>
+</blockquote>
+<p>所以，封装成单独的包才是更优雅的方式。最后还有一句话，<strong>切勿混用<code>callback</code>和<code>promise</code></strong>。</p>
+<h2><a id="_278"></a>总结</h2>
 <p>大多数时候，我们只需要一点点小技巧就能使得程序看起来正常地工作起来。然而要写出<strong>完美</strong>的程序却并不是一件简单的事情。</p>
-<h2><a id="_259"></a>相关链接</h2>
+<h2><a id="_283"></a>相关链接</h2>
 <ul>
 <li><a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">callback 和 promise 的错误捕获</a></li>
 <li><a href="http://www.jianshu.com/p/9e4026614fbe">Promise 陷阱</a></li>
