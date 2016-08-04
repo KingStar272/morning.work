@@ -168,6 +168,8 @@ td, th {
 }
 #license {
   margin-bottom: 4em;
+  font-weight: bold;
+  color: #222;
 }
 #content {
   min-height: 200px;
@@ -182,6 +184,20 @@ td, th {
 li > p {
   margin-top: 5px;
   margin-bottom: 0.4em;
+}
+.author {
+  display: flex;
+}
+.author .avatar img {
+  width: 100%;
+}
+.author .avatar {
+  flex: 1;
+  min-width: 80px;
+}
+.author .description {
+  flex: 8;
+  margin-left: 1em;
 }
 </style>
 </head>
@@ -198,7 +214,7 @@ li > p {
   <h1 id="title">Node.js 的 Buffer 那些你可能不知道的用法</h1>
 
   <div id="date">
-              <a href="" title="
+              <a href="http://ucdok.com" title="
         Web开发者、
         &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
         &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
@@ -469,7 +485,9 @@ buf.readUIntBE(<span class="hljs-number">0</span>, <span class="hljs-number">6</
   <!-- Chinese Version -->
   <div id="about">
     <h3>关于作者</h3>
-    <p>          <a href="" title="
+    <div class="author">
+      <div class="avatar"><img src="https://avatars.githubusercontent.com/u/841625?v=3&s=120"></div>
+      <div class="description">          <a href="http://ucdok.com" title="
         Web开发者、
         &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
         &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
@@ -481,16 +499,17 @@ buf.readUIntBE(<span class="hljs-number">0</span>, <span class="hljs-number">6</
         <a href="http://nodejs.ucdok.com/">《Node.js实战》</a>作者之一<br>
         个人主页: <a href="http://ucdok.com">http://ucdok.com</a><br>
         GitHub: <a href="https://github.com/leizongmin">https://github.com/leizongmin</a><br>
-      </p>
+      </div>
+    </div>
   </div>
   <div id="license">
-    <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="知识共享许可协议" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />本作品由           <a href="" title="
+    <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh"><img alt="知识共享许可协议" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />本作品由           <a href="http://ucdok.com" title="
         Web开发者、
         &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
         &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
         个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
         GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
-      " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>       创作，采用 <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/4.0/">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a> 进行许可。
+      " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>       创作，采用 <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a> 进行许可。
   </div>
 
 
