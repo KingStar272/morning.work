@@ -5,7 +5,7 @@
   "main": "build/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run clean && babel-node build/preview.js",
+    "start": "babel-node build/preview.js",
     "clean": "rm -rf page",
     "build": "npm run clean && babel-node build"
   },

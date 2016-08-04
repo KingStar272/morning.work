@@ -36,6 +36,7 @@ body {
     padding-bottom: 1px;
   }
 }
+
 b, strong, h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
 }
@@ -174,6 +175,20 @@ td, th {
 li > p {
   margin-top: 5px;
   margin-bottom: 0.4em;
+}
+
+/* 移动端页面下的阅读模式 */
+@media (min-width: 600px) {
+  body {
+    font-size: 14px;
+    background-color: #F1F1EA;
+  }
+  #license, #about {
+    background-color: inherit;
+  }
+  pre {
+    background-color: inherit;
+  }
 }
 </style>
 </head>
