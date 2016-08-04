@@ -243,7 +243,10 @@ li > p {
   <div id="about">
     <h3>About Authors</h3>
     {% for a in authors %}
-    <p>{{author_links}}: {{a.about}}</p>
+    <div class="author">
+      <div class="avatar"><img src="{{a.avatar}}"></div>
+      <div class="description">{{author_links}}: {{a.about}}</div>
+    </div>
     {% endfor %}
   </div>
   <div id="license">
