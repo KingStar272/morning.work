@@ -9,6 +9,9 @@
 <title>如何让异步接口同时支持 callback 和 promise - 早起搬砖 morning.work</title>
 <link rel="stylesheet" href="/styles/github.css" />
 <style>
+::selection {
+  background-color: rgba(251,220,114,0.5);
+}
 body {
   -webkit-text-size-adjust: none;
   -webkit-tap-highlight-color: rgba(200,0,0,0.4);
@@ -41,8 +44,7 @@ h1, h2, h3, h4, h5, h6 {
   color: #000;
 }
 b, strong {
-  border-bottom: 1px solid #888;
-  background-color: rgba(251,220,114,0.3);
+  border-bottom: 1px solid #E91E63;
   font-weight: normal;
 }
 blockquote b, blockquote strong {
@@ -220,7 +222,7 @@ li > p {
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
     创作于 2016-08-03            </div>
   <div id="remaining-time">
-    全文约 5212 字，预计阅读时间为 0 时 27 分钟
+    全文约 5216 字，预计阅读时间为 0 时 27 分钟
   </div>
 
   <article id="content">
@@ -246,7 +248,7 @@ li > p {
 </code></pre>
 <p>上文的代码使得<code>request()</code>函数可以返回一个<code>Promise</code>对象，同时如果传入了一个<code>callback</code>参数它也能工作良好，这似乎已经能满足了前文的目标。</p>
 <p>但这样的做法带来的一个问题是，<strong>如果我们使用<code>callback</code>方式，当<code>request()</code>函数在执行时回调了一个错误对象（即执行了<code>callback(err)</code>和<code>reject(err)</code>），此时会触发一个<code>unhandledRejection</code>事件</strong>。大多数情况下这样也并不会影响到我们程序的功能，它还是能够正常的工作，但是这些本该可以避免的<code>unhandledRejection</code>事件会对我们调试程序时造成很大的干扰。</p>
-<p>究其原因，正确的<strong>实现同时支持 callback 和 promise</strong>必须做到，当使用者传入<code>callback</code>参数时不应该返回一个 Promise 对象。如果返回了一个 Promise 对象，而使用者并不会调用<code>.catch()</code>去捕捉可能发生的错误，这样就会导致触发<code>unhandledRejection</code>事件。</p>
+<p>究其原因，正确的**实现同时支持<code>callback</code>和<code>promise</code>**必须做到，当使用者传入<code>callback</code>参数时不应该返回一个 Promise 对象。如果返回了一个 Promise 对象，而使用者并不会调用<code>.catch()</code>去捕捉可能发生的错误，这样就会导致触发<code>unhandledRejection</code>事件。</p>
 <p>所以，针对上文的例子我们可以改成这样：</p>
 <pre><code class="language-javascript">request(method, path, params, callback) {
   <span class="hljs-keyword">if</span> (callback) {
@@ -281,7 +283,7 @@ li > p {
 }
 </code></pre>
 <h2><a id="_callback__71"></a>重复执行 callback 的坑</h2>
-<p>也许以上的写法并没有那么直观，我们更希望有这么一个<code>promiseToCallback</code>函数（代码来自<a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">《callback 和 promise 的错误捕获
+<p>也许以上的写法并没有那么直观，我们更希望有这么一个<code>promiseToCallback</code>函数（代码来自<a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">《<code>callback</code>和<code>promise</code>的错误捕获
 》</a>]，有删改）：</p>
 <pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
   <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
@@ -326,7 +328,7 @@ promiseToCallback(hello)(<span class="hljs-string">'test'</span>, (err, ret) =&g
 unhandledRejection [Error: haha]
 </code></pre>
 <p>其中第一行的输出是正常回调时的输出，但是在回调里面有抛出了一个<code>haha</code>错误，被<code>promiseToCallback</code>的<code>.catch()</code>捕捉到，然后它先把这个<code>err</code>对象打印出来，再重复执行了一遍回调函数，在回调函数中又输出了一遍。同时，在这次的回调函数中，有抛出了一个<code>haha</code>错误，此时<code>promiseToCallback</code>中的<code>.catch()</code>已经不能再捕捉到这个错误了，然后被注册的<code>unhandledRejection</code>事件监听器监听到，并将其打印了出来。</p>
-<p>在此先不讨论这个<code>promiseToCallback()</code>是否满足了<strong>同时支持 callback 和 promise 这个前提</strong>，就重复执行<code>callback</code>的问题我们是万万不能使用它的。</p>
+<p>在此先不讨论这个<code>promiseToCallback()</code>是否满足了<strong>同时支持<code>callback</code>和<code>promise</code>这个前提</strong>，就重复执行<code>callback</code>的问题我们是万万不能使用它的。</p>
 <p>当然我们也可以有办法使得它不会重复执行回调函数：</p>
 <pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
   <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
@@ -354,7 +356,7 @@ unhandledRejection [Error: haha]
 </code></pre>
 <p>我们通过一个<code>isCalled</code>属性来保证了回调函数只会被执行一次，它确实保证了<code>callback</code>不被重复执行，但同时它也悄悄地将<code>callback</code>发生的错误藏了起来，说不定这又成了将来某一天困扰你多时的坑。</p>
 <h2><a id="_162"></a>也许这是最佳的解决方案</h2>
-<p>说了这么一大堆，要使得很好地同时支持 callback 和 promise，关键是要处理好这两个问题：</p>
+<p>说了这么一大堆，要使得很好地同时支持<code>callback</code>和<code>promise</code>，关键是要处理好这两个问题：</p>
 <ul>
 <li>避免<code>unhandledRejection</code>事件（一定要使用<code>promise.catch()</code>捕捉错误）</li>
 <li>避免多次执行<code>callback</code></li>

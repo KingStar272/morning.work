@@ -32,7 +32,7 @@ request(method, path, params, callback) {
 
 但这样的做法带来的一个问题是，**如果我们使用`callback`方式，当`request()`函数在执行时回调了一个错误对象（即执行了`callback(err)`和`reject(err)`），此时会触发一个`unhandledRejection`事件**。大多数情况下这样也并不会影响到我们程序的功能，它还是能够正常的工作，但是这些本该可以避免的`unhandledRejection`事件会对我们调试程序时造成很大的干扰。
 
-究其原因，正确的**实现同时支持 callback 和 promise**必须做到，当使用者传入`callback`参数时不应该返回一个 Promise 对象。如果返回了一个 Promise 对象，而使用者并不会调用`.catch()`去捕捉可能发生的错误，这样就会导致触发`unhandledRejection`事件。
+究其原因，正确的**实现同时支持`callback`和`promise`**必须做到，当使用者传入`callback`参数时不应该返回一个 Promise 对象。如果返回了一个 Promise 对象，而使用者并不会调用`.catch()`去捕捉可能发生的错误，这样就会导致触发`unhandledRejection`事件。
 
 所以，针对上文的例子我们可以改成这样：
 
@@ -75,7 +75,7 @@ request(method, path, params, callback) {
 
 ## 重复执行 callback 的坑
 
-也许以上的写法并没有那么直观，我们更希望有这么一个`promiseToCallback`函数（代码来自[《callback 和 promise 的错误捕获
+也许以上的写法并没有那么直观，我们更希望有这么一个`promiseToCallback`函数（代码来自[《`callback`和`promise`的错误捕获
 》](http://www.plusman.cn/2016/05/09/b7-error-catch/)]，有删改）：
 
 ```javascript
@@ -131,7 +131,7 @@ unhandledRejection [Error: haha]
 
 其中第一行的输出是正常回调时的输出，但是在回调里面有抛出了一个`haha`错误，被`promiseToCallback`的`.catch()`捕捉到，然后它先把这个`err`对象打印出来，再重复执行了一遍回调函数，在回调函数中又输出了一遍。同时，在这次的回调函数中，有抛出了一个`haha`错误，此时`promiseToCallback`中的`.catch()`已经不能再捕捉到这个错误了，然后被注册的`unhandledRejection`事件监听器监听到，并将其打印了出来。
 
-在此先不讨论这个`promiseToCallback()`是否满足了**同时支持 callback 和 promise 这个前提**，就重复执行`callback`的问题我们是万万不能使用它的。
+在此先不讨论这个`promiseToCallback()`是否满足了**同时支持`callback`和`promise`这个前提**，就重复执行`callback`的问题我们是万万不能使用它的。
 
 当然我们也可以有办法使得它不会重复执行回调函数：
 
@@ -166,7 +166,7 @@ function promiseToCallback(fn) {
 
 ## 也许这是最佳的解决方案
 
-说了这么一大堆，要使得很好地同时支持 callback 和 promise，关键是要处理好这两个问题：
+说了这么一大堆，要使得很好地同时支持`callback`和`promise`，关键是要处理好这两个问题：
 
 + 避免`unhandledRejection`事件（一定要使用`promise.catch()`捕捉错误）
 + 避免多次执行`callback`
