@@ -1,0 +1,154 @@
+::selection {
+  background-color: rgba(251, 220, 114, 0.5);
+}
+
+.article {
+  font-family: "Biaodian Pro Sans GB", "Helvetica Neue", Helvetica, Arial, "Han Heiti GB", sans-serif;
+  font-family: "Biaodian Pro Sans CNS","Helvetica Neue",Helvetica,Arial,"Zhuyin Heiti","Han Heiti",sans-serif;
+  -webkit-font-smoothing: subpixel-antialiased;
+  line-height: 1.7;
+  word-break: break-word;
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.article h1,
+.article h2,
+.article h3,
+.article h4,
+.article h5,
+.article h6,
+.article b,
+.article strong {
+  font-weight: 400;
+  color: #000;
+}
+
+.article b,
+.article strong {
+  font-weight: 600;
+}
+
+.article blockquote b,
+.article blockquote strong {
+  text-decoration: none;
+}
+
+.article em {
+  font-size: 0.875em;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.article blockquote em {
+  font-size: 1em;
+}
+
+.article blockquote {
+  font-size: 14px;
+  color: #000;
+  padding: 8px 12px 8px 16px;
+  font-style: normal;
+  line-height: 1.5;
+  background-color: #f7f7f8;
+  margin: 1em 0;
+  border-left: 4px solid #ddd;
+}
+
+.article code {
+  padding: 0 0.25em;
+  font-size: 0.875em;
+  word-break: break-word;
+  font-family: Consolas, Menlo, Monaco, "Courier New", monospace;
+  text-rendering: optimizeSpeed;
+  border-radius: 3px;
+  white-space: pre-wrap;
+  color: #0086b3;
+  -webkit-font-smoothing: antialiased;
+}
+
+.article pre {
+  line-height: 1.45;
+  padding: 16px;
+  background-color: #f7f7f8;
+  border-radius: 3px;
+  white-space: pre-wrap;
+  overflow-x: scroll;
+}
+
+.article pre code {
+  padding: 0;
+  color: rgba(0, 0, 0, .9);
+  display: block;
+  min-width: 700px;
+}
+
+.article blockquote pre {
+  border: 1px solid #ccc;
+  border-radius: 0;
+}
+
+.article h2 {
+  border-bottom: 2px solid rgba(0, 39, 59, .08);
+  margin-top: 52px;
+}
+
+.article ul {
+  list-style-position: outside;
+  padding: 0 2em;
+}
+
+.article a {
+  display: inline;
+  border-bottom: 1px solid #008E59;
+}
+
+.article h1 a,
+.article h2 a,
+.article h3 a,
+.article h4 a,
+.article h5 a,
+.article h6 a {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+
+.article hr {
+  border: none;
+  border-bottom: 2px solid #CCC;
+  margin: 20px 0 40px 0;
+}
+
+.article table {
+  width: 100%;
+  background-color: transparent;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.article td,
+.article th {
+  border: 1px solid #CCC;
+  padding: 4px 16px;
+  font-size: 0.875em;
+}
+.article th {
+  background-color: #eee;
+}
+
+.article li> p {
+  margin-top: 5px;
+  margin-bottom: 0.4em;
+}
+
+.article img {
+  display: block;
+  max-width: 100%;
+  margin: auto;
+}
+
+article p,
+article li {
+  text-align: justify;
+  text-justify: inter-ideograph;
+}

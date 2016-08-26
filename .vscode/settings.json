@@ -1,6 +1,6 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-  "editor.lineHeight": 22.5,
+  "editor.lineHeight": 22,
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.fontSize": 14,
