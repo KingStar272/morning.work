@@ -10,7 +10,7 @@ export default {
         GitHub: <a href="https://github.com/leizongmin">https://github.com/leizongmin</a><br>
       `,
       link: 'http://ucdok.com',
-      avatar: 'https://avatars.githubusercontent.com/u/841625?v=3&s=120',
+      avatar: '/images/logo_lei.jpg',
     },
     en: {
       name: 'Zongmin Lei',
@@ -19,7 +19,7 @@ export default {
         GitHub: <a href="https://github.com/leizongmin">https://github.com/leizongmin</a>
       `,
       link: 'http://ucdok.com',
-      avatar: 'https://avatars.githubusercontent.com/u/841625?v=3&s=120',
+      avatar: '/images/logo_lei.jpg',
     }
   }
 };
