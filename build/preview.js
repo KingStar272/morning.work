@@ -9,7 +9,7 @@ import fs from 'fs';
 import express from 'express';
 import serveStatic from 'serve-static';
 import open from 'open';
-import {renderPost, renderPostList, renderFeed} from './index';
+import {readFile, renderPost, renderPostList, renderFeed} from './index';
 
 let app = express();
 app.get('/', (req, res, next) => {
@@ -20,7 +20,7 @@ app.get('/rss.xml', (req, res, next) => {
 });
 app.get('/page/*.html', (req, res, next) => {
   let f = path.resolve(__dirname, `../source/${req.params[0]}.md`);
-  renderPost(f, next);
+  renderPost(Object.assign({ is_preview: true }, readFile(f)), next);
 });
 
 app.use('/', serveStatic(path.resolve(__dirname, '..')));

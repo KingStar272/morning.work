@@ -169,6 +169,7 @@ a:hover {
 </body>
 </html>
 
+{% unless is_preview %}
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -191,3 +192,4 @@ var disqus_config = function () {
   (d.head || d.body).appendChild(s);
 })();
 </script>
+{% endunless %}

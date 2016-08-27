@@ -52,7 +52,7 @@ baseTplContext.onInclude(function (filename, callback) {
 });
 
 // 解析文章内容
-function readFile(f) {
+export function readFile(f) {
   let data = fs.readFileSync(f).toString().replace(/\r/g, '');
   data = prettyContent(data);
   let i = data.indexOf('\n\n');
