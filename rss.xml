@@ -1,4 +1,232 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Sat, 27 Aug 2016 02:21:56 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[如何让异步接口同时支持 callback 和 promise]]></title><description><![CDATA[<h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Mon, 29 Aug 2016 09:10:33 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[利用 ESLint 检查代码质量]]></title><description><![CDATA[<blockquote>
+<p>其实很早的时候就想尝试 ESLint 了，但是很多次都是玩了一下就觉得这东西巨复杂，<strong>一执行检查就是满屏的<code>error</code>，简直是不堪入目，遂放弃</strong>。直到某天终于下定决心深入看了文档，才发现其实挺简单的，只是当时没有看到合适入门教程而已。我相信很多人也有着跟我一样的经历，所以希望将自己的踩坑心得记录下来，让后来者更轻易地掌握 ESLint 的使用，因为它确实是个好东西。</p>
+</blockquote>
+<p>JavaScript 是一门神奇的动态语言，它在带给我们编程的灵活性的同时也悄悄埋下了一些地雷。除了基本的语法错误能在程序一启动的时候被检测到之外，很多隐含的错误都是在运行的时候才突然地蹦出来。除非你的程序有着 100%的测试覆盖率，否则说不定哪天就会因为一个<code>xxx is undefined</code>而导致程序崩溃，而为了避免这样的错误可能你只需要在提交代码的时候用工具静态分析一下，仅此而已。</p>
+<p>ESLint 是一个插件化的 javascript 代码检测工具，它可以用于检查常见的 JavaScript 代码错误，也可以进行代码风格检查，这样我们就可以根据自己的喜好指定一套 ESLint 配置，然后应用到所编写的项目上，从而实现<strong>辅助编码规范的执行，有效控制项目代码的质量</strong>。</p>
+<h2><a id="_9"></a>手把手入门</h2>
+<p>在开始使用 ESLint 之前，我们需要通过 NPM 来安装它：</p>
+<pre><code class="language-bash">$ npm install -g eslint
+</code></pre>
+<p>我从 Gist 上找到了自己几年前写的一个小函数，将其保存为文件<code>merge.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">merge</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">var</span> ret = {};
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">arguments</span>) {
+    <span class="hljs-keyword">var</span> m = <span class="hljs-built_in">arguments</span>[i];
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> j <span class="hljs-keyword">in</span> m) ret[j] = m[j];
+  }
+  <span class="hljs-keyword">return</span> ret;
+}
+
+<span class="hljs-built_in">console</span>.log(merge({a: <span class="hljs-number">123</span>}, {b: <span class="hljs-number">456</span>}));
+</code></pre>
+<p>然后执行<code>node merge.js</code>确保它是可以正确运行的（输出结果为<code>{ a: 123, b: 456 }</code>）。</p>
+<p>接着我们执行以下命令来使用 ESLint 检查：</p>
+<pre><code class="language-bash">$ eslint merge.js
+</code></pre>
+<p>可以看到，没有任何输出结果。这是因为我们没有指定任何的配置，除非这个文件是有语法错误，否则应该是不会有任何提示的。现在我们先使用内置的<code>eslint:recommended</code>配置，它包含了一系列核心规则，能报告一些常见的问题。</p>
+<p>首先新建 ESLint 配置文件<code>.eslintrc.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  extends: <span class="hljs-string">'eslint:recommended'</span>,
+};
+</code></pre>
+<p>重新执行<code>eslint merge.js</code>可以看到输出了 2 个错误：</p>
+<pre><code>/example/merge.js
+  10:1  error  Unexpected console statement  no-console
+  10:1  error  'console' is not defined      no-undef
+
+✖ 2 problem (2 error, 0 warnings)
+</code></pre>
+<p>这两条提示信息还是足够我们搞清楚是怎么回事的：</p>
+<ul>
+<li><strong>Unexpected console statement no-console</strong> - 不能使用<code>console</code></li>
+<li><strong>'console' is not defined     no-undef</strong> - <code>console</code>变量未定义，不能使用未定义的变量</li>
+</ul>
+<p>针对第 1 条提示，我们可以禁用<code>no-console</code>规则。将配置文件<code>.eslintrc.js</code>改为这样：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  extends: <span class="hljs-string">'eslint:recommended'</span>,
+  rules: {
+    <span class="hljs-string">'no-console'</span>: <span class="hljs-string">'off'</span>,
+  },
+};
+</code></pre>
+<p>说明：配置规则写在<code>rules</code>对象里面，<code>key</code>表示规则名称，<code>value</code>表示规则的配置，具体说明见下文。</p>
+<p>重新执行检查还是提示<code>no-undef</code>：</p>
+<pre><code>/example/merge.js
+  10:1  error  'console' is not defined  no-undef
+
+✖ 1 problem (1 error, 0 warnings)
+</code></pre>
+<p>这是因为 JavaScript 有很多种运行环境，比如常见的有浏览器和 Node.js，另外还有很多软件系统使用 JavaScript 作为其脚本引擎，比如 PostgreSQL 就支持使用 JavaScript 来编写存储引擎，而这些运行环境可能并不存在<code>console</code>这个对象。另外在浏览器环境下会有<code>window</code>对象，而 Node.js 下没有；在 Node.js 下会有<code>process</code>对象，而浏览器环境下没有。</p>
+<p>所以在配置文件中我们还需要指定程序的目标环境：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  extends: <span class="hljs-string">'eslint:recommended'</span>,
+  env: {
+    node: <span class="hljs-literal">true</span>,
+  },
+  rules: {
+    <span class="hljs-string">'no-console'</span>: <span class="hljs-string">'off'</span>,
+  },
+};
+</code></pre>
+<p>再重新执行检查时，已经没有任何提示输出了，说明<code>merge.js</code>已经完全通过了检查。</p>
+<h3><a id="_105"></a>配置文件</h3>
+<p>ESLint 还可以在项目的<code>package.json</code>文件中指定配置，直接将上文中的<code>module.exports</code>的值写到<code>eslintConfig</code>里面即可：</p>
+<pre><code class="language-json">{
+  "name": "my-package",
+  "version": "0.0.1",
+  "eslintConfig": {
+    "extends": "eslint:recommended",
+    "env": {
+      node: true
+    },
+    "rules": {
+      "no-console": "off"
+    }
+  }
+}
+</code></pre>
+<p>另外还可以在执行<code>eslint</code>命令时通过命令行参数来指定，详细文档可以参考这里：<a href="http://eslint.cn/docs/user-guide/configuring">Configuring ESLint - 配置</a></p>
+<h3><a id="_127"></a>规则</h3>
+<p>每条规则有 3 个等级：<code>off</code>、<code>warn</code>和<code>error</code>。<code>off</code>表示禁用这条规则，<code>warn</code>表示仅给出警告，并不会导致检查不通过，而<code>error</code>则会导致检查不通过。</p>
+<p>有些规则还带有可选的参数，比如<code>comma-dangle</code>可以写成<code>[ &quot;error&quot;, &quot;always-multiline&quot; ]</code>；<code>no-multi-spaces</code>可以写成<code>[ &quot;error&quot;, { exceptions: { &quot;ImportDeclaration&quot;: true }}]</code>。</p>
+<p>规则的详细说明文档可以参考这里：<a href="http://eslint.cn/docs/rules/">Rules - 规则</a></p>
+<h2><a id="_136"></a>使用共享的配置文件</h2>
+<p>上文我们以<code>eslint:recommended</code>为基础配置，然后在此之上修改<code>no-console</code>这条规则。而在大多数时候，我们可能会根据自己个人或团队的习惯，定制更多的规则，比如限定缩进是 2 个空格和使用单引号的字符串等。而如果每一个项目都要这样写到<code>.eslintrc.js</code>文件上，管理起来会比较麻烦。</p>
+<p>我们可以将定义好规则的<code>.eslintrc.js</code>文件存储到一个公共的位置，比如<code>public-eslintrc.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  extends: <span class="hljs-string">'eslint:recommended'</span>,
+  env: {
+    node: <span class="hljs-literal">true</span>,
+  },
+  rules: {
+    <span class="hljs-string">'no-console'</span>: <span class="hljs-string">'off'</span>,
+    <span class="hljs-string">'indent'</span>: [ <span class="hljs-string">'error'</span>, <span class="hljs-number">2</span> ],
+    <span class="hljs-string">'quotes'</span>: [ <span class="hljs-string">'error'</span>, <span class="hljs-string">'single'</span> ],
+  },
+};
+</code></pre>
+<p>然后将原来的<code>.eslintrc.js</code>文件改成这样：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  extends: <span class="hljs-string">'./public-eslintrc.js'</span>,
+};
+</code></pre>
+<p>为了验证这样的修改是否生效，将<code>merge.js</code>中的<code>var ret = {};</code>这一行前面多加一个空格，再执行 ESLint 检查：</p>
+<pre><code>/example/merge.js
+  2:4  error  Expected indentation of 2 space characters but found 3  indent
+
+✖ 1 problem (1 error, 0 warnings)
+</code></pre>
+<p>这时候提示的是缩进只能为 2 个空格，而文件的第 2 行却发现了 3 个空格，说明公共配置文件<code>public-eslintrc.js</code>已经生效了。</p>
+<p>我们还可以使用已经发布到 NPM 上的 ESLint 配置，这些配置的模块名一般以<code>eslint-config-</code>为前缀，比如我在学习 ESLint 时自己编写的一个配置名为<code>eslint-config-lei</code>。要使用这个配置，先执行以下命令安装它：</p>
+<pre><code class="language-bash">$ npm install -g eslint-config-lei
+</code></pre>
+<p><strong>注意：用于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
+<p>然后将<code>.eslintrc.js</code>文件改成这样：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  extends: <span class="hljs-string">'lei'</span>,
+};
+</code></pre>
+<p>再执行 ESLint 检查，可以看到输出如下的提示：</p>
+<pre><code>/example/merge.js
+   1:15  warning  Unexpected space before function parentheses  space-before-function-paren
+   2:3   error    Unexpected var, use let or const instead      no-var
+   3:8   error    Unexpected var, use let or const instead      no-var
+   4:5   error    Unexpected var, use let or const instead      no-var
+   5:10  error    Unexpected var, use let or const instead      no-var
+  10:19  warning  A space is required after '{'                 object-curly-spacing
+  10:26  warning  A space is required before '}'                object-curly-spacing
+  10:29  warning  A space is required after '{'                 object-curly-spacing
+  10:36  warning  A space is required before '}'                object-curly-spacing
+
+✖ 9 problems (4 errors, 5 warnings)
+</code></pre>
+<p>ESLint 配置文件中的<code>extends</code>还可以用来指定各种来源的配置引用，具体说明可以参考以下链接：</p>
+<ul>
+<li><a href="http://eslint.cn/docs/user-guide/configuring#using-a-shareable-configuration-package">Using a shareable configuration package - 使用共享的模块</a></li>
+<li><a href="http://eslint.cn/docs/user-guide/configuring#using-the-configuration-from-a-plugin">Using the configuration from a plugin - 使用插件</a></li>
+<li><a href="http://eslint.cn/docs/user-guide/configuring#using-a-configuration-file">Using a configuration file - 使用配置文件</a></li>
+<li><a href="http://eslint.cn/docs/user-guide/configuring#using-eslintall">Using &quot;eslint:all&quot; - 使用&quot;eslint:all&quot;</a></li>
+</ul>
+<h2><a id="_216"></a>代码格式化</h2>
+<p>在<a href="http://eslint.cn/docs/rules/">ESLint 规则列表</a>页面，我们发现有些规则的旁边会带有一个<strong>橙色扳手图标</strong>，表示在执行<code>eslint</code>命令时指定<code>--fix</code>参数可以<strong>自动修复</strong>该问题。</p>
+<p>接着上文使用<code>eslint-config-lei</code>配置的检查，我们尝试在执行检查时添加<code>--fix</code>参数：</p>
+<pre><code class="language-bash">$ eslint merge.js --fix
+</code></pre>
+<p>执行完毕，没有发现任何提示。再打开<code>merge.js</code>文件发现已经变成了这样：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">merge</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">const</span> ret = {};
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">arguments</span>) {
+    <span class="hljs-keyword">const</span> m = <span class="hljs-built_in">arguments</span>[i];
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> j <span class="hljs-keyword">in</span> m) ret[j] = m[j];
+  }
+  <span class="hljs-keyword">return</span> ret;
+}
+
+<span class="hljs-built_in">console</span>.log(merge({ a: <span class="hljs-number">123</span> }, { b: <span class="hljs-number">456</span> }));
+</code></pre>
+<p>主要的变化有以下三部分：</p>
+<ul>
+<li>声明函数时，函数名与参数列表的空格不见了：<code>merge ()</code>修改为<code>merge()</code></li>
+<li><code>var</code>声明的变量变成了<code>const</code>声明：<code>var ret = {}</code>修改为<code>const ret = {}</code></li>
+<li>对象的内容与花括号之间增加了空格：<code>{a: 123}</code>修改为<code>{ a: 123 }</code></li>
+</ul>
+<p>我们可以利用这个特性来自动格式化项目代码，这样就可以保证代码书写风格的统一。</p>
+<h2><a id="_250"></a>发布自己的配置</h2>
+<p>前文关于「共享的配置文件」一小节已经提到，可以在<code>extends</code>中指定一个文件名，或者一个<code>eslint-config-</code>开头的模块名。为了便于共享，一般推荐将其发布成一个 NPM 模块。</p>
+<p>其原理就是在载入模块时输出原来<code>.eslintrc.js</code>的数据。比如我们可以创建一个模块<code>eslint-config-my</code>用于测试。</p>
+<p>新建文件<code>eslint-config-my/index.js</code>：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  extends: <span class="hljs-string">'eslint:recommended'</span>,
+  env: {
+    node: <span class="hljs-literal">true</span>,
+    es6: <span class="hljs-literal">true</span>,
+  },
+  rules: {
+    <span class="hljs-string">'no-console'</span>: <span class="hljs-string">'off'</span>,
+    <span class="hljs-string">'indent'</span>: [ <span class="hljs-string">'error'</span>, <span class="hljs-number">2</span> ],
+    <span class="hljs-string">'quotes'</span>: [ <span class="hljs-string">'error'</span>, <span class="hljs-string">'single'</span> ],
+  },
+};
+</code></pre>
+<p>再新建文件<code>eslint-config-my/package.json</code>：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"eslint-config-my"</span>,
+  <span class="hljs-attr">"version"</span>: <span class="hljs-string">"0.0.1"</span>,
+  <span class="hljs-attr">"main"</span>: <span class="hljs-string">"index.js"</span>
+}
+</code></pre>
+<p>为了能让<code>eslint</code>正确载入这个模块，我们需要执行<code>npm link</code>将这个模块链接到本地全局位置：</p>
+<pre><code>$ npm link eslint-config-my
+</code></pre>
+<p>然后将文件<code>.eslintrc.js</code>改成这样：</p>
+<pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
+  extends: <span class="hljs-string">'my'</span>,
+};
+</code></pre>
+<p>说明：在<code>extends</code>中，<code>eslint-config-my</code>可简写为<code>my</code>。</p>
+<p>在执行<code>eslint merge.js</code>检查，可看到没有任何错误提示信息，说明<code>eslint</code>已经成功载入了<code>eslint-config-my</code>的配置。如果我们使用<code>npm publish</code>将其发布到 NPM 上，那么其他人通过<code>npm install eslint-config-my</code>即可使用我们共享的这个配置。</p>
+<p>另外可以参考我自己写的一个 ESLint 配置模块：<a href="https://github.com/leizongmin/eslint-config-lei">eslint-config-lei</a></p>
+<p>关于共享 ESLint 配置的详细文档可参考：<a href="http://eslint.cn/docs/developer-guide/shareable-configs">Shareable Configs - 可共享的配置</a></p>
+<h2><a id="_306"></a>例外情况</h2>
+<p>尽管我们在编码时怀着<strong>严格遵守规则</strong>的美好愿景，而<strong>凡事总有例外</strong>。定立 ESLint 规则的初衷是为了避免自己犯错，但是我们也要避免不顾实际情况而将其搞得太过于形式化，本末倒置。</p>
+<p>ESLint 提供了多种临时禁用规则的方式，比如我们可以通过一条<code>eslint-disable-next-line</code>备注来使得下一行可以跳过检查：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// eslint-disable-next-line</span>
+<span class="hljs-keyword">var</span> a = <span class="hljs-number">123</span>;
+<span class="hljs-keyword">var</span> b = <span class="hljs-number">456</span>;
+</code></pre>
+<p>在上面的示例代码中，<code>var a = 123</code>不会受到检查，而<code>var b = 456</code>则右恢复检查，在上文我们使用的<code>eslint-config-lei</code>的配置规则下，由于不允许使用<code>var</code>声明变量，则<code>var b</code>这一行会报告一个<code>error</code>。</p>
+<p>我们还可以通过成对的<code>eslint-enable</code>和<code>eslint-disable</code>备注来禁用对某一段代码的检查，但是稍不小心少写了一个<code>eslint-disable</code>就可能会导致后面所有文件的检查都被禁用，所以我并不推荐使用。</p>
+<p>详细使用方法可以参考文档：<a href="http://eslint.cn/docs/user-guide/configuring#disabling-rules-with-inline-comments">Disabling Rules with Inline Comments - 使用行内注释禁用规则</a></p>
+<h2><a id="_325"></a>总结</h2>
+<p>刚开始接触 ESLint 时觉得太难，是因为过太过于<strong>迷信权威</strong>。比如 Airbnb 公司的 JavaScript 风格，在 GitHub 上受到了很大的好评，其实我自己也非常认可这样的编码风格。但每个团队都会根据自己的的<strong>实际情况</strong>来<strong>定制</strong>不同的东西，我们并<strong>不能随便照搬</strong>过来。所以当使用<code>eslint-config-airbnb</code>这个配置进行 ESLint 检查时，满屏都是<code>error</code>和<code>warning</code>，从而觉得这东西根本没啥卵用。</p>
+<p>另外我也犯了「大忌」：直接使用<code>eslint-config-airbnb</code>这种某个公司高度定制化的配置，而不是<code>eslint:recommended</code>这样保守的。而且是直接用来检查整个项目好几十个 JS 文件，可想而知那是怎样的画面（本文最后版本的<code>merge.js</code>文件使用<code>airbnb</code>的配置，总共 12 行的代码就提示了 8 个问题：<em>✖ 8 problems (7 errors, 1 warning)</em>）。</p>
+<p>本文的目的是让读者以一个比较低的姿态开始接触 ESLint，先学会简单地配置规则，如果要更深入地定制自己的规则，建议阅读「相关链接」中的 ESLint 文档。</p>
+<h2><a id="_334"></a>相关链接</h2>
+<ul>
+<li><a href="https://csspod.com/getting-started-with-eslint/">ESLint 使用入门</a></li>
+<li><a href="http://eslint.cn/">ESLinit 中文版文档</a></li>
+</ul>
+]]></description><link>http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Sat, 27 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何让异步接口同时支持 callback 和 promise]]></title><description><![CDATA[<h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
 <p>随着 ES6 的普及，越来越多的异步接口都开始同时支持<code>callback</code>和<code>promise</code>两种方式，我在最近的两篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>和<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html">《如何编写一个简单的 Redis 客户端》</a>中也使用<strong>一个简单的小技巧</strong>来实现这样的功能：</p>
 <pre><code class="language-javascript">request(method, path, params, callback) {
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((_resolve, _reject) =&gt; {
@@ -743,8 +971,7 @@ b=undefined, err=Error: connection has been closed
 <li><code>RedisProto</code>解析结果的算法还是可以优化的，目前这个只能算是大概能用</li>
 <li>如果连接意外断开了，我们可能希望能自动重新连接而不是直接报错</li>
 </ul>
-<p><strong>好了，这只是随便撸一下的面试题，又不是要撸成一个轮子，剩下的就交给你啦。</strong></p>
-<h2><a id="_629"></a>相关链接</h2>
+<h2><a id="_627"></a>相关链接</h2>
 <ul>
 <li><a href="http://redis.cn/topics/protocol.html">Redis 协议</a>（<a href="http://redis.cn/topics/protocol.html%EF%BC%89">http://redis.cn/topics/protocol.html）</a></li>
 <li><a href="http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html">如何让异步接口同时支持 callback 和 promise</a></li>
