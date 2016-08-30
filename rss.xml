@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Mon, 29 Aug 2016 09:10:33 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[利用 ESLint 检查代码质量]]></title><description><![CDATA[<blockquote>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Tue, 30 Aug 2016 02:42:44 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[利用 ESLint 检查代码质量]]></title><description><![CDATA[<blockquote>
 <p>其实很早的时候就想尝试 ESLint 了，但是很多次都是玩了一下就觉得这东西巨复杂，<strong>一执行检查就是满屏的<code>error</code>，简直是不堪入目，遂放弃</strong>。直到某天终于下定决心深入看了文档，才发现其实挺简单的，只是当时没有看到合适入门教程而已。我相信很多人也有着跟我一样的经历，所以希望将自己的踩坑心得记录下来，让后来者更轻易地掌握 ESLint 的使用，因为它确实是个好东西。</p>
 </blockquote>
 <p>JavaScript 是一门神奇的动态语言，它在带给我们编程的灵活性的同时也悄悄埋下了一些地雷。除了基本的语法错误能在程序一启动的时候被检测到之外，很多隐含的错误都是在运行的时候才突然地蹦出来。除非你的程序有着 100%的测试覆盖率，否则说不定哪天就会因为一个<code>xxx is undefined</code>而导致程序崩溃，而为了避免这样的错误可能你只需要在提交代码的时候用工具静态分析一下，仅此而已。</p>
@@ -72,15 +72,15 @@
 <h3><a id="_105"></a>配置文件</h3>
 <p>ESLint 还可以在项目的<code>package.json</code>文件中指定配置，直接将上文中的<code>module.exports</code>的值写到<code>eslintConfig</code>里面即可：</p>
 <pre><code class="language-json">{
-  "name": "my-package",
-  "version": "0.0.1",
-  "eslintConfig": {
-    "extends": "eslint:recommended",
-    "env": {
-      node: true
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"my-package"</span>,
+  <span class="hljs-attr">"version"</span>: <span class="hljs-string">"0.0.1"</span>,
+  <span class="hljs-attr">"eslintConfig"</span>: {
+    <span class="hljs-attr">"extends"</span>: <span class="hljs-string">"eslint:recommended"</span>,
+    <span class="hljs-attr">"env"</span>: {
+      <span class="hljs-attr">"node"</span>: <span class="hljs-literal">true</span>
     },
-    "rules": {
-      "no-console": "off"
+    <span class="hljs-attr">"rules"</span>: {
+      <span class="hljs-attr">"no-console"</span>: <span class="hljs-string">"off"</span>
     }
   }
 }
@@ -120,7 +120,7 @@
 <p>我们还可以使用已经发布到 NPM 上的 ESLint 配置，这些配置的模块名一般以<code>eslint-config-</code>为前缀，比如我在学习 ESLint 时自己编写的一个配置名为<code>eslint-config-lei</code>。要使用这个配置，先执行以下命令安装它：</p>
 <pre><code class="language-bash">$ npm install -g eslint-config-lei
 </code></pre>
-<p><strong>注意：用于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
+<p><strong>注意：用于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，否则将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
 <p>然后将<code>.eslintrc.js</code>文件改成这样：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
   extends: <span class="hljs-string">'lei'</span>,
@@ -226,7 +226,7 @@
 <li><a href="https://csspod.com/getting-started-with-eslint/">ESLint 使用入门</a></li>
 <li><a href="http://eslint.cn/">ESLinit 中文版文档</a></li>
 </ul>
-]]></description><link>http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Sat, 27 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何让异步接口同时支持 callback 和 promise]]></title><description><![CDATA[<h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
+]]></description><link>http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 30 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何让异步接口同时支持 callback 和 promise]]></title><description><![CDATA[<h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
 <p>随着 ES6 的普及，越来越多的异步接口都开始同时支持<code>callback</code>和<code>promise</code>两种方式，我在最近的两篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>和<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html">《如何编写一个简单的 Redis 客户端》</a>中也使用<strong>一个简单的小技巧</strong>来实现这样的功能：</p>
 <pre><code class="language-javascript">request(method, path, params, callback) {
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((_resolve, _reject) =&gt; {

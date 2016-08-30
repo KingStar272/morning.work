@@ -116,9 +116,9 @@ a:hover {
         个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
         GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
-    创作于 2016-08-27            </div>
+    创作于 2016-08-30            </div>
   <div id="remaining-time">
-    全文约 6506 字，预计阅读时间为 0 时 33 分钟
+    全文约 6510 字，预计阅读时间为 0 时 33 分钟
   </div>
 
   <article class="article">
@@ -196,15 +196,15 @@ a:hover {
 <h3><a id="_105"></a>配置文件</h3>
 <p>ESLint 还可以在项目的<code>package.json</code>文件中指定配置，直接将上文中的<code>module.exports</code>的值写到<code>eslintConfig</code>里面即可：</p>
 <pre><code class="language-json">{
-  "name": "my-package",
-  "version": "0.0.1",
-  "eslintConfig": {
-    "extends": "eslint:recommended",
-    "env": {
-      node: true
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"my-package"</span>,
+  <span class="hljs-attr">"version"</span>: <span class="hljs-string">"0.0.1"</span>,
+  <span class="hljs-attr">"eslintConfig"</span>: {
+    <span class="hljs-attr">"extends"</span>: <span class="hljs-string">"eslint:recommended"</span>,
+    <span class="hljs-attr">"env"</span>: {
+      <span class="hljs-attr">"node"</span>: <span class="hljs-literal">true</span>
     },
-    "rules": {
-      "no-console": "off"
+    <span class="hljs-attr">"rules"</span>: {
+      <span class="hljs-attr">"no-console"</span>: <span class="hljs-string">"off"</span>
     }
   }
 }
@@ -244,7 +244,7 @@ a:hover {
 <p>我们还可以使用已经发布到 NPM 上的 ESLint 配置，这些配置的模块名一般以<code>eslint-config-</code>为前缀，比如我在学习 ESLint 时自己编写的一个配置名为<code>eslint-config-lei</code>。要使用这个配置，先执行以下命令安装它：</p>
 <pre><code class="language-bash">$ npm install -g eslint-config-lei
 </code></pre>
-<p><strong>注意：用于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
+<p><strong>注意：用于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，否则将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
 <p>然后将<code>.eslintrc.js</code>文件改成这样：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
   extends: <span class="hljs-string">'lei'</span>,

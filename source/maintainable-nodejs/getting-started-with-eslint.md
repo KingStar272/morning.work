@@ -1,6 +1,6 @@
 ```
 title: 利用ESLint检查代码质量
-date: 2016-08-27
+date: 2016-08-30
 author: 老雷
 ```
 
@@ -118,7 +118,7 @@ ESLint还可以在项目的`package.json`文件中指定配置，直接将上文
   "eslintConfig": {
     "extends": "eslint:recommended",
     "env": {
-      node: true
+      "node": true
     },
     "rules": {
       "no-console": "off"
@@ -183,7 +183,7 @@ module.exports = {
 $ npm install -g eslint-config-lei
 ```
 
-**注意：用于我们的`eslint`命令是全局安装的，所有用到的`eslint-config-*`模块也必须全局安装，将无法正确载入。这是一个已知的Bug，参考这里：[Error: Cannot read config package for shareable config using global eslint #4822](https://github.com/eslint/eslint/issues/4822#issuecomment-167600953)**
+**注意：用于我们的`eslint`命令是全局安装的，所有用到的`eslint-config-*`模块也必须全局安装，否则将无法正确载入。这是一个已知的Bug，参考这里：[Error: Cannot read config package for shareable config using global eslint #4822](https://github.com/eslint/eslint/issues/4822#issuecomment-167600953)**
 
 然后将`.eslintrc.js`文件改成这样：
 
