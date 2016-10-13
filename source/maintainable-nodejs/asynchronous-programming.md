@@ -222,17 +222,17 @@ function isPromise(p) {
 }
 
 // coroutine函数，接收一个generator function作为参数，返回一个新的函数
-function coroutine(generator) {
+function coroutine(genFn) {
   return function () {
     // 函数执行结果是一个promise对象
     return new Promise((resolve, reject) => {
       // 首先执行generator function，它会返回一个Generator对象
-      // 详细文档可参考https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator
-      const fn = generator.apply(null, arguments);
+      const gen = genFn.apply(null, arguments);
       let ret;
-      function next() {
+      function next(value) {
         // 执行.next()返回yield返回的值
-        ret = fn.next();
+        // next()可以接收一个参数，用作在生成器函数里面yield语句的返回值
+        ret = gen.next(value);
         // 如果done=true则表示结束
         if (ret.done) {
           return resolve(ret.value);
@@ -328,7 +328,7 @@ test(10, 500)
 回想在过去的一年多时间里，我确实是对以使用`generator`的`co`模块来解决异步问题是有些许偏见，也曾喷过某**月饼云**的 Node.js SDK 竟然不支持`callback`而是直接返回一个`generator`。究其原因，我深以为有以下几点：
 
 + 早期版本的`co`封装并不是返回一个`promise`对象，再加上大多数介绍`co`的文章讲的基本上都是`thunks`的概念，这对初使用`co`的人是相当恶心的
-+ `co` 的`yield`支持的功能实在太丰富了，而我更喜欢简单的
++ `co` 的`yield`支持的功能实在太丰fu富za了，而我更喜欢简单的
 + 在 Node v4 发布之前，使用 Generator 还需要开启 Harmony 特性
 + 从 Node v4 开始，直接支持了 Generator 和 Promise
 
@@ -344,4 +344,4 @@ test(10, 500)
 + [你不懂JS: 异步与性能 第四章: Generator（下）](http://www.jianshu.com/p/e6f6766cba13)
 + [co 函数库的含义和用法](http://www.ruanyifeng.com/blog/2015/05/co.html)
 + [Koa, co and coroutine](http://lifemap.in/koa-co-and-coroutine/)
-
++ [生成器（Generator）——《实战 ES2015》章节试读](https://zhuanlan.zhihu.com/p/20794401)

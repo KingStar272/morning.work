@@ -118,7 +118,7 @@ a:hover {
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
     创作于 2016-10-13            </div>
   <div id="remaining-time">
-    全文约 6651 字，预计阅读时间为 0 时 34 分钟
+    全文约 6628 字，预计阅读时间为 0 时 34 分钟
   </div>
 
   <article class="article">
@@ -300,17 +300,17 @@ next();
 }
 
 <span class="hljs-comment">// coroutine 函数，接收一个 generator function 作为参数，返回一个新的函数</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">coroutine</span>(<span class="hljs-params">generator</span>) </span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">coroutine</span>(<span class="hljs-params">genFn</span>) </span>{
   <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
     <span class="hljs-comment">// 函数执行结果是一个 promise 对象</span>
     <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
       <span class="hljs-comment">// 首先执行 generator function，它会返回一个 Generator 对象</span>
-      <span class="hljs-comment">// 详细文档可参考 https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator</span>
-      <span class="hljs-keyword">const</span> fn = generator.apply(<span class="hljs-literal">null</span>, <span class="hljs-built_in">arguments</span>);
+      <span class="hljs-keyword">const</span> gen = genFn.apply(<span class="hljs-literal">null</span>, <span class="hljs-built_in">arguments</span>);
       <span class="hljs-keyword">let</span> ret;
-      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">next</span>(<span class="hljs-params"></span>) </span>{
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">next</span>(<span class="hljs-params">value</span>) </span>{
         <span class="hljs-comment">// 执行.next()返回 yield 返回的值</span>
-        ret = fn.next();
+        <span class="hljs-comment">// next()可以接收一个参数，用作在生成器函数里面 yield 语句的返回值</span>
+        ret = gen.next(value);
         <span class="hljs-comment">// 如果 done=true 则表示结束</span>
         <span class="hljs-keyword">if</span> (ret.done) {
           <span class="hljs-keyword">return</span> resolve(ret.value);
@@ -386,7 +386,7 @@ test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
 <p>回想在过去的一年多时间里，我确实是对以使用<code>generator</code>的<code>co</code>模块来解决异步问题是有些许偏见，也曾喷过某<strong>月饼云</strong>的 Node.js SDK 竟然不支持<code>callback</code>而是直接返回一个<code>generator</code>。究其原因，我深以为有以下几点：</p>
 <ul>
 <li>早期版本的<code>co</code>封装并不是返回一个<code>promise</code>对象，再加上大多数介绍<code>co</code>的文章讲的基本上都是<code>thunks</code>的概念，这对初使用<code>co</code>的人是相当恶心的</li>
-<li><code>co</code> 的<code>yield</code>支持的功能实在太丰富了，而我更喜欢简单的</li>
+<li><code>co</code> 的<code>yield</code>支持的功能实在太丰 fu 富 za 了，而我更喜欢简单的</li>
 <li>在 Node v4 发布之前，使用 Generator 还需要开启 Harmony 特性</li>
 <li>从 Node v4 开始，直接支持了 Generator 和 Promise</li>
 </ul>
@@ -399,6 +399,7 @@ test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
 <li><a href="http://www.jianshu.com/p/e6f6766cba13">你不懂 JS: 异步与性能 第四章: Generator（下）</a></li>
 <li><a href="http://www.ruanyifeng.com/blog/2015/05/co.html">co 函数库的含义和用法</a></li>
 <li><a href="http://lifemap.in/koa-co-and-coroutine/">Koa, co and coroutine</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/20794401">生成器（Generator）——《实战 ES2015》章节试读</a></li>
 </ul>
 
   </article>

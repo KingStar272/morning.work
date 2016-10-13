@@ -1,7 +1,7 @@
 // sleep函数，返回一个Promise对象
 function sleep(ms) {
   return new Promise((resolve, reject) => {
-    setTimeout(resolve, ms);
+    setTimeout(() => resolve(ms), ms);
   });
 }
 
@@ -10,8 +10,8 @@ const test = coroutine(function* () {
   // 循环100次
   for (let i = 0; i < 100; i++) {
     // 等待100ms再返回
-    yield sleep(100);
-    console.log('i=%s', i);
+    const ms = yield sleep(100);
+    console.log('i=%s, ms=%s', i, ms);
   }
   // 返回执行sleep次数
   return 100;
@@ -38,13 +38,13 @@ function isPromise(p) {
   return typeof p.then === 'function' && typeof p.catch === 'function';
 }
 
-function coroutine(generator) {
+function coroutine(genFn) {
   return function () {
     return new Promise((resolve, reject) => {
-      const fn = generator.apply(null, arguments);
+      const gen = genFn.apply(null, arguments);
       let ret;
-      function next() {
-        ret = fn.next();
+      function next(value) {
+        ret = gen.next(value);
         // 如果done=true则表示结束
         if (ret.done) {
           return resolve(ret.value);
