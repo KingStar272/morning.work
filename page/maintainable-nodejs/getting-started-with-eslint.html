@@ -244,7 +244,7 @@ a:hover {
 <p>我们还可以使用已经发布到 NPM 上的 ESLint 配置，这些配置的模块名一般以<code>eslint-config-</code>为前缀，比如我在学习 ESLint 时自己编写的一个配置名为<code>eslint-config-lei</code>。要使用这个配置，先执行以下命令安装它：</p>
 <pre><code class="language-bash">$ npm install -g eslint-config-lei
 </code></pre>
-<p><strong>注意：用于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，否则将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
+<p><strong>注意：由于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，否则将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
 <p>然后将<code>.eslintrc.js</code>文件改成这样：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
   extends: <span class="hljs-string">'lei'</span>,

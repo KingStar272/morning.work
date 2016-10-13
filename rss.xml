@@ -1,4 +1,282 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Tue, 30 Aug 2016 02:42:44 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[利用 ESLint 检查代码质量]]></title><description><![CDATA[<blockquote>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Thu, 13 Oct 2016 08:35:52 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[基于 generator 与 promise 的异步编程解决方案]]></title><description><![CDATA[<h2><a id="_2"></a>前言</h2>
+<p>一直以来，“异步”编程问题一直困扰着广大的 JavaScript 开发者。近年来出现了各种异步解决方案，从基于最原始的<code>callback</code>方式的<code>async</code>函数，到<code>promise</code>标准，再到基于<code>generator</code>的<code>co</code>库，以及即将纳入 ES7 标准的<code>async function / await</code>语法，但是由于各种现实的原因，它们的表现并不尽人意。</p>
+<p>原始的<code>callback</code>方式简单明了，不需要过多的依赖，但是在异步逻辑较复杂的场景下写出来的程序并不太直观，就我个人的使用经验而言，尽管多年来已经练就了一身可以穿梭在各种嵌套回调的“乱码”之中，每次重新看这些代码都头疼不已。</p>
+<p>JavaScript 异步解决方案都是朝着更直观（跟写同步代码一样）的方向发展的，比如近来呼声最高的<code>async function / await</code>语法，直接从语言层面解决问题，使用体验那是好得没法说的。但是，这是一个 ES7 （ES2017，即明年才会发布的 ES 标准）标准的语法，目前并没有得到各 JavaScript 引擎的内置支持。虽然我们照样可以使用 Babel 神器来将它编译成 ES5 / ES6 的语法，然后运行在现有的 JavaScript 引擎之上。然而使用 Babel 编译后的代码并不易于维护，首先这些代码修改后要先经过一次编译，当我们在生产环境上执行编译后的代码时，很难准确地定位到源码出错的位置。另外，根据最新可靠的消息，Node  v7 版本会在语法层面上支持<code>async function / await</code>语法，但该版本原计划于 9 月 30 号发布却跳票了，而且按照往年的惯例，也要在 1 年后发布的 Node v8 LTS 版本上才会正式支持该语法，这对于追求稳定的企业来说还需要一个漫长的等待过程。</p>
+<h2><a id="_Babel__async_function__await___10"></a>通过 Babel 编译 async function / await  语法解决方案</h2>
+<p>利用<code>async function / await</code>语法，我们可以很直观地书写异步程序：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// sleep 函数，返回一个 Promise 对象</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setTimeout(resolve, ms);
+  });
+}
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 循环 100 次</span>
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; i++) {
+    <span class="hljs-comment">// 等待 100ms 再返回</span>
+    <span class="hljs-keyword">await</span> sleep(<span class="hljs-number">100</span>);
+  }
+}
+</code></pre>
+<p>但由于目前的 JavaScript 引擎均不支持该语法，需要通过 Babel 之类的工具编译成 ES6 语法后的程序是这样的：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">"use strict"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_asyncToGenerator</span>(<span class="hljs-params">fn</span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">var</span> gen = fn.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>); <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>{ <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">step</span>(<span class="hljs-params">key, arg</span>) </span>{ <span class="hljs-keyword">try</span> { <span class="hljs-keyword">var</span> info = gen[key](arg); <span class="hljs-keyword">var</span> value = info.value; } <span class="hljs-keyword">catch</span> (error) { reject(error); <span class="hljs-keyword">return</span>; } <span class="hljs-keyword">if</span> (info.done) { resolve(value); } <span class="hljs-keyword">else</span> { <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve(value).then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value</span>) </span>{ <span class="hljs-keyword">return</span> step(<span class="hljs-string">"next"</span>, value); }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{ <span class="hljs-keyword">return</span> step(<span class="hljs-string">"throw"</span>, err); }); } } <span class="hljs-keyword">return</span> step(<span class="hljs-string">"next"</span>); }); }; }
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setTimeout(resolve, ms);
+  });
+}
+
+<span class="hljs-keyword">let</span> test = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> ref = _asyncToGenerator(<span class="hljs-function"><span class="hljs-keyword">function</span>* (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; i++) {
+            <span class="hljs-keyword">yield</span> sleep(<span class="hljs-number">100</span>);
+        }
+    });
+
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">return</span> ref.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+    };
+}();
+</code></pre>
+<p>从编译后的代码来看，虽然在前面增加了一坨<code>_asyncToGenerator</code>函数的代码，但<code>test</code>函数的代码还是能看出程序原来的结构。通过以上凌乱的代码我们还是可以看出，其内部是通过<code>generator function</code>实现的，在外层返回一个<code>promise</code>对象。</p>
+<h2><a id="_generator__promise__61"></a>基于 generator 与 promise 的解决方案</h2>
+<p>首先我们要达成这样的共识：<strong><code>async function / await</code>语法是未来的主流，但是要让主流的 JavaScript 引擎支持该语法还需要一个很漫长的过程，而现在我们需要找到一种替代的方法，而这种方法又能尽量保持与<code>async function / await</code>非常相近，在以后可以很轻易地替换成新的用法。</strong> 基于以上的考虑可以得出以下结论：</p>
+<ul>
+<li>异步函数执行后需要返回一个<code>promise</code>对象（<code>async function</code>执行后返回的也是一个<code>promise</code>对象）</li>
+<li>使用<code>generator function</code>，<code>yield</code>代替<code>await</code>，这样可以最大程度上保持程序逻辑结构不变（<code>generator function</code>从 Node v4 已经开始支持，经过两年多的使用验证，性能和可靠性性上还是有保证的）</li>
+</ul>
+<p>基于以上两点的考虑，我们可以假设新的异步代码应该是这样的：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// sleep 函数，返回一个 Promise 对象</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setTimeout(resolve, ms);
+  });
+}
+
+<span class="hljs-comment">// 通过 coroutine 来包装异步函数</span>
+<span class="hljs-keyword">const</span> test = coroutine(<span class="hljs-function"><span class="hljs-keyword">function</span>* (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 循环 100 次</span>
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; i++) {
+    <span class="hljs-comment">// 等待 100ms 再返回</span>
+    <span class="hljs-keyword">yield</span> sleep(<span class="hljs-number">100</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'i=%s'</span>, i);
+  }
+  <span class="hljs-comment">// 返回执行 sleep 次数</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-number">100</span>;
+});
+
+ <span class="hljs-comment">// 执行函数，其返回一个 Promise 对象</span>
+test()
+  .then(i =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行了%s 次 sleep'</span>, i))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'出错'</span>, err));
+</code></pre>
+<p>对比直接使用<code>async function / await</code>语法，我们发现只是在声明异步函数和<code>yield</code>这两行写法不同，它可以在 Node v4 及更高版本上可直接执行，并且可以直接在源码上进行调试。以下是上文的程序在 Visual Studio Code 上进行调试的界面（<code>coroutine</code>函数的实现将在下文讲解）：</p>
+<p><img src="../../images/2016-10/debug_coroutine.png" alt="调试 coroutine 程序"></p>
+<h2><a id="_coroutine__102"></a>实现一个简单的 coroutine 函数</h2>
+<p>本小节只是是为了通过演示如何动手写一个<code>coroutine</code>函数来了解其中的原理，实际久经考验的<code>bluebird</code>模块和<code>co</code>模块已经实现了此功能，下一小节将会讲解基于这些现成模块的使用方法。</p>
+<p>首先我们需要了解一下 Generator 的概念。Generator 中文名称为“生成器”，通过<code>function*</code>来定义的函数称之为“生成器函数”（<code>generator function</code>），而生成器函数执行后返回的是一个生成器对象（<code>Generator</code>），这个生成器对象包含了几个方法，其中一个重要的方法是<code>next()</code>，我们可以通过不断地调用<code>next()</code>来取得在生成器中<code>yield</code>出来的值，生成器是否已执行结束则可以通过返回值的<code>done</code>属性来判断。</p>
+<p>生成器有一个特点就是它可以中断函数的执行，每次执行<code>yield</code>语句之后，函数即暂停执行，直到调用返回的生成器对象的<code>next()</code>函数它才会继续执行。以下是一个简单的例子：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-comment">// 生成器函数，可以生成指定数量的数字</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">genNumbers</span>(<span class="hljs-params">n</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++) {
+    <span class="hljs-keyword">yield</span> i;
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-string">'ok'</span>;
+}
+
+<span class="hljs-comment">// 执行生成器函数</span>
+<span class="hljs-keyword">const</span> gen = genNumbers(<span class="hljs-number">10</span>);
+<span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) {
+  <span class="hljs-comment">// 执行 next()方法取下一个数字</span>
+  <span class="hljs-keyword">const</span> ret = gen.next();
+  <span class="hljs-comment">// 打印结果</span>
+  <span class="hljs-built_in">console</span>.log(ret);
+  <span class="hljs-keyword">if</span> (ret.done) {
+    <span class="hljs-comment">// 如果 done=true 则表示生成器执行结束</span>
+    <span class="hljs-keyword">break</span>;
+  }
+}
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>);
+</code></pre>
+<p>上面的代码执行后的结果如下：</p>
+<pre><code>{ value: 1, done: false }
+{ value: 2, done: false }
+{ value: 3, done: false }
+{ value: 4, done: false }
+{ value: 5, done: false }
+{ value: 6, done: false }
+{ value: 7, done: false }
+{ value: 8, done: false }
+{ value: 9, done: false }
+{ value: 10, done: false }
+{ value: 'ok', done: true }
+done
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>每次执行<code>next()</code>都会返回一个包含<code>{ value, done }</code>两个属性的对象，其中<code>value</code>是该次<code>yield</code>返回的值，<code>done</code>表示是否执行结束</li>
+<li>最后一次返回的值是生成器函数内<code>return</code>语句返回的值</li>
+</ul>
+<p>从上文的代码可知，只有我们执行<code>gen.next()</code>时生成器才会继续执行。如果还不太确定，我们可以尝试把它换成异步的执行方式：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-comment">// 生成器函数，可以生成指定数量的数字</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">genNumbers</span>(<span class="hljs-params">n</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++) {
+    <span class="hljs-keyword">yield</span> i;
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-string">'ok'</span>;
+}
+
+<span class="hljs-comment">// 执行生成器函数</span>
+<span class="hljs-keyword">const</span> gen = genNumbers(<span class="hljs-number">10</span>);
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">next</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 执行 next()方法取下一个数字</span>
+  <span class="hljs-keyword">const</span> ret = gen.next();
+  <span class="hljs-comment">// 打印结果</span>
+  <span class="hljs-built_in">console</span>.log(ret);
+  <span class="hljs-keyword">if</span> (ret.done) {
+    <span class="hljs-comment">// 如果 done=true 则表示生成器执行结束</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-comment">// 500ms 后继续执行</span>
+    setTimeout(next, <span class="hljs-number">500</span>);
+  }
+}
+
+next();
+</code></pre>
+<p>如无意外，执行上面的代码后我们应该能看到每隔 0.5 秒会打印出一行结果，直到 5 秒后程序才执行结束，而打印的结果跟之前的一模一样。</p>
+<p>现在我们不妨假设，在我们的异步函数中，通过<code>yield</code>返回一个<code>promise</code>对象，然后等待<code>promise</code>执行回调后再执行<code>gen.next()</code>方法，如此循环，是不是就可以实现异步流程控制呢？</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ret = gen.next();
+<span class="hljs-keyword">if</span> (ret.done) {
+  <span class="hljs-comment">// 执行结束</span>
+  resolve(ret.value);
+} <span class="hljs-keyword">else</span> {
+  <span class="hljs-comment">// 等待 promise 回调</span>
+  ret.value
+    .than(() =&gt; ret.next())
+    .catch(err =&gt; reject(err));
+}
+</code></pre>
+<p>以下是这个简单<code>coroutine</code>函数的代码：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-comment">// 判断是否为 Promise 对象，再次只简单判断该对象是否包含 then 和 catch 方法</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isPromise</span>(<span class="hljs-params">p</span>) </span>{
+  <span class="hljs-keyword">return</span> p &amp;&amp; <span class="hljs-keyword">typeof</span> p.then === <span class="hljs-string">'function'</span> &amp;&amp; <span class="hljs-keyword">typeof</span> p.catch === <span class="hljs-string">'function'</span>;
+}
+
+<span class="hljs-comment">// coroutine 函数，接收一个 generator function 作为参数，返回一个新的函数</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">coroutine</span>(<span class="hljs-params">generator</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-comment">// 函数执行结果是一个 promise 对象</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+      <span class="hljs-comment">// 首先执行 generator function，它会返回一个 Generator 对象</span>
+      <span class="hljs-comment">// 详细文档可参考 https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator</span>
+      <span class="hljs-keyword">const</span> fn = generator.apply(<span class="hljs-literal">null</span>, <span class="hljs-built_in">arguments</span>);
+      <span class="hljs-keyword">let</span> ret;
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">next</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-comment">// 执行.next()返回 yield 返回的值</span>
+        ret = fn.next();
+        <span class="hljs-comment">// 如果 done=true 则表示结束</span>
+        <span class="hljs-keyword">if</span> (ret.done) {
+          <span class="hljs-keyword">return</span> resolve(ret.value);
+        }
+        <span class="hljs-comment">// 如果返回的值不是 promise 则报错</span>
+        <span class="hljs-keyword">if</span> (!isPromise(ret.value)) {
+          <span class="hljs-keyword">return</span> reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>(<span class="hljs-string">'You may only yield a promise, but the following object was passed: '</span> + <span class="hljs-built_in">String</span>(ret.value)));
+        }
+        <span class="hljs-comment">// 等待 promise 执行结果</span>
+        ret.value.then(next).catch(reject);
+      }
+      <span class="hljs-comment">// 开始执行</span>
+      next();
+    });
+  };
+}
+</code></pre>
+<p>说明：此代码仅用作演示，尽管通常情况下它也能正确地运行，但是并没有考虑性能问题和一些异常情况，生产环境下请使用稳定的 NPM 模块。</p>
+<h2><a id="_bluebird__coroutine__251"></a>使用 bluebird 模块的 coroutine 函数</h2>
+<p>使用前先执行以下命令安装<code>bluebird</code>模块：</p>
+<pre><code class="language-bash">$ npm install bluebird --save
+</code></pre>
+<p>以下是基于<code>bluebird</code>模块的<code>coroutine</code>函数的使用方法：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bluebird'</span>);
+
+<span class="hljs-keyword">const</span> test = <span class="hljs-built_in">Promise</span>.coroutine(<span class="hljs-function"><span class="hljs-keyword">function</span>* (<span class="hljs-params">n, ms</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'i=%s'</span>, i);
+    <span class="hljs-keyword">yield</span> <span class="hljs-built_in">Promise</span>.delay(ms);
+  }
+  <span class="hljs-keyword">return</span> n;
+});
+
+test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
+  .then(n =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行结束，n=%s'</span>, n))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'执行出错：'</span>, err));
+</code></pre>
+<p>说明：</p>
+<ul>
+<li><code>bluebird</code>自带了<code>delay()</code>函数，功能与上文实现的<code>sleep()</code>相同</li>
+</ul>
+<h2><a id="_co__285"></a>使用 co 模块</h2>
+<p>使用前先执行以下命令安装<code>co</code>模块：</p>
+<pre><code class="language-bash">$ npm install co --save
+</code></pre>
+<p>以下是基于<code>co</code>模块的简单使用方法：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> co = <span class="hljs-built_in">require</span>(<span class="hljs-string">'co'</span>);
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setTimeout(resolve, ms);
+  });
+}
+
+<span class="hljs-keyword">const</span> test = co.wrap(<span class="hljs-function"><span class="hljs-keyword">function</span>* (<span class="hljs-params">n, ms</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'i=%s'</span>, i);
+    <span class="hljs-keyword">yield</span> sleep(ms);
+  }
+  <span class="hljs-keyword">return</span> n;
+});
+
+test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
+  .then(n =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行结束，n=%s'</span>, n))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'执行出错：'</span>, err));
+</code></pre>
+<p>实际上<code>bluebird</code>模块和<code>co</code>模块还是有区别的：<code>bluebird</code>模块只支持<code>yield</code>一个<code>promise</code>对象，而<code>co</code>模块可以支持<code>promise</code>，<code>generator</code>，<code>array</code>，<code>object</code>和<code>Thunk</code>函数，可在异步函数内实现多个并发异步任务，比前者复杂得多。</p>
+<h2><a id="_321"></a>后记</h2>
+<p>回想在过去的一年多时间里，我确实是对以使用<code>generator</code>的<code>co</code>模块来解决异步问题是有些许偏见，也曾喷过某<strong>月饼云</strong>的 Node.js SDK 竟然不支持<code>callback</code>而是直接返回一个<code>generator</code>。究其原因，我深以为有以下几点：</p>
+<ul>
+<li>早期版本的<code>co</code>封装并不是返回一个<code>promise</code>对象，再加上大多数介绍<code>co</code>的文章讲的基本上都是<code>thunks</code>的概念，这对初使用<code>co</code>的人是相当恶心的</li>
+<li><code>co</code> 的<code>yield</code>支持的功能实在太丰富了，而我更喜欢简单的</li>
+<li>在 Node v4 发布之前，使用 Generator 还需要开启 Harmony 特性</li>
+<li>从 Node v4 开始，直接支持了 Generator 和 Promise</li>
+</ul>
+<p>最后一句，JavaScript 的世界变化实在太快了。</p>
+<h2><a id="_334"></a>相关链接</h2>
+<ul>
+<li><a href="http://www.ruanyifeng.com/blog/2015/04/generator.html">Generator 函数的含义与用法</a></li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator">生成器</a></li>
+<li><a href="http://www.jianshu.com/p/d6ac6b0b41d6">你不懂 JS: 异步与性能 第四章: Generator（上）</a></li>
+<li><a href="http://www.jianshu.com/p/e6f6766cba13">你不懂 JS: 异步与性能 第四章: Generator（下）</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2015/05/co.html">co 函数库的含义和用法</a></li>
+<li><a href="http://lifemap.in/koa-co-and-coroutine/">Koa, co and coroutine</a></li>
+</ul>
+]]></description><link>http://morning.work/page/maintainable-nodejs/asynchronous-programming.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/asynchronous-programming.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Thu, 13 Oct 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[利用 ESLint 检查代码质量]]></title><description><![CDATA[<blockquote>
 <p>其实很早的时候就想尝试 ESLint 了，但是很多次都是玩了一下就觉得这东西巨复杂，<strong>一执行检查就是满屏的<code>error</code>，简直是不堪入目，遂放弃</strong>。直到某天终于下定决心深入看了文档，才发现其实挺简单的，只是当时没有看到合适入门教程而已。我相信很多人也有着跟我一样的经历，所以希望将自己的踩坑心得记录下来，让后来者更轻易地掌握 ESLint 的使用，因为它确实是个好东西。</p>
 </blockquote>
 <p>JavaScript 是一门神奇的动态语言，它在带给我们编程的灵活性的同时也悄悄埋下了一些地雷。除了基本的语法错误能在程序一启动的时候被检测到之外，很多隐含的错误都是在运行的时候才突然地蹦出来。除非你的程序有着 100%的测试覆盖率，否则说不定哪天就会因为一个<code>xxx is undefined</code>而导致程序崩溃，而为了避免这样的错误可能你只需要在提交代码的时候用工具静态分析一下，仅此而已。</p>
@@ -120,7 +398,7 @@
 <p>我们还可以使用已经发布到 NPM 上的 ESLint 配置，这些配置的模块名一般以<code>eslint-config-</code>为前缀，比如我在学习 ESLint 时自己编写的一个配置名为<code>eslint-config-lei</code>。要使用这个配置，先执行以下命令安装它：</p>
 <pre><code class="language-bash">$ npm install -g eslint-config-lei
 </code></pre>
-<p><strong>注意：用于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，否则将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
+<p><strong>注意：由于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，否则将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
 <p>然后将<code>.eslintrc.js</code>文件改成这样：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
   extends: <span class="hljs-string">'lei'</span>,
@@ -226,231 +504,7 @@
 <li><a href="https://csspod.com/getting-started-with-eslint/">ESLint 使用入门</a></li>
 <li><a href="http://eslint.cn/">ESLinit 中文版文档</a></li>
 </ul>
-]]></description><link>http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 30 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何让异步接口同时支持 callback 和 promise]]></title><description><![CDATA[<h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
-<p>随着 ES6 的普及，越来越多的异步接口都开始同时支持<code>callback</code>和<code>promise</code>两种方式，我在最近的两篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>和<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html">《如何编写一个简单的 Redis 客户端》</a>中也使用<strong>一个简单的小技巧</strong>来实现这样的功能：</p>
-<pre><code class="language-javascript">request(method, path, params, callback) {
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((_resolve, _reject) =&gt; {
-
-    <span class="hljs-keyword">const</span> resolve = ret =&gt; {
-      _resolve(ret);
-      callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
-    };
-
-    <span class="hljs-keyword">const</span> reject = err =&gt; {
-      _reject(err);
-      callback &amp;&amp; callback(err);
-    };
-
-    <span class="hljs-comment">// 以下部分不变</span>
-    <span class="hljs-comment">// ...</span>
-  });
-}
-</code></pre>
-<p>上文的代码使得<code>request()</code>函数可以返回一个<code>Promise</code>对象，同时如果传入了一个<code>callback</code>参数它也能工作良好，这似乎已经能满足了前文的目标。</p>
-<p>但这样的做法带来的一个问题是，<strong>如果我们使用<code>callback</code>方式，当<code>request()</code>函数在执行时回调了一个错误对象（即执行了<code>callback(err)</code>和<code>reject(err)</code>），此时会触发一个<code>unhandledRejection</code>事件</strong>。大多数情况下这样也并不会影响到我们程序的功能，它还是能够正常的工作，但是这些本该可以避免的<code>unhandledRejection</code>事件会对我们调试程序时造成很大的干扰。</p>
-<p>究其原因，正确的**实现同时支持<code>callback</code>和<code>promise</code>**必须做到，当使用者传入<code>callback</code>参数时不应该返回一个 Promise 对象。如果返回了一个 Promise 对象，而使用者并不会调用<code>.catch()</code>去捕捉可能发生的错误，这样就会导致触发<code>unhandledRejection</code>事件。</p>
-<p>所以，针对上文的例子我们可以改成这样：</p>
-<pre><code class="language-javascript">request(method, path, params, callback) {
-  <span class="hljs-keyword">if</span> (callback) {
-    doRequest(method, path, params, callback);
-  } <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-      doRequest(method, path, params, (err, ret) =&gt; {
-        err ? reject(err) : resolve(ret);
-      });
-    });
-  }
-
-  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doRequest</span>(<span class="hljs-params">method, path, params, callback</span>) </span>{
-    <span class="hljs-comment">// 以下部分不变</span>
-    <span class="hljs-comment">// ...</span>
-  }
-}
-</code></pre>
-<p>或者我们可以写成这样：</p>
-<pre><code class="language-javascript">request(method, path, params, callback) {
-  <span class="hljs-keyword">if</span> (!callback) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-      <span class="hljs-comment">// 重新调用当前函数</span>
-      request(method, path, params, (err, ret) =&gt; {
-        err ? reject(err) : resolve(ret);
-      });
-    });
-  }
-
-  <span class="hljs-comment">// 以下部分不变</span>
-  <span class="hljs-comment">// ...</span>
-}
-</code></pre>
-<h2><a id="_callback__71"></a>重复执行 callback 的坑</h2>
-<p>也许以上的写法并没有那么直观，我们更希望有这么一个<code>promiseToCallback</code>函数（代码来自<a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">《<code>callback</code>和<code>promise</code>的错误捕获
-》</a>]，有删改）：</p>
-<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
-    <span class="hljs-keyword">const</span> callback = args.pop();
-    fn.apply(<span class="hljs-literal">null</span>, args)
-      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
-        callback(<span class="hljs-literal">null</span>, result);
-      })
-      .catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
-        <span class="hljs-built_in">console</span>.error(err);
-        callback(err);
-      });
-  };
-}
-</code></pre>
-<p>正如该文章所说的那样，上文这个代码在<code>callback</code>执行出错时，会被<code>.catch()</code>捕捉到，从而又重复执行了一次<code>callback</code>，这样往往会将我们带入一个更大的坑里面。</p>
-<p>我们可以通过以下代码来测试这个<code>promiseToCallback()</code>所存在的问题：</p>
-<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
-
-process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unhandledRejection'</span>, err);
-});
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-    setImmediate(() =&gt; {
-      resolve(<span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
-    });
-  });
-}
-
-promiseToCallback(hello)(<span class="hljs-string">'test'</span>, (err, ret) =&gt; {
-  <span class="hljs-built_in">console</span>.log(err, ret);
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
-});
-</code></pre>
-<p>执行程序后输出结果如下：</p>
-<pre><code>null 'hello, test'
-[Error: haha]
-[Error: haha] undefined
-unhandledRejection [Error: haha]
-</code></pre>
-<p>其中第一行的输出是正常回调时的输出，但是在回调里面有抛出了一个<code>haha</code>错误，被<code>promiseToCallback</code>的<code>.catch()</code>捕捉到，然后它先把这个<code>err</code>对象打印出来，再重复执行了一遍回调函数，在回调函数中又输出了一遍。同时，在这次的回调函数中，有抛出了一个<code>haha</code>错误，此时<code>promiseToCallback</code>中的<code>.catch()</code>已经不能再捕捉到这个错误了，然后被注册的<code>unhandledRejection</code>事件监听器监听到，并将其打印了出来。</p>
-<p>在此先不讨论这个<code>promiseToCallback()</code>是否满足了<strong>同时支持<code>callback</code>和<code>promise</code>这个前提</strong>，就重复执行<code>callback</code>的问题我们是万万不能使用它的。</p>
-<p>当然我们也可以有办法使得它不会重复执行回调函数：</p>
-<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
-    <span class="hljs-keyword">const</span> callback = args.pop();
-
-    <span class="hljs-comment">// 包装 callback，在此函数中保证 callback 只会调用一次</span>
-    <span class="hljs-comment">// 再次调用会直接忽略</span>
-    <span class="hljs-keyword">const</span> cb = (err, ret) =&gt; {
-      <span class="hljs-keyword">if</span> (cb.isCalled) <span class="hljs-keyword">return</span>;
-      cb.isCalled = <span class="hljs-literal">true</span>;
-      callback(err, ret);
-    };
-
-    fn.apply(<span class="hljs-literal">null</span>, args)
-      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
-        cb(<span class="hljs-literal">null</span>, result);
-      })
-      .catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
-        <span class="hljs-built_in">console</span>.error(err);
-        cb(err);
-      });
-  };
-}
-</code></pre>
-<p>我们通过一个<code>isCalled</code>属性来保证了回调函数只会被执行一次，它确实保证了<code>callback</code>不被重复执行，但同时它也悄悄地将<code>callback</code>发生的错误藏了起来，说不定这又成了将来某一天困扰你多时的坑。</p>
-<h2><a id="_162"></a>也许这是最佳的解决方案</h2>
-<p>说了这么一大堆，要使得很好地同时支持<code>callback</code>和<code>promise</code>，关键是要处理好这两个问题：</p>
-<ul>
-<li>避免<code>unhandledRejection</code>事件（一定要使用<code>promise.catch()</code>捕捉错误）</li>
-<li>避免多次执行<code>callback</code></li>
-</ul>
-<p>而我觉得处理好这两个问题其实只需要记住这一个原则：<strong>「原始函数使用 callback 实现，仅在必要时才返回 promise」</strong>。下面是根据这一原则实现的<code>promiseOrCallback</code>函数：</p>
-<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseOrCallback</span>(<span class="hljs-params">fn, argc</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
-    <span class="hljs-comment">// 判断调用函数时实际传过来的参数数量</span>
-    <span class="hljs-keyword">if</span> (args.length &gt; argc) {
-      <span class="hljs-comment">// 这是 callback 方式调用的</span>
-      <span class="hljs-keyword">return</span> fn.apply(<span class="hljs-literal">null</span>, args);
-    }
-    <span class="hljs-comment">// 这是 promise 方式调用的</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-      <span class="hljs-comment">// 创建一个 callback 函数用来对接 promise 的 resolve 和 reject</span>
-      args.push((err, ret) =&gt; {
-        err ? reject(err) : resolve(ret);
-      });
-      fn.apply(<span class="hljs-literal">null</span>, args);
-    });
-  };
-}
-</code></pre>
-<p>说明：在包装函数时，<strong>需要明确知道这个函数会接收多少个参数</strong>，假设<code>argc = 1</code>，那么当调用包装后的函数时传入了<code>2</code>个参数，则会认为它是以<code>callback</code>方式调用的，否则会返回一个<code>promise</code>。</p>
-<p>我们可以使用以下程序来测试：</p>
-<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
-
-process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unhandledRejection'</span>, err);
-});
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg, callback</span>) </span>{
-  setImmediate(() =&gt; {
-    callback(<span class="hljs-literal">null</span>, <span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
-  });
-}
-
-promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>, (err, ret) =&gt; {
-  <span class="hljs-built_in">console</span>.log(err, ret);
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
-});
-</code></pre>
-<p>其执行结果应该是这样的：</p>
-<pre><code>null 'hello, test'
-/tmp/test.js:45
-  throw new Error('haha');
-  ^
-
-Error: haha
-    at /tmp/test.js:45:9
-    at Immediate._onImmediate (/tmp/test.js:39:5)
-    at processImmediate [as _immediateCallback] (timers.js:383:17)
-</code></pre>
-<p>说明：在回调函数中，先执行<code>console.log(err, ret)</code>输出了结果，然后<code>throw new Error('haha')</code>再抛出一个错误，这时因为外层没有捕捉到，使得进程因为异常而退出了，这正是我们所期望的。</p>
-<p>如果我们改用<code>promise</code>的方式去调用：</p>
-<pre><code class="language-javascript">promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>).then(ret =&gt; {
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-literal">null</span>, ret);
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
-}).catch(err =&gt; {
-  <span class="hljs-built_in">console</span>.log(err);
-});
-</code></pre>
-<p>则其执行结果是这样的：</p>
-<pre><code>null 'hello, test'
-[Error: haha]
-</code></pre>
-<p>说明：在<code>.then()</code>的回调函数内，我们先输出结果，在<code>throw</code>出一个错误时，并<code>.catch()</code>捕捉到并打印了出来，这符合<code>promise</code>的行为。</p>
-<p><strong>如果你要问「原始函数是基于 promise 实现的，想支持 callback 怎么办」，我建议你最好放弃这个想法。</strong></p>
-<h2><a id="_254"></a>接口设计的哲学</h2>
-<p>在本文发出去之后，得到了大神<a href="http://weibo.com/haxy">@Hax</a>的点评：</p>
-<blockquote>
-<p>有些代码直接调，不传<code>cb</code>因为它想触发副作用，结果你改成了<code>p</code>，然后还是掉坑了……</p>
-</blockquote>
-<p>结合上下文我们可以理解为，在上文我们通过判断是否传入了一个<code>callback</code>参数来判断异步方式，在合适的时候再返回<code>promise</code>。但是，假如我们仅仅是想触发一个副作用（执行异步函数，但并不关心它的回调结果），由于没有传入<code>callback</code>参数，此时会被自动识别为<code>promise</code>方式调用，于是它返回了一个<code>promise</code>对象。而当函数执行时回调了一个<code>err</code>对象时，我们又重新掉进了前文所说的<code>unhandledRejection</code>的坑里面。</p>
-<p>通过判断参数数量这样的方式来实现不同异步方式的转换并<strong>不严谨</strong>。所以，针对<strong>不同的异步方式应该使用不同的接口</strong>，比如我们可以规定所有异步方法默认都是<code>callback</code>方式（如<code>request</code>），而<code>promise</code>方式都有<code>P</code>后缀（如<code>requestP</code>）。</p>
-<p><a href="http://weibo.com/haxy">@Hax</a>继续评论道：</p>
-<blockquote>
-<p>是的，这是为啥 Node.js 的人最后决定把<code>promise</code>化的 API 单独分开</p>
-<p>我个人觉得<code>xxxP</code>名字也不是很友好。其实用不同的包就好了。</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/callback'</span>
-<span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/promise'</span>
-</code></pre>
-</blockquote>
-<p>所以，封装成单独的包才是更优雅的方式。最后还有一句话，<strong>切勿混用<code>callback</code>和<code>promise</code></strong>。</p>
-<h2><a id="_278"></a>总结</h2>
-<p>大多数时候，我们只需要一点点小技巧就能使得程序看起来正常地工作起来。然而要写出<strong>完美</strong>的程序却并不是一件简单的事情。</p>
-<h2><a id="_283"></a>相关链接</h2>
-<ul>
-<li><a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">callback 和 promise 的错误捕获</a></li>
-<li><a href="http://www.jianshu.com/p/9e4026614fbe">Promise 陷阱</a></li>
-<li><a href="http://liubin.org/promises-book">JavaScript Promise 迷你书（中文版）</a></li>
-</ul>
-]]></description><link>http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Wed, 03 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何编写一个简单的 Redis 客户端]]></title><description><![CDATA[<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这 <em>不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块</em> ，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
+]]></description><link>http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 30 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何编写一个简单的 Redis 客户端]]></title><description><![CDATA[<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这 <em>不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块</em> ，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
 <p>这次要写的这个 Redis 客户端应该算是个客户端了，需要直接发起<code>TCP/IP</code>连接去跟服务器通讯，需要自己解析客户端返回的结果，还要做一些简单的容错处理，如果要做到足够健壮也不容易，不过就本文要实现一个基本可用的例子来说，还是简单了点。</p>
 <p>无论是实现 REST 的 API 客户端还是这样一个 Redis 客户端，虽然具体实现的细节不同，但是，<strong>套路</strong>还是<strong>一样</strong>的。二十一世纪行走江湖最重要的是什么？套路！套路！套路！所以呢，本文还是跟之前一样的套路。</p>
 <h2><a id="Redis__9"></a>Redis 协议</h2>
@@ -1198,7 +1252,231 @@ testToken(callback) {
 <ul>
 <li><a href="http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html">如何让异步接口同时支持 callback 和 promise</a></li>
 </ul>
-]]></description><link>http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</link><guid isPermaLink="true">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Wed, 03 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 的 Readable Stream 与日志文件处理]]></title><description><![CDATA[<blockquote>
+]]></description><link>http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</link><guid isPermaLink="true">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Wed, 03 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何让异步接口同时支持 callback 和 promise]]></title><description><![CDATA[<h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
+<p>随着 ES6 的普及，越来越多的异步接口都开始同时支持<code>callback</code>和<code>promise</code>两种方式，我在最近的两篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>和<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html">《如何编写一个简单的 Redis 客户端》</a>中也使用<strong>一个简单的小技巧</strong>来实现这样的功能：</p>
+<pre><code class="language-javascript">request(method, path, params, callback) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((_resolve, _reject) =&gt; {
+
+    <span class="hljs-keyword">const</span> resolve = ret =&gt; {
+      _resolve(ret);
+      callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
+    };
+
+    <span class="hljs-keyword">const</span> reject = err =&gt; {
+      _reject(err);
+      callback &amp;&amp; callback(err);
+    };
+
+    <span class="hljs-comment">// 以下部分不变</span>
+    <span class="hljs-comment">// ...</span>
+  });
+}
+</code></pre>
+<p>上文的代码使得<code>request()</code>函数可以返回一个<code>Promise</code>对象，同时如果传入了一个<code>callback</code>参数它也能工作良好，这似乎已经能满足了前文的目标。</p>
+<p>但这样的做法带来的一个问题是，<strong>如果我们使用<code>callback</code>方式，当<code>request()</code>函数在执行时回调了一个错误对象（即执行了<code>callback(err)</code>和<code>reject(err)</code>），此时会触发一个<code>unhandledRejection</code>事件</strong>。大多数情况下这样也并不会影响到我们程序的功能，它还是能够正常的工作，但是这些本该可以避免的<code>unhandledRejection</code>事件会对我们调试程序时造成很大的干扰。</p>
+<p>究其原因，正确的**实现同时支持<code>callback</code>和<code>promise</code>**必须做到，当使用者传入<code>callback</code>参数时不应该返回一个 Promise 对象。如果返回了一个 Promise 对象，而使用者并不会调用<code>.catch()</code>去捕捉可能发生的错误，这样就会导致触发<code>unhandledRejection</code>事件。</p>
+<p>所以，针对上文的例子我们可以改成这样：</p>
+<pre><code class="language-javascript">request(method, path, params, callback) {
+  <span class="hljs-keyword">if</span> (callback) {
+    doRequest(method, path, params, callback);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+      doRequest(method, path, params, (err, ret) =&gt; {
+        err ? reject(err) : resolve(ret);
+      });
+    });
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doRequest</span>(<span class="hljs-params">method, path, params, callback</span>) </span>{
+    <span class="hljs-comment">// 以下部分不变</span>
+    <span class="hljs-comment">// ...</span>
+  }
+}
+</code></pre>
+<p>或者我们可以写成这样：</p>
+<pre><code class="language-javascript">request(method, path, params, callback) {
+  <span class="hljs-keyword">if</span> (!callback) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+      <span class="hljs-comment">// 重新调用当前函数</span>
+      request(method, path, params, (err, ret) =&gt; {
+        err ? reject(err) : resolve(ret);
+      });
+    });
+  }
+
+  <span class="hljs-comment">// 以下部分不变</span>
+  <span class="hljs-comment">// ...</span>
+}
+</code></pre>
+<h2><a id="_callback__71"></a>重复执行 callback 的坑</h2>
+<p>也许以上的写法并没有那么直观，我们更希望有这么一个<code>promiseToCallback</code>函数（代码来自<a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">《<code>callback</code>和<code>promise</code>的错误捕获
+》</a>]，有删改）：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
+    <span class="hljs-keyword">const</span> callback = args.pop();
+    fn.apply(<span class="hljs-literal">null</span>, args)
+      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
+        callback(<span class="hljs-literal">null</span>, result);
+      })
+      .catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
+        <span class="hljs-built_in">console</span>.error(err);
+        callback(err);
+      });
+  };
+}
+</code></pre>
+<p>正如该文章所说的那样，上文这个代码在<code>callback</code>执行出错时，会被<code>.catch()</code>捕捉到，从而又重复执行了一次<code>callback</code>，这样往往会将我们带入一个更大的坑里面。</p>
+<p>我们可以通过以下代码来测试这个<code>promiseToCallback()</code>所存在的问题：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unhandledRejection'</span>, err);
+});
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setImmediate(() =&gt; {
+      resolve(<span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
+    });
+  });
+}
+
+promiseToCallback(hello)(<span class="hljs-string">'test'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(err, ret);
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
+});
+</code></pre>
+<p>执行程序后输出结果如下：</p>
+<pre><code>null 'hello, test'
+[Error: haha]
+[Error: haha] undefined
+unhandledRejection [Error: haha]
+</code></pre>
+<p>其中第一行的输出是正常回调时的输出，但是在回调里面有抛出了一个<code>haha</code>错误，被<code>promiseToCallback</code>的<code>.catch()</code>捕捉到，然后它先把这个<code>err</code>对象打印出来，再重复执行了一遍回调函数，在回调函数中又输出了一遍。同时，在这次的回调函数中，有抛出了一个<code>haha</code>错误，此时<code>promiseToCallback</code>中的<code>.catch()</code>已经不能再捕捉到这个错误了，然后被注册的<code>unhandledRejection</code>事件监听器监听到，并将其打印了出来。</p>
+<p>在此先不讨论这个<code>promiseToCallback()</code>是否满足了<strong>同时支持<code>callback</code>和<code>promise</code>这个前提</strong>，就重复执行<code>callback</code>的问题我们是万万不能使用它的。</p>
+<p>当然我们也可以有办法使得它不会重复执行回调函数：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
+    <span class="hljs-keyword">const</span> callback = args.pop();
+
+    <span class="hljs-comment">// 包装 callback，在此函数中保证 callback 只会调用一次</span>
+    <span class="hljs-comment">// 再次调用会直接忽略</span>
+    <span class="hljs-keyword">const</span> cb = (err, ret) =&gt; {
+      <span class="hljs-keyword">if</span> (cb.isCalled) <span class="hljs-keyword">return</span>;
+      cb.isCalled = <span class="hljs-literal">true</span>;
+      callback(err, ret);
+    };
+
+    fn.apply(<span class="hljs-literal">null</span>, args)
+      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
+        cb(<span class="hljs-literal">null</span>, result);
+      })
+      .catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
+        <span class="hljs-built_in">console</span>.error(err);
+        cb(err);
+      });
+  };
+}
+</code></pre>
+<p>我们通过一个<code>isCalled</code>属性来保证了回调函数只会被执行一次，它确实保证了<code>callback</code>不被重复执行，但同时它也悄悄地将<code>callback</code>发生的错误藏了起来，说不定这又成了将来某一天困扰你多时的坑。</p>
+<h2><a id="_162"></a>也许这是最佳的解决方案</h2>
+<p>说了这么一大堆，要使得很好地同时支持<code>callback</code>和<code>promise</code>，关键是要处理好这两个问题：</p>
+<ul>
+<li>避免<code>unhandledRejection</code>事件（一定要使用<code>promise.catch()</code>捕捉错误）</li>
+<li>避免多次执行<code>callback</code></li>
+</ul>
+<p>而我觉得处理好这两个问题其实只需要记住这一个原则：<strong>「原始函数使用 callback 实现，仅在必要时才返回 promise」</strong>。下面是根据这一原则实现的<code>promiseOrCallback</code>函数：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseOrCallback</span>(<span class="hljs-params">fn, argc</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
+    <span class="hljs-comment">// 判断调用函数时实际传过来的参数数量</span>
+    <span class="hljs-keyword">if</span> (args.length &gt; argc) {
+      <span class="hljs-comment">// 这是 callback 方式调用的</span>
+      <span class="hljs-keyword">return</span> fn.apply(<span class="hljs-literal">null</span>, args);
+    }
+    <span class="hljs-comment">// 这是 promise 方式调用的</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+      <span class="hljs-comment">// 创建一个 callback 函数用来对接 promise 的 resolve 和 reject</span>
+      args.push((err, ret) =&gt; {
+        err ? reject(err) : resolve(ret);
+      });
+      fn.apply(<span class="hljs-literal">null</span>, args);
+    });
+  };
+}
+</code></pre>
+<p>说明：在包装函数时，<strong>需要明确知道这个函数会接收多少个参数</strong>，假设<code>argc = 1</code>，那么当调用包装后的函数时传入了<code>2</code>个参数，则会认为它是以<code>callback</code>方式调用的，否则会返回一个<code>promise</code>。</p>
+<p>我们可以使用以下程序来测试：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unhandledRejection'</span>, err);
+});
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg, callback</span>) </span>{
+  setImmediate(() =&gt; {
+    callback(<span class="hljs-literal">null</span>, <span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
+  });
+}
+
+promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(err, ret);
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
+});
+</code></pre>
+<p>其执行结果应该是这样的：</p>
+<pre><code>null 'hello, test'
+/tmp/test.js:45
+  throw new Error('haha');
+  ^
+
+Error: haha
+    at /tmp/test.js:45:9
+    at Immediate._onImmediate (/tmp/test.js:39:5)
+    at processImmediate [as _immediateCallback] (timers.js:383:17)
+</code></pre>
+<p>说明：在回调函数中，先执行<code>console.log(err, ret)</code>输出了结果，然后<code>throw new Error('haha')</code>再抛出一个错误，这时因为外层没有捕捉到，使得进程因为异常而退出了，这正是我们所期望的。</p>
+<p>如果我们改用<code>promise</code>的方式去调用：</p>
+<pre><code class="language-javascript">promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>).then(ret =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-literal">null</span>, ret);
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
+}).catch(err =&gt; {
+  <span class="hljs-built_in">console</span>.log(err);
+});
+</code></pre>
+<p>则其执行结果是这样的：</p>
+<pre><code>null 'hello, test'
+[Error: haha]
+</code></pre>
+<p>说明：在<code>.then()</code>的回调函数内，我们先输出结果，在<code>throw</code>出一个错误时，并<code>.catch()</code>捕捉到并打印了出来，这符合<code>promise</code>的行为。</p>
+<p><strong>如果你要问「原始函数是基于 promise 实现的，想支持 callback 怎么办」，我建议你最好放弃这个想法。</strong></p>
+<h2><a id="_254"></a>接口设计的哲学</h2>
+<p>在本文发出去之后，得到了大神<a href="http://weibo.com/haxy">@Hax</a>的点评：</p>
+<blockquote>
+<p>有些代码直接调，不传<code>cb</code>因为它想触发副作用，结果你改成了<code>p</code>，然后还是掉坑了……</p>
+</blockquote>
+<p>结合上下文我们可以理解为，在上文我们通过判断是否传入了一个<code>callback</code>参数来判断异步方式，在合适的时候再返回<code>promise</code>。但是，假如我们仅仅是想触发一个副作用（执行异步函数，但并不关心它的回调结果），由于没有传入<code>callback</code>参数，此时会被自动识别为<code>promise</code>方式调用，于是它返回了一个<code>promise</code>对象。而当函数执行时回调了一个<code>err</code>对象时，我们又重新掉进了前文所说的<code>unhandledRejection</code>的坑里面。</p>
+<p>通过判断参数数量这样的方式来实现不同异步方式的转换并<strong>不严谨</strong>。所以，针对<strong>不同的异步方式应该使用不同的接口</strong>，比如我们可以规定所有异步方法默认都是<code>callback</code>方式（如<code>request</code>），而<code>promise</code>方式都有<code>P</code>后缀（如<code>requestP</code>）。</p>
+<p><a href="http://weibo.com/haxy">@Hax</a>继续评论道：</p>
+<blockquote>
+<p>是的，这是为啥 Node.js 的人最后决定把<code>promise</code>化的 API 单独分开</p>
+<p>我个人觉得<code>xxxP</code>名字也不是很友好。其实用不同的包就好了。</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/callback'</span>
+<span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/promise'</span>
+</code></pre>
+</blockquote>
+<p>所以，封装成单独的包才是更优雅的方式。最后还有一句话，<strong>切勿混用<code>callback</code>和<code>promise</code></strong>。</p>
+<h2><a id="_278"></a>总结</h2>
+<p>大多数时候，我们只需要一点点小技巧就能使得程序看起来正常地工作起来。然而要写出<strong>完美</strong>的程序却并不是一件简单的事情。</p>
+<h2><a id="_283"></a>相关链接</h2>
+<ul>
+<li><a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">callback 和 promise 的错误捕获</a></li>
+<li><a href="http://www.jianshu.com/p/9e4026614fbe">Promise 陷阱</a></li>
+<li><a href="http://liubin.org/promises-book">JavaScript Promise 迷你书（中文版）</a></li>
+</ul>
+]]></description><link>http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Wed, 03 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 的 Readable Stream 与日志文件处理]]></title><description><![CDATA[<blockquote>
 <p>在上一篇文章<a href="http://morning.work/page/2016-07/how-to-implement-a-tail-f-command-in-nodejs.html">《如何实时监听文件的新增内容：一个简单 tailf 命令的实现》</a>里面，我们已经实现了一个<code>tailf</code>函数用来监听文件的新增内容，看起来它也工作良好。然而当我想把它应用到手头正要做的日志文件处理时，却发现这样一个<strong>非标准的接口很难与之前编写的模块愉快地合作</strong>。</p>
 <p>我在去年的文章<a href="http://morning.work/page/2015-07/read_and_write_big_file_in_nodejs.html">《在 Node.js 中读写大文件》</a>中实现了一个<code>readLine(stream)</code>函数，其接收的参数是一个<code>Readable Stream</code>对象，能按照给定的规则（比如使用<code>\n</code>换行）来<code>emit</code>出每一行的内容，再结合<code>tailf</code>来监听文件的新增内容，我们就可以很轻易地对新增的内容进行按行切分。</p>
 <p>所以，我们要实现一个实现了<code>Readable Stream</code>接口的<code>tailf</code>，在本文中我给它起了个名字叫<code>TailStream</code>。</p>

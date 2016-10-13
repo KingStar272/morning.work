@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<base target="_blank">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" >
+<title>基于 generator 与 promise 的异步编程解决方案 - 早起搬砖 morning.work</title>
+<link rel="stylesheet" href="/styles/github.css" />
+<link rel="stylesheet" href="/article.css" />
+<style>
+body {
+  -webkit-text-size-adjust: none;
+  -webkit-tap-highlight-color: rgba(200,0,0,0.4);
+}
+body {
+  width: 94%;
+  max-width: 800px;
+  margin: auto;
+  color: rgba(0, 0, 0, 0.9);
+  word-break: break-word;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: subpixel-antialiased;
+  font-family: Exo,'-apple-system','Open Sans',HelveticaNeue-Light,'Helvetica Neue Light','Helvetica Neue','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif;
+  font-weight: 350;
+}
+@media (min-width: 900px) {
+  html {
+    background-color: #f7f7f8;
+  }
+  body {
+    background-color: #fff;
+    padding: 0 50px;
+    padding-bottom: 1px;
+  }
+}
+#ds-thread {
+  margin-top: 20px;
+}
+a {
+  color: #008E59;
+  text-decoration: none;
+}
+a:hover {
+  color: #B60000;
+}
+#title {
+  margin-bottom: 0;
+  line-height: 1.2em;
+  margin-top: 2em;
+  font-size: 1.8em;
+  font-weight: 500;
+}
+#date {
+  font-size: 0.875em;
+  margin-top: 1em;
+}
+#remaining-time {
+  font-size: 0.875em;
+  margin-top: 0.5em;
+}
+#nav {
+  border-bottom: 2px solid #eee;
+  font-size: 18px;
+}
+#license, #about {
+  font-size: 14px;
+  background-color: #f7f7f8;
+  padding: 16px;
+}
+#license {
+  margin-bottom: 4em;
+  font-weight: bold;
+  color: #222;
+}
+.article {
+  min-height: 200px;
+  margin-top: 4em;
+  margin-bottom: 4em;
+}
+.author {
+  display: flex;
+}
+.author .avatar img {
+  width: 100%;
+}
+.author .avatar {
+  flex: 1;
+  min-width: 80px;
+}
+.author .description {
+  flex: 8;
+  margin-left: 1em;
+}
+</style>
+</head>
+<body>
+
+  <nav id="nav">
+    <a href="http://morning.work" target="_self">早起搬砖 morning.work</a>
+<a href="http://morning.work/rss.xml" target="_blank" title="订阅 早起搬砖 morning.work">
+  <img style="vertical-align:middle;" width="20" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAUzSURBVHjavFdbbFRVFF3nPjoz7dTWTittaW0jUDRAUqaNojyqREnEQKgfUj9MqqAmhqRt/OCD4CuY+Kckoh+aiGKC+gMJbdHoRysJ8dkhhmJLNdDKtJU+6GMK87j3Hs85d2Z6HzNtMYWb3Dn3NWftvfba+5xNYDl+e6Fkj6yqb/oDRbWq14vlPBLRKCITkxf0ROLt+hNjp1PPSRK4kA3vF1dXNRcWlyA2OQU9eos9opAkAiKxD+XkKO6t15aRWO7J/MgmAZU8MEgexgZHMX518Dh72sYMmVKShnxWuWHdHtxKIDIYTgMuDzgfmSOIQkYMpdUF8OY92Hytt4/jvkg47czzU16iQovM3QFwmNck+Yyduu7D6NA0Z6JR4THntFs9V4tWQg6Ui3s6MwKDncsFTnXKLJhDSeUK3AgPtyhccDzmVs999buRt/1Vm4i0od+hX7+MRG87jPGB/w1u8FPj9xEw7McVrnYuOCvtpjTth3J/nTg99c8LRhKhr6D3dTB5R24bXFwbMXBsyZzeoXaycEpJ95TB09AGX/NpqLVNtw8urnVzLvHjFNxiFqRy2OOHuqUVnue+ACkoWzo4O6lGzTmuHq6nPvY2m9rVqjrIK2rMEKxqyG5NPAKt+wjo0LklgfNxJkZMA3KJvqRUk3z5UFY3QH14P0h+WUY79HPvgv7VuSg4ZRGY1YgZgqXmORccF17sy2ehnf9AeO085K2HQFbtXBScj0LcpgF2cN+WV+DZ/LJQu6gD4R7oV7pBJwbSgtMvfiPoVp56DySwxm7EtkMs1WdAB7qzggsDJKQYsHucSkOudrkiCPWR/fA2nYCn8SNIK4NptSMyAu3sAdDRkIsJdfth0LzSrODUoPNZ4KI9SxJI5UHk7D4GdQfz2us31c7CoHMjRkKuDPHseCMrONVhNcDJwMJpKFVvg9L4OaTiNWm1x789KCqkrXhVBiEz0WYCT2nAzQAD1/vaETv1GrRfP4Vx5cfMNcDPwvP0h0DhanPym7OIf/+O67vcJ1/PCJ4KgdzaUP6Wz+dU+5yIL6fV+PsHGAOdwlPpvvUOyeeAVGyCdqkDNB6DPjsBSrnndfOGevOh3RhGItxvA+fX1CtbGFhgYUFkFMZPR6F1HnClHq8HyubWtJexX06CRmdt33hrd7nA7SFY4qoGpnYuOKcRykPPgDCBcsHx9Iv+fNL2PueBehCWUfYQIIMGLOCcOmXDXsh1+yCt35tUPfvzGFuSvzvoinXOxqa02qOhM6733nVP2MAdaej2XN11DPKjLZCD+yBvahGCo7JfTKAN9UD7s8Oe9zUNIhz8fWI8DG2k38WCFdxugANcXrvTVd1IEbuv3Jour7Hzn7jLMBNfKs7R3i67gRVrbeCOEDhinmWhAatsqdquM2XzHZINhK2cqTjHr/XZdVJUbgN3MWAVXKbSyg9jesRW2xP9di+lwrL5ojM3m2H/kG9hwcIA37c71W6wJdW2J2S5nrjYbq/t1AHAhJsKQeyfPvf6IMJgghPJhFZ4x0KlfLFvt22du45Au/A1SOlGc0P672XXwhLtOcM0kTTEMMd0qkVmMNXxMd/tsedUjInr4SQDgOfeXMSiN0FCL5WHah4L1qqYXPJOJlttd+a5M+YpcG5poLYKQ5f+6JJ4r8bbJYP47hq4r7QAs9PjYNhHJd4o8l5taiwuOpa7AS4XKqI/5NjJbTnaWK92nLdLuhQAJayRNMiygXPBeQN+Qbvu0zDc3y+aUzhbkGR73sI7ljvUnndx2q3t+X8CDAD66FtrIL864AAAAABJRU5ErkJggg==">
+</a>
+  </nav>
+
+
+  <h1 id="title">基于 generator 与 promise 的异步编程解决方案</h1>
+
+  <div id="date">
+              <a href="http://ucdok.com" title="
+        Web开发者、
+        &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
+        &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
+        个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
+        GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
+      " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
+    创作于 2016-10-13            </div>
+  <div id="remaining-time">
+    全文约 6651 字，预计阅读时间为 0 时 34 分钟
+  </div>
+
+  <article class="article">
+    <h2><a id="_2"></a>前言</h2>
+<p>一直以来，“异步”编程问题一直困扰着广大的 JavaScript 开发者。近年来出现了各种异步解决方案，从基于最原始的<code>callback</code>方式的<code>async</code>函数，到<code>promise</code>标准，再到基于<code>generator</code>的<code>co</code>库，以及即将纳入 ES7 标准的<code>async function / await</code>语法，但是由于各种现实的原因，它们的表现并不尽人意。</p>
+<p>原始的<code>callback</code>方式简单明了，不需要过多的依赖，但是在异步逻辑较复杂的场景下写出来的程序并不太直观，就我个人的使用经验而言，尽管多年来已经练就了一身可以穿梭在各种嵌套回调的“乱码”之中，每次重新看这些代码都头疼不已。</p>
+<p>JavaScript 异步解决方案都是朝着更直观（跟写同步代码一样）的方向发展的，比如近来呼声最高的<code>async function / await</code>语法，直接从语言层面解决问题，使用体验那是好得没法说的。但是，这是一个 ES7 （ES2017，即明年才会发布的 ES 标准）标准的语法，目前并没有得到各 JavaScript 引擎的内置支持。虽然我们照样可以使用 Babel 神器来将它编译成 ES5 / ES6 的语法，然后运行在现有的 JavaScript 引擎之上。然而使用 Babel 编译后的代码并不易于维护，首先这些代码修改后要先经过一次编译，当我们在生产环境上执行编译后的代码时，很难准确地定位到源码出错的位置。另外，根据最新可靠的消息，Node  v7 版本会在语法层面上支持<code>async function / await</code>语法，但该版本原计划于 9 月 30 号发布却跳票了，而且按照往年的惯例，也要在 1 年后发布的 Node v8 LTS 版本上才会正式支持该语法，这对于追求稳定的企业来说还需要一个漫长的等待过程。</p>
+<h2><a id="_Babel__async_function__await___10"></a>通过 Babel 编译 async function / await  语法解决方案</h2>
+<p>利用<code>async function / await</code>语法，我们可以很直观地书写异步程序：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// sleep 函数，返回一个 Promise 对象</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setTimeout(resolve, ms);
+  });
+}
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 循环 100 次</span>
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; i++) {
+    <span class="hljs-comment">// 等待 100ms 再返回</span>
+    <span class="hljs-keyword">await</span> sleep(<span class="hljs-number">100</span>);
+  }
+}
+</code></pre>
+<p>但由于目前的 JavaScript 引擎均不支持该语法，需要通过 Babel 之类的工具编译成 ES6 语法后的程序是这样的：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">"use strict"</span>;
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_asyncToGenerator</span>(<span class="hljs-params">fn</span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">var</span> gen = fn.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>); <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>{ <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">step</span>(<span class="hljs-params">key, arg</span>) </span>{ <span class="hljs-keyword">try</span> { <span class="hljs-keyword">var</span> info = gen[key](arg); <span class="hljs-keyword">var</span> value = info.value; } <span class="hljs-keyword">catch</span> (error) { reject(error); <span class="hljs-keyword">return</span>; } <span class="hljs-keyword">if</span> (info.done) { resolve(value); } <span class="hljs-keyword">else</span> { <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve(value).then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value</span>) </span>{ <span class="hljs-keyword">return</span> step(<span class="hljs-string">"next"</span>, value); }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{ <span class="hljs-keyword">return</span> step(<span class="hljs-string">"throw"</span>, err); }); } } <span class="hljs-keyword">return</span> step(<span class="hljs-string">"next"</span>); }); }; }
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setTimeout(resolve, ms);
+  });
+}
+
+<span class="hljs-keyword">let</span> test = <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">var</span> ref = _asyncToGenerator(<span class="hljs-function"><span class="hljs-keyword">function</span>* (<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; i++) {
+            <span class="hljs-keyword">yield</span> sleep(<span class="hljs-number">100</span>);
+        }
+    });
+
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-keyword">return</span> ref.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>);
+    };
+}();
+</code></pre>
+<p>从编译后的代码来看，虽然在前面增加了一坨<code>_asyncToGenerator</code>函数的代码，但<code>test</code>函数的代码还是能看出程序原来的结构。通过以上凌乱的代码我们还是可以看出，其内部是通过<code>generator function</code>实现的，在外层返回一个<code>promise</code>对象。</p>
+<h2><a id="_generator__promise__61"></a>基于 generator 与 promise 的解决方案</h2>
+<p>首先我们要达成这样的共识：<strong><code>async function / await</code>语法是未来的主流，但是要让主流的 JavaScript 引擎支持该语法还需要一个很漫长的过程，而现在我们需要找到一种替代的方法，而这种方法又能尽量保持与<code>async function / await</code>非常相近，在以后可以很轻易地替换成新的用法。</strong> 基于以上的考虑可以得出以下结论：</p>
+<ul>
+<li>异步函数执行后需要返回一个<code>promise</code>对象（<code>async function</code>执行后返回的也是一个<code>promise</code>对象）</li>
+<li>使用<code>generator function</code>，<code>yield</code>代替<code>await</code>，这样可以最大程度上保持程序逻辑结构不变（<code>generator function</code>从 Node v4 已经开始支持，经过两年多的使用验证，性能和可靠性性上还是有保证的）</li>
+</ul>
+<p>基于以上两点的考虑，我们可以假设新的异步代码应该是这样的：</p>
+<pre><code class="language-javascript"><span class="hljs-comment">// sleep 函数，返回一个 Promise 对象</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setTimeout(resolve, ms);
+  });
+}
+
+<span class="hljs-comment">// 通过 coroutine 来包装异步函数</span>
+<span class="hljs-keyword">const</span> test = coroutine(<span class="hljs-function"><span class="hljs-keyword">function</span>* (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 循环 100 次</span>
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">100</span>; i++) {
+    <span class="hljs-comment">// 等待 100ms 再返回</span>
+    <span class="hljs-keyword">yield</span> sleep(<span class="hljs-number">100</span>);
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'i=%s'</span>, i);
+  }
+  <span class="hljs-comment">// 返回执行 sleep 次数</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-number">100</span>;
+});
+
+ <span class="hljs-comment">// 执行函数，其返回一个 Promise 对象</span>
+test()
+  .then(i =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行了%s 次 sleep'</span>, i))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'出错'</span>, err));
+</code></pre>
+<p>对比直接使用<code>async function / await</code>语法，我们发现只是在声明异步函数和<code>yield</code>这两行写法不同，它可以在 Node v4 及更高版本上可直接执行，并且可以直接在源码上进行调试。以下是上文的程序在 Visual Studio Code 上进行调试的界面（<code>coroutine</code>函数的实现将在下文讲解）：</p>
+<p><img src="../../images/2016-10/debug_coroutine.png" alt="调试 coroutine 程序"></p>
+<h2><a id="_coroutine__102"></a>实现一个简单的 coroutine 函数</h2>
+<p>本小节只是是为了通过演示如何动手写一个<code>coroutine</code>函数来了解其中的原理，实际久经考验的<code>bluebird</code>模块和<code>co</code>模块已经实现了此功能，下一小节将会讲解基于这些现成模块的使用方法。</p>
+<p>首先我们需要了解一下 Generator 的概念。Generator 中文名称为“生成器”，通过<code>function*</code>来定义的函数称之为“生成器函数”（<code>generator function</code>），而生成器函数执行后返回的是一个生成器对象（<code>Generator</code>），这个生成器对象包含了几个方法，其中一个重要的方法是<code>next()</code>，我们可以通过不断地调用<code>next()</code>来取得在生成器中<code>yield</code>出来的值，生成器是否已执行结束则可以通过返回值的<code>done</code>属性来判断。</p>
+<p>生成器有一个特点就是它可以中断函数的执行，每次执行<code>yield</code>语句之后，函数即暂停执行，直到调用返回的生成器对象的<code>next()</code>函数它才会继续执行。以下是一个简单的例子：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-comment">// 生成器函数，可以生成指定数量的数字</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">genNumbers</span>(<span class="hljs-params">n</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++) {
+    <span class="hljs-keyword">yield</span> i;
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-string">'ok'</span>;
+}
+
+<span class="hljs-comment">// 执行生成器函数</span>
+<span class="hljs-keyword">const</span> gen = genNumbers(<span class="hljs-number">10</span>);
+<span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) {
+  <span class="hljs-comment">// 执行 next()方法取下一个数字</span>
+  <span class="hljs-keyword">const</span> ret = gen.next();
+  <span class="hljs-comment">// 打印结果</span>
+  <span class="hljs-built_in">console</span>.log(ret);
+  <span class="hljs-keyword">if</span> (ret.done) {
+    <span class="hljs-comment">// 如果 done=true 则表示生成器执行结束</span>
+    <span class="hljs-keyword">break</span>;
+  }
+}
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>);
+</code></pre>
+<p>上面的代码执行后的结果如下：</p>
+<pre><code>{ value: 1, done: false }
+{ value: 2, done: false }
+{ value: 3, done: false }
+{ value: 4, done: false }
+{ value: 5, done: false }
+{ value: 6, done: false }
+{ value: 7, done: false }
+{ value: 8, done: false }
+{ value: 9, done: false }
+{ value: 10, done: false }
+{ value: 'ok', done: true }
+done
+</code></pre>
+<p>说明：</p>
+<ul>
+<li>每次执行<code>next()</code>都会返回一个包含<code>{ value, done }</code>两个属性的对象，其中<code>value</code>是该次<code>yield</code>返回的值，<code>done</code>表示是否执行结束</li>
+<li>最后一次返回的值是生成器函数内<code>return</code>语句返回的值</li>
+</ul>
+<p>从上文的代码可知，只有我们执行<code>gen.next()</code>时生成器才会继续执行。如果还不太确定，我们可以尝试把它换成异步的执行方式：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-comment">// 生成器函数，可以生成指定数量的数字</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span>* <span class="hljs-title">genNumbers</span>(<span class="hljs-params">n</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>; i &lt;= n; i++) {
+    <span class="hljs-keyword">yield</span> i;
+  }
+  <span class="hljs-keyword">return</span> <span class="hljs-string">'ok'</span>;
+}
+
+<span class="hljs-comment">// 执行生成器函数</span>
+<span class="hljs-keyword">const</span> gen = genNumbers(<span class="hljs-number">10</span>);
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">next</span>(<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// 执行 next()方法取下一个数字</span>
+  <span class="hljs-keyword">const</span> ret = gen.next();
+  <span class="hljs-comment">// 打印结果</span>
+  <span class="hljs-built_in">console</span>.log(ret);
+  <span class="hljs-keyword">if</span> (ret.done) {
+    <span class="hljs-comment">// 如果 done=true 则表示生成器执行结束</span>
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-comment">// 500ms 后继续执行</span>
+    setTimeout(next, <span class="hljs-number">500</span>);
+  }
+}
+
+next();
+</code></pre>
+<p>如无意外，执行上面的代码后我们应该能看到每隔 0.5 秒会打印出一行结果，直到 5 秒后程序才执行结束，而打印的结果跟之前的一模一样。</p>
+<p>现在我们不妨假设，在我们的异步函数中，通过<code>yield</code>返回一个<code>promise</code>对象，然后等待<code>promise</code>执行回调后再执行<code>gen.next()</code>方法，如此循环，是不是就可以实现异步流程控制呢？</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">const</span> ret = gen.next();
+<span class="hljs-keyword">if</span> (ret.done) {
+  <span class="hljs-comment">// 执行结束</span>
+  resolve(ret.value);
+} <span class="hljs-keyword">else</span> {
+  <span class="hljs-comment">// 等待 promise 回调</span>
+  ret.value
+    .than(() =&gt; ret.next())
+    .catch(err =&gt; reject(err));
+}
+</code></pre>
+<p>以下是这个简单<code>coroutine</code>函数的代码：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-comment">// 判断是否为 Promise 对象，再次只简单判断该对象是否包含 then 和 catch 方法</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">isPromise</span>(<span class="hljs-params">p</span>) </span>{
+  <span class="hljs-keyword">return</span> p &amp;&amp; <span class="hljs-keyword">typeof</span> p.then === <span class="hljs-string">'function'</span> &amp;&amp; <span class="hljs-keyword">typeof</span> p.catch === <span class="hljs-string">'function'</span>;
+}
+
+<span class="hljs-comment">// coroutine 函数，接收一个 generator function 作为参数，返回一个新的函数</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">coroutine</span>(<span class="hljs-params">generator</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-comment">// 函数执行结果是一个 promise 对象</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+      <span class="hljs-comment">// 首先执行 generator function，它会返回一个 Generator 对象</span>
+      <span class="hljs-comment">// 详细文档可参考 https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator</span>
+      <span class="hljs-keyword">const</span> fn = generator.apply(<span class="hljs-literal">null</span>, <span class="hljs-built_in">arguments</span>);
+      <span class="hljs-keyword">let</span> ret;
+      <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">next</span>(<span class="hljs-params"></span>) </span>{
+        <span class="hljs-comment">// 执行.next()返回 yield 返回的值</span>
+        ret = fn.next();
+        <span class="hljs-comment">// 如果 done=true 则表示结束</span>
+        <span class="hljs-keyword">if</span> (ret.done) {
+          <span class="hljs-keyword">return</span> resolve(ret.value);
+        }
+        <span class="hljs-comment">// 如果返回的值不是 promise 则报错</span>
+        <span class="hljs-keyword">if</span> (!isPromise(ret.value)) {
+          <span class="hljs-keyword">return</span> reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">TypeError</span>(<span class="hljs-string">'You may only yield a promise, but the following object was passed: '</span> + <span class="hljs-built_in">String</span>(ret.value)));
+        }
+        <span class="hljs-comment">// 等待 promise 执行结果</span>
+        ret.value.then(next).catch(reject);
+      }
+      <span class="hljs-comment">// 开始执行</span>
+      next();
+    });
+  };
+}
+</code></pre>
+<p>说明：此代码仅用作演示，尽管通常情况下它也能正确地运行，但是并没有考虑性能问题和一些异常情况，生产环境下请使用稳定的 NPM 模块。</p>
+<h2><a id="_bluebird__coroutine__251"></a>使用 bluebird 模块的 coroutine 函数</h2>
+<p>使用前先执行以下命令安装<code>bluebird</code>模块：</p>
+<pre><code class="language-bash">$ npm install bluebird --save
+</code></pre>
+<p>以下是基于<code>bluebird</code>模块的<code>coroutine</code>函数的使用方法：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> <span class="hljs-built_in">Promise</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">'bluebird'</span>);
+
+<span class="hljs-keyword">const</span> test = <span class="hljs-built_in">Promise</span>.coroutine(<span class="hljs-function"><span class="hljs-keyword">function</span>* (<span class="hljs-params">n, ms</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'i=%s'</span>, i);
+    <span class="hljs-keyword">yield</span> <span class="hljs-built_in">Promise</span>.delay(ms);
+  }
+  <span class="hljs-keyword">return</span> n;
+});
+
+test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
+  .then(n =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行结束，n=%s'</span>, n))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'执行出错：'</span>, err));
+</code></pre>
+<p>说明：</p>
+<ul>
+<li><code>bluebird</code>自带了<code>delay()</code>函数，功能与上文实现的<code>sleep()</code>相同</li>
+</ul>
+<h2><a id="_co__285"></a>使用 co 模块</h2>
+<p>使用前先执行以下命令安装<code>co</code>模块：</p>
+<pre><code class="language-bash">$ npm install co --save
+</code></pre>
+<p>以下是基于<code>co</code>模块的简单使用方法：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+<span class="hljs-keyword">const</span> co = <span class="hljs-built_in">require</span>(<span class="hljs-string">'co'</span>);
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    setTimeout(resolve, ms);
+  });
+}
+
+<span class="hljs-keyword">const</span> test = co.wrap(<span class="hljs-function"><span class="hljs-keyword">function</span>* (<span class="hljs-params">n, ms</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; n; i++) {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'i=%s'</span>, i);
+    <span class="hljs-keyword">yield</span> sleep(ms);
+  }
+  <span class="hljs-keyword">return</span> n;
+});
+
+test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
+  .then(n =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行结束，n=%s'</span>, n))
+  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'执行出错：'</span>, err));
+</code></pre>
+<p>实际上<code>bluebird</code>模块和<code>co</code>模块还是有区别的：<code>bluebird</code>模块只支持<code>yield</code>一个<code>promise</code>对象，而<code>co</code>模块可以支持<code>promise</code>，<code>generator</code>，<code>array</code>，<code>object</code>和<code>Thunk</code>函数，可在异步函数内实现多个并发异步任务，比前者复杂得多。</p>
+<h2><a id="_321"></a>后记</h2>
+<p>回想在过去的一年多时间里，我确实是对以使用<code>generator</code>的<code>co</code>模块来解决异步问题是有些许偏见，也曾喷过某<strong>月饼云</strong>的 Node.js SDK 竟然不支持<code>callback</code>而是直接返回一个<code>generator</code>。究其原因，我深以为有以下几点：</p>
+<ul>
+<li>早期版本的<code>co</code>封装并不是返回一个<code>promise</code>对象，再加上大多数介绍<code>co</code>的文章讲的基本上都是<code>thunks</code>的概念，这对初使用<code>co</code>的人是相当恶心的</li>
+<li><code>co</code> 的<code>yield</code>支持的功能实在太丰富了，而我更喜欢简单的</li>
+<li>在 Node v4 发布之前，使用 Generator 还需要开启 Harmony 特性</li>
+<li>从 Node v4 开始，直接支持了 Generator 和 Promise</li>
+</ul>
+<p>最后一句，JavaScript 的世界变化实在太快了。</p>
+<h2><a id="_334"></a>相关链接</h2>
+<ul>
+<li><a href="http://www.ruanyifeng.com/blog/2015/04/generator.html">Generator 函数的含义与用法</a></li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator">生成器</a></li>
+<li><a href="http://www.jianshu.com/p/d6ac6b0b41d6">你不懂 JS: 异步与性能 第四章: Generator（上）</a></li>
+<li><a href="http://www.jianshu.com/p/e6f6766cba13">你不懂 JS: 异步与性能 第四章: Generator（下）</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2015/05/co.html">co 函数库的含义和用法</a></li>
+<li><a href="http://lifemap.in/koa-co-and-coroutine/">Koa, co and coroutine</a></li>
+</ul>
+
+  </article>
+
+
+  <!-- Chinese Version -->
+  <div id="about">
+    <h3>关于作者</h3>
+    <div class="author">
+      <div class="avatar"><img src="/images/logo_lei.jpg"></div>
+      <div class="description">          <a href="http://ucdok.com" title="
+        Web开发者、
+        &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
+        &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
+        个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
+        GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
+      " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      ：
+        Web开发者、
+        <a href="http://www.superid.me/">一登</a>后端架构师、
+        <a href="http://nodejs.ucdok.com/">《Node.js实战》</a>作者之一<br>
+        个人主页: <a href="http://ucdok.com">http://ucdok.com</a><br>
+        GitHub: <a href="https://github.com/leizongmin">https://github.com/leizongmin</a><br>
+      </div>
+    </div>
+  </div>
+  <div id="license">
+    <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh"><img alt="知识共享许可协议" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />本作品由           <a href="http://ucdok.com" title="
+        Web开发者、
+        &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
+        &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
+        个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
+        GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
+      " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>       创作，采用 <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a> 进行许可。
+  </div>
+
+
+</body>
+</html>
+
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-26599868-2', 'auto');
+  ga('send', 'pageview');
+</script>
+
+<div id="disqus_thread"></div>
+<script>
+var disqus_config = function () {
+  this.page.url = 'http://morning.work/page/maintainable-nodejs/asynchronous-programming.html';
+  this.page.identifier = '/maintainable-nodejs/asynchronous-programming.html';
+};
+(function() {  // DON'T EDIT BELOW THIS LINE
+  var d = document, s = d.createElement('script');
+  s.src = '//leizongmin-writings.disqus.com/embed.js';
+  s.setAttribute('data-timestamp', +new Date());
+  (d.head || d.body).appendChild(s);
+})();
+</script>
