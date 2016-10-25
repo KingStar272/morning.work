@@ -2,6 +2,7 @@
 title: 基于 generator 与 promise 的异步编程解决方案
 date: 2016-10-13
 author: 老雷
+link: https://github.com/leizongmin/lei-coroutine
 ```
 
 ##  前言

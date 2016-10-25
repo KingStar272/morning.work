@@ -1,25 +1,26 @@
 ```
-title: 利用ESLint检查代码质量
+title: 利用 ESLint 检查代码质量
 date: 2016-08-30
 author: 老雷
+link: https://github.com/leizongmin/eslint-config-lei
 ```
 
-> 其实很早的时候就想尝试ESLint了，但是很多次都是玩了一下就觉得这东西巨复杂，**一执行检查就是满屏的`error`，简直是不堪入目，遂放弃**。直到某天终于下定决心深入看了文档，才发现其实挺简单的，只是当时没有看到合适入门教程而已。我相信很多人也有着跟我一样的经历，所以希望将自己的踩坑心得记录下来，让后来者更轻易地掌握ESLint的使用，因为它确实是个好东西。
+> 其实很早的时候就想尝试 ESLint 了，但是很多次都是玩了一下就觉得这东西巨复杂，**一执行检查就是满屏的`error`，简直是不堪入目，遂放弃**。直到某天终于下定决心深入看了文档，才发现其实挺简单的，只是当时没有看到合适入门教程而已。我相信很多人也有着跟我一样的经历，所以希望将自己的踩坑心得记录下来，让后来者更轻易地掌握 ESLint 的使用，因为它确实是个好东西。
 
-JavaScript是一门神奇的动态语言，它在带给我们编程的灵活性的同时也悄悄埋下了一些地雷。除了基本的语法错误能在程序一启动的时候被检测到之外，很多隐含的错误都是在运行的时候才突然地蹦出来。除非你的程序有着100%的测试覆盖率，否则说不定哪天就会因为一个`xxx is undefined`而导致程序崩溃，而为了避免这样的错误可能你只需要在提交代码的时候用工具静态分析一下，仅此而已。
+JavaScript 是一门神奇的动态语言，它在带给我们编程的灵活性的同时也悄悄埋下了一些地雷。除了基本的语法错误能在程序一启动的时候被检测到之外，很多隐含的错误都是在运行的时候才突然地蹦出来。除非你的程序有着 100% 的测试覆盖率，否则说不定哪天就会因为一个`xxx is undefined`而导致程序崩溃，而为了避免这样的错误可能你只需要在提交代码的时候用工具静态分析一下，仅此而已。
 
-ESLint是一个插件化的javascript代码检测工具，它可以用于检查常见的JavaScript代码错误，也可以进行代码风格检查，这样我们就可以根据自己的喜好指定一套ESLint配置，然后应用到所编写的项目上，从而实现**辅助编码规范的执行，有效控制项目代码的质量**。
+ESLint是一个插件化的 javascript 代码检测工具，它可以用于检查常见的 JavaScript 代码错误，也可以进行代码风格检查，这样我们就可以根据自己的喜好指定一套 ESLint 配置，然后应用到所编写的项目上，从而实现**辅助编码规范的执行，有效控制项目代码的质量**。
 
 
 ## 手把手入门
 
-在开始使用ESLint之前，我们需要通过NPM来安装它：
+在开始使用 ESLint 之前，我们需要通过 NPM 来安装它：
 
 ```bash
 $ npm install -g eslint
 ```
 
-我从Gist上找到了自己几年前写的一个小函数，将其保存为文件`merge.js`：
+我从 Gist 上找到了自己几年前写的一个小函数，将其保存为文件`merge.js`：
 
 ```javascript
 function merge () {
@@ -36,7 +37,7 @@ console.log(merge({a: 123}, {b: 456}));
 
 然后执行`node merge.js`确保它是可以正确运行的（输出结果为`{ a: 123, b: 456 }`）。
 
-接着我们执行以下命令来使用ESLint检查：
+接着我们执行以下命令来使用 ESLint 检查：
 
 ```bash
 $ eslint merge.js
@@ -44,7 +45,7 @@ $ eslint merge.js
 
 可以看到，没有任何输出结果。这是因为我们没有指定任何的配置，除非这个文件是有语法错误，否则应该是不会有任何提示的。现在我们先使用内置的`eslint:recommended`配置，它包含了一系列核心规则，能报告一些常见的问题。
 
-首先新建ESLint配置文件`.eslintrc.js`：
+首先新建 ESLint 配置文件`.eslintrc.js`：
 
 ```javascript
 module.exports = {
@@ -52,7 +53,7 @@ module.exports = {
 };
 ```
 
-重新执行`eslint merge.js`可以看到输出了2个错误：
+重新执行`eslint merge.js`可以看到输出了 2 个错误：
 
 ```
 /example/merge.js
@@ -67,7 +68,7 @@ module.exports = {
 + **Unexpected console statement no-console** - 不能使用`console`
 + **'console' is not defined     no-undef** - `console`变量未定义，不能使用未定义的变量
 
-针对第1条提示，我们可以禁用`no-console`规则。将配置文件`.eslintrc.js`改为这样：
+针对第 1 条提示，我们可以禁用`no-console`规则。将配置文件`.eslintrc.js`改为这样：
 
 ```javascript
 module.exports = {
@@ -89,7 +90,7 @@ module.exports = {
 ✖ 1 problem (1 error, 0 warnings)
 ```
 
-这是因为JavaScript有很多种运行环境，比如常见的有浏览器和Node.js，另外还有很多软件系统使用JavaScript作为其脚本引擎，比如PostgreSQL就支持使用JavaScript来编写存储引擎，而这些运行环境可能并不存在`console`这个对象。另外在浏览器环境下会有`window`对象，而Node.js下没有；在Node.js下会有`process`对象，而浏览器环境下没有。
+这是因为 JavaScript 有很多种运行环境，比如常见的有浏览器和 Node.js，另外还有很多软件系统使用 JavaScript 作为其脚本引擎，比如 PostgreSQL 就支持使用 JavaScript 来编写存储引擎，而这些运行环境可能并不存在`console`这个对象。另外在浏览器环境下会有`window`对象，而 Node.js 下没有；在 Node.js 下会有`process`对象，而浏览器环境下没有。
 
 所以在配置文件中我们还需要指定程序的目标环境：
 
@@ -131,7 +132,7 @@ ESLint还可以在项目的`package.json`文件中指定配置，直接将上文
 
 ### 规则
 
-每条规则有3个等级：`off`、`warn`和`error`。`off`表示禁用这条规则，`warn`表示仅给出警告，并不会导致检查不通过，而`error`则会导致检查不通过。
+每条规则有 3 个等级：`off`、`warn`和`error`。`off`表示禁用这条规则，`warn`表示仅给出警告，并不会导致检查不通过，而`error`则会导致检查不通过。
 
 有些规则还带有可选的参数，比如`comma-dangle`可以写成`[ "error", "always-multiline" ]`；`no-multi-spaces`可以写成`[ "error", { exceptions: { "ImportDeclaration": true }}]`。
 
@@ -140,7 +141,7 @@ ESLint还可以在项目的`package.json`文件中指定配置，直接将上文
 
 ## 使用共享的配置文件
 
-上文我们以`eslint:recommended`为基础配置，然后在此之上修改`no-console`这条规则。而在大多数时候，我们可能会根据自己个人或团队的习惯，定制更多的规则，比如限定缩进是2个空格和使用单引号的字符串等。而如果每一个项目都要这样写到`.eslintrc.js`文件上，管理起来会比较麻烦。
+上文我们以`eslint:recommended`为基础配置，然后在此之上修改`no-console`这条规则。而在大多数时候，我们可能会根据自己个人或团队的习惯，定制更多的规则，比如限定缩进是 2 个空格和使用单引号的字符串等。而如果每一个项目都要这样写到`.eslintrc.js`文件上，管理起来会比较麻烦。
 
 我们可以将定义好规则的`.eslintrc.js`文件存储到一个公共的位置，比如`public-eslintrc.js`：
 
@@ -166,7 +167,7 @@ module.exports = {
 };
 ```
 
-为了验证这样的修改是否生效，将`merge.js`中的`var ret = {};`这一行前面多加一个空格，再执行ESLint检查：
+为了验证这样的修改是否生效，将`merge.js`中的`var ret = {};`这一行前面多加一个空格，再执行 ESLint 检查：
 
 ```
 /example/merge.js
@@ -175,9 +176,9 @@ module.exports = {
 ✖ 1 problem (1 error, 0 warnings)
 ```
 
-这时候提示的是缩进只能为2个空格，而文件的第2行却发现了3个空格，说明公共配置文件`public-eslintrc.js`已经生效了。
+这时候提示的是缩进只能为 2 个空格，而文件的第 2 行却发现了 3 个空格，说明公共配置文件`public-eslintrc.js`已经生效了。
 
-我们还可以使用已经发布到NPM上的ESLint配置，这些配置的模块名一般以`eslint-config-`为前缀，比如我在学习ESLint时自己编写的一个配置名为`eslint-config-lei`。要使用这个配置，先执行以下命令安装它：
+我们还可以使用已经发布到 NPM 上的 ESLint 配置，这些配置的模块名一般以`eslint-config-`为前缀，比如我在学习 ESLint 时自己编写的一个配置名为`eslint-config-lei`。要使用这个配置，先执行以下命令安装它：
 
 ```bash
 $ npm install -g eslint-config-lei
@@ -193,7 +194,7 @@ module.exports = {
 };
 ```
 
-再执行ESLint检查，可以看到输出如下的提示：
+再执行 ESLint 检查，可以看到输出如下的提示：
 
 ```
 /example/merge.js
@@ -220,7 +221,7 @@ ESLint配置文件中的`extends`还可以用来指定各种来源的配置引�
 
 ## 代码格式化
 
-在[ESLint规则列表](http://eslint.cn/docs/rules/)页面，我们发现有些规则的旁边会带有一个**橙色扳手图标**，表示在执行`eslint`命令时指定`--fix`参数可以**自动修复**该问题。
+在[ESLint 规则列表](http://eslint.cn/docs/rules/)页面，我们发现有些规则的旁边会带有一个**橙色扳手图标**，表示在执行`eslint`命令时指定`--fix`参数可以**自动修复**该问题。
 
 接着上文使用`eslint-config-lei`配置的检查，我们尝试在执行检查时添加`--fix`参数：
 
@@ -254,7 +255,7 @@ console.log(merge({ a: 123 }, { b: 456 }));
 
 ## 发布自己的配置
 
-前文关于「共享的配置文件」一小节已经提到，可以在`extends`中指定一个文件名，或者一个`eslint-config-`开头的模块名。为了便于共享，一般推荐将其发布成一个NPM模块。
+前文关于「共享的配置文件」一小节已经提到，可以在`extends`中指定一个文件名，或者一个`eslint-config-`开头的模块名。为了便于共享，一般推荐将其发布成一个 NPM 模块。
 
 其原理就是在载入模块时输出原来`.eslintrc.js`的数据。比如我们可以创建一个模块`eslint-config-my`用于测试。
 
@@ -303,14 +304,14 @@ module.exports = {
 
 在执行`eslint merge.js`检查，可看到没有任何错误提示信息，说明`eslint`已经成功载入了`eslint-config-my`的配置。如果我们使用`npm publish`将其发布到NPM上，那么其他人通过`npm install eslint-config-my`即可使用我们共享的这个配置。
 
-另外可以参考我自己写的一个ESLint配置模块：[eslint-config-lei](https://github.com/leizongmin/eslint-config-lei)
+另外可以参考我自己写的一个 ESLint 配置模块：[eslint-config-lei](https://github.com/leizongmin/eslint-config-lei)
 
 关于共享ESLint配置的详细文档可参考：[Shareable Configs - 可共享的配置](http://eslint.cn/docs/developer-guide/shareable-configs)
 
 
 ## 例外情况
 
-尽管我们在编码时怀着**严格遵守规则**的美好愿景，而**凡事总有例外**。定立ESLint规则的初衷是为了避免自己犯错，但是我们也要避免不顾实际情况而将其搞得太过于形式化，本末倒置。
+尽管我们在编码时怀着**严格遵守规则**的美好愿景，而**凡事总有例外**。定立 ESLint 规则的初衷是为了避免自己犯错，但是我们也要避免不顾实际情况而将其搞得太过于形式化，本末倒置。
 
 ESLint提供了多种临时禁用规则的方式，比如我们可以通过一条`eslint-disable-next-line`备注来使得下一行可以跳过检查：
 
@@ -329,14 +330,14 @@ var b = 456;
 
 ## 总结
 
-刚开始接触ESLint时觉得太难，是因为过太过于**迷信权威**。比如Airbnb公司的JavaScript风格，在GitHub上受到了很大的好评，其实我自己也非常认可这样的编码风格。但每个团队都会根据自己的的**实际情况**来**定制**不同的东西，我们并**不能随便照搬**过来。所以当使用`eslint-config-airbnb`这个配置进行ESLint检查时，满屏都是`error`和`warning`，从而觉得这东西根本没啥卵用。
+刚开始接触 ESLint 时觉得太难，是因为过太过于**迷信权威**。比如 Airbnb 公司的 JavaScript 风格，在 GitHub 上受到了很大的好评，其实我自己也非常认可这样的编码风格。但每个团队都会根据自己的的**实际情况**来**定制**不同的东西，我们并**不能随便照搬**过来。所以当使用`eslint-config-airbnb`这个配置进行 ESLint 检查时，满屏都是`error`和`warning`，从而觉得这东西根本没啥卵用。
 
-另外我也犯了「大忌」：直接使用`eslint-config-airbnb`这种某个公司高度定制化的配置，而不是`eslint:recommended`这样保守的。而且是直接用来检查整个项目好几十个JS文件，可想而知那是怎样的画面（本文最后版本的`merge.js`文件使用`airbnb`的配置，总共12行的代码就提示了8个问题：_✖ 8 problems (7 errors, 1 warning)_）。
+另外我也犯了「大忌」：直接使用`eslint-config-airbnb`这种某个公司高度定制化的配置，而不是`eslint:recommended`这样保守的。而且是直接用来检查整个项目好几十个 JS 文件，可想而知那是怎样的画面（本文最后版本的`merge.js`文件使用`airbnb`的配置，总共 12 行的代码就提示了 8 个问题：_✖ 8 problems (7 errors, 1 warning)_）。
 
-本文的目的是让读者以一个比较低的姿态开始接触ESLint，先学会简单地配置规则，如果要更深入地定制自己的规则，建议阅读「相关链接」中的ESLint文档。
+本文的目的是让读者以一个比较低的姿态开始接触 ESLint，先学会简单地配置规则，如果要更深入地定制自己的规则，建议阅读「相关链接」中的 ESLint 文档。
 
 
 ## 相关链接
 
-+ [ESLint使用入门](https://csspod.com/getting-started-with-eslint/)
-+ [ESLinit中文版文档](http://eslint.cn/)
++ [ESLint 使用入门](https://csspod.com/getting-started-with-eslint/)
++ [ESLinit 中文版文档](http://eslint.cn/)
