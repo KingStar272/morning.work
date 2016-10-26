@@ -271,13 +271,13 @@ $ npm init
     <span class="hljs-keyword">const</span> first = lines[<span class="hljs-number">0</span>];
 
     <span class="hljs-comment">// 去掉指定数量的行，并且返回结果</span>
-    <span class="hljs-keyword">const</span> popResult = (lineNumber, result) =&gt; {
+    <span class="hljs-keyword">const</span> popResult = <span class="hljs-function">(<span class="hljs-params">lineNumber, result</span>) =&gt;</span> {
       <span class="hljs-keyword">this</span>._lines = <span class="hljs-keyword">this</span>._lines.slice(lineNumber);
       <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.result = result;
     };
 
     <span class="hljs-comment">// 返回空结果</span>
-    <span class="hljs-keyword">const</span> popEmpty = () =&gt; {
+    <span class="hljs-keyword">const</span> popEmpty = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
       <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.result = <span class="hljs-literal">false</span>;
     };
 
@@ -286,24 +286,24 @@ $ npm init
     <span class="hljs-keyword">switch</span> (first[<span class="hljs-number">0</span>]) {
 
       <span class="hljs-keyword">case</span> <span class="hljs-string">'+'</span>:
-        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {data: first.slice(<span class="hljs-number">1</span>)});
+        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {<span class="hljs-attr">data</span>: first.slice(<span class="hljs-number">1</span>)});
 
       <span class="hljs-keyword">case</span> <span class="hljs-string">'-'</span>:
-        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {error: first.slice(<span class="hljs-number">1</span>)});
+        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {<span class="hljs-attr">error</span>: first.slice(<span class="hljs-number">1</span>)});
 
       <span class="hljs-keyword">case</span> <span class="hljs-string">':'</span>:
-        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {data: <span class="hljs-built_in">Number</span>(first.slice(<span class="hljs-number">1</span>))});
+        <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {<span class="hljs-attr">data</span>: <span class="hljs-built_in">Number</span>(first.slice(<span class="hljs-number">1</span>))});
 
       <span class="hljs-keyword">case</span> <span class="hljs-string">'$'</span>: {
         <span class="hljs-keyword">const</span> n = <span class="hljs-built_in">Number</span>(first.slice(<span class="hljs-number">1</span>));
         <span class="hljs-keyword">if</span> (n === <span class="hljs-number">-1</span>) {
           <span class="hljs-comment">// 如果是 $-1 表示空结果</span>
-          <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {data: <span class="hljs-literal">null</span>});
+          <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {<span class="hljs-attr">data</span>: <span class="hljs-literal">null</span>});
         } <span class="hljs-keyword">else</span> {
           <span class="hljs-comment">// 否则取后面一行作为结果</span>
           <span class="hljs-keyword">const</span> second = lines[<span class="hljs-number">1</span>];
           <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> second !== <span class="hljs-string">'undefined'</span>) {
-            <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">2</span>, {data: second});
+            <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">2</span>, {<span class="hljs-attr">data</span>: second});
           } <span class="hljs-keyword">else</span> {
             <span class="hljs-keyword">return</span> popEmpty();
           }
@@ -313,7 +313,7 @@ $ npm init
       <span class="hljs-keyword">case</span> <span class="hljs-string">'*'</span>: {
         <span class="hljs-keyword">const</span> n = <span class="hljs-built_in">Number</span>(first.slice(<span class="hljs-number">1</span>));
         <span class="hljs-keyword">if</span> (n === <span class="hljs-number">0</span>) {
-          <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {data: []});
+          <span class="hljs-keyword">return</span> popResult(<span class="hljs-number">1</span>, {<span class="hljs-attr">data</span>: []});
         } <span class="hljs-keyword">else</span> {
           <span class="hljs-keyword">const</span> array = [];
           <span class="hljs-keyword">let</span> i = <span class="hljs-number">1</span>;
@@ -334,7 +334,7 @@ $ npm init
             }
           }
           <span class="hljs-keyword">if</span> (array.length === n) {
-            <span class="hljs-keyword">return</span> popResult(i, {data: array});
+            <span class="hljs-keyword">return</span> popResult(i, {<span class="hljs-attr">data</span>: array});
           } <span class="hljs-keyword">else</span> {
             <span class="hljs-keyword">return</span> popEmpty();
           }
@@ -353,12 +353,12 @@ $ npm init
 <span class="hljs-built_in">module</span>.exports = RedisProto;
 </code></pre>
 <p>执行上文中的测试代码可得到如下结果：</p>
-<pre><code class="language-javascript">{ data: <span class="hljs-string">'123456'</span> }
-{ data: [ <span class="hljs-string">'abc'</span>, <span class="hljs-string">'aa1'</span>, <span class="hljs-string">'a'</span> ] }
-{ error: <span class="hljs-string">'ERR unknown command \'help\''</span> }
-{ data: <span class="hljs-string">'OK'</span> }
-{ data: <span class="hljs-number">5</span> }
-{ data: [ <span class="hljs-string">'hello'</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">'world'</span> ] }
+<pre><code class="language-javascript">{ <span class="hljs-attr">data</span>: <span class="hljs-string">'123456'</span> }
+{ <span class="hljs-attr">data</span>: [ <span class="hljs-string">'abc'</span>, <span class="hljs-string">'aa1'</span>, <span class="hljs-string">'a'</span> ] }
+{ <span class="hljs-attr">error</span>: <span class="hljs-string">'ERR unknown command \'help\''</span> }
+{ <span class="hljs-attr">data</span>: <span class="hljs-string">'OK'</span> }
+{ <span class="hljs-attr">data</span>: <span class="hljs-number">5</span> }
+{ <span class="hljs-attr">data</span>: [ <span class="hljs-string">'hello'</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">'world'</span> ] }
 </code></pre>
 <h2><a id="_Redis__292"></a>实现 Redis 客户端</h2>
 <p>上文我们已经实现了一个简单的解析器，其可以通过<code>push()</code>将接收到的数据片段加进去，然后我们只需要不断地调用<code>next()</code>来获取下一个解析出来的结果即可，直到其返回<code>false</code>，在下一次收到数据时，重复刚才的动作。</p>
@@ -421,9 +421,9 @@ $ npm init
 
   <span class="hljs-comment">// 发送命令给服务器</span>
   sendCommand(cmd, callback) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
 
-      <span class="hljs-keyword">const</span> cb = (err, ret) =&gt; {
+      <span class="hljs-keyword">const</span> cb = <span class="hljs-function">(<span class="hljs-params">err, ret</span>) =&gt;</span> {
         callback &amp;&amp; callback(err, ret);
         err ? reject(err) : resolve(ret);
       };
@@ -501,9 +501,9 @@ client.sendCommand(<span class="hljs-string">'OOXX'</span>, (err, ret) =&gt; {
 });
 
 client.sendCommand(<span class="hljs-string">'SET a '</span> + <span class="hljs-built_in">Date</span>.now())
-  .then(ret =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'success'</span>, ret))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'error'</span>, err))
-  .then(() =&gt; client.end());
+  .then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'success'</span>, ret))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'error'</span>, err))
+  .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> client.end());
 </code></pre>
 <p>执行测试文件<code>node test.js</code>可看到类似如下的结果：</p>
 <pre><code>a=1463041835231, err=null
@@ -525,7 +525,7 @@ success OK
   <span class="hljs-keyword">const</span> self = <span class="hljs-keyword">this</span>;
 
   <span class="hljs-comment">// 绑定命令</span>
-  <span class="hljs-keyword">const</span> bind = (cmd) =&gt; {
+  <span class="hljs-keyword">const</span> bind = <span class="hljs-function">(<span class="hljs-params">cmd</span>) =&gt;</span> {
     <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
 
       <span class="hljs-keyword">let</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.call(<span class="hljs-built_in">arguments</span>);
@@ -535,7 +535,7 @@ success OK
       }
 
       <span class="hljs-comment">// 每个参数使用空格分隔</span>
-      args = args.map(item =&gt; <span class="hljs-built_in">Array</span>.isArray(item) ? item.join(<span class="hljs-string">' '</span>) : item).join(<span class="hljs-string">' '</span>);
+      args = args.map(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> <span class="hljs-built_in">Array</span>.isArray(item) ? item.join(<span class="hljs-string">' '</span>) : item).join(<span class="hljs-string">' '</span>);
 
       <span class="hljs-keyword">return</span> self.sendCommand(<span class="hljs-string">`<span class="hljs-subst">${cmd}</span> <span class="hljs-subst">${args}</span>`</span>, callback);
 
@@ -583,9 +583,9 @@ client.keys(<span class="hljs-string">'*IO*'</span>, (err, ret) =&gt; {
 });
 
 client.set(<span class="hljs-string">'a'</span>, <span class="hljs-built_in">Date</span>.now())
-  .then(ret =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'success'</span>, ret))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'error'</span>, err))
-  .then(() =&gt; client.end())
+  .then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'success'</span>, ret))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'error'</span>, err))
+  .then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> client.end())
 </code></pre>
 <p>重新执行<code>node test.js</code>可看到结果跟上文还是一致的。</p>
 <h2><a id="_552"></a>简单容错处理</h2>

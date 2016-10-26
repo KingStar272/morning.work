@@ -168,8 +168,8 @@ a:hover {
 <pre><code class="language-bash">$ mkdir es2015_demo &amp;&amp; <span class="hljs-built_in">cd</span> es2015_demo &amp;&amp; git init &amp;&amp; npm init
 </code></pre>
 <p>现在我们新建一个文件<code>test.js</code>试试是否能正常运行：</p>
-<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms = 0</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; setTimeout(resolve, ms));
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms = <span class="hljs-number">0</span></span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> setTimeout(resolve, ms));
 }
 
 <span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"></span>) </span>{
@@ -179,7 +179,7 @@ a:hover {
   }
 }
 
-test().then(() =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>));
+test().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'done'</span>));
 </code></pre>
 <p>执行以下命令运行<code>test.js</code>：</p>
 <pre><code class="language-bash">$ babel-node test.js
@@ -261,11 +261,11 @@ ReferenceError: regeneratorRuntime is not defined
 <span class="hljs-keyword">let</span> source = <span class="hljs-string">'一个 URL 或者本地文件名'</span>;
 <span class="hljs-keyword">let</span> target = <span class="hljs-string">'要存储到的本地位置，null|false|undefined 表示自动生成一个临时文件'</span>;
 <span class="hljs-comment">// 用于获取进度通知的函数，可以省略</span>
-<span class="hljs-keyword">let</span> progress = (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度：<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>);
+<span class="hljs-keyword">let</span> progress = <span class="hljs-function">(<span class="hljs-params">size, total</span>) =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度：<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>);
 
 download(source, target, progress)
-  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到：<span class="hljs-subst">${filename}</span>`</span>))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
+  .then(<span class="hljs-function"><span class="hljs-params">filename</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到：<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 
 <span class="hljs-comment">// 也可以使用 callback 模式</span>
 download(source, target, progress, (err, filename) =&gt; {
@@ -285,7 +285,7 @@ download(source, target, progress, (err, filename) =&gt; {
 <pre><code class="language-javascript"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">'fs'</span>;
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">copyFile</span>(<span class="hljs-params">source, target, progress</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
 
     fs.stat(source, (err, stats) =&gt; {
       <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> reject(err);
@@ -318,8 +318,8 @@ download(source, target, progress, (err, filename) =&gt; {
 </ul>
 <p>为了测试该代码能否正常工作，可在文件末尾增加以下测试程序（在编写单元测试时将删除）：</p>
 <pre><code class="language-javascript">copyFile(__filename, <span class="hljs-string">'/tmp/copy.js'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
-  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
+  .then(<span class="hljs-function"><span class="hljs-params">filename</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 </code></pre>
 <p>以上程序的作用是将当前 JavaScript 文件复制到<code>/tmp/copy.js</code>，使用<code>babel-node</code>执行该文件将得到以下结果：</p>
 <pre><code class="language-bash">$ babel-node src/copy.js
@@ -332,7 +332,7 @@ download(source, target, progress, (err, filename) =&gt; {
 <span class="hljs-keyword">import</span> request <span class="hljs-keyword">from</span> <span class="hljs-string">'request'</span>;
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">downloadFile</span>(<span class="hljs-params">url, target, progress</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
 
     <span class="hljs-keyword">let</span> s = fs.createWriteStream(target);
     s.on(<span class="hljs-string">'error'</span>, reject);
@@ -341,8 +341,8 @@ download(source, target, progress, (err, filename) =&gt; {
     <span class="hljs-keyword">let</span> downloadSize = <span class="hljs-number">0</span>;
     <span class="hljs-keyword">let</span> req = request
       .get({
-        url: url,
-        encoding: <span class="hljs-literal">null</span>
+        <span class="hljs-attr">url</span>: url,
+        <span class="hljs-attr">encoding</span>: <span class="hljs-literal">null</span>
       })
       .on(<span class="hljs-string">'response'</span>, res =&gt; {
         <span class="hljs-keyword">if</span> (res.statusCode !== <span class="hljs-number">200</span>) {
@@ -369,8 +369,8 @@ download(source, target, progress, (err, filename) =&gt; {
 <p>为了测试该代码能否正常工作，可在文件末尾增加以下测试程序（在编写单元测试时将删除）：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">let</span> url = <span class="hljs-string">'http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg'</span>;
 downloadFile(url, <span class="hljs-string">'/tmp/avatar.jpg'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
-  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
+  .then(<span class="hljs-function"><span class="hljs-params">filename</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 </code></pre>
 <p>以上程序的作用是将 URL 为<code>http://dn-cnodestatic.qbox.me/public/images/cnodejs_light.svg</code>的文件复制到<code>/tmp/avatar.jpg</code>，使用<code>babel-node</code>执行该文件将得到以下结果：</p>
 <pre><code class="language-bash">$ babel-node src/download.js
@@ -388,7 +388,7 @@ downloadFile(url, <span class="hljs-string">'/tmp/avatar.jpg'</span>, (size, tot
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">source, target, progress</span>) </span>{
   target = target || randomFilename(download.tmpDir);
   progress = progress || noop;
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
 
     mkdirp(path.dirname(target), err =&gt; {
       <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> callback(err);
@@ -402,7 +402,7 @@ downloadFile(url, <span class="hljs-string">'/tmp/avatar.jpg'</span>, (size, tot
 
 <span class="hljs-keyword">let</span> getTmpDir = os.tmpdir || os.tmpDir;
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789'</span>) </span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = <span class="hljs-number">6</span>, chars = <span class="hljs-string">'abcdefghijklmnopqrstuvwxyz0123456789'</span></span>) </span>{
   <span class="hljs-keyword">let</span> max = chars.length + <span class="hljs-number">1</span>;
   <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>;
   <span class="hljs-keyword">while</span> (size &gt; <span class="hljs-number">0</span>) {
@@ -436,8 +436,8 @@ downloadFile(url, <span class="hljs-string">'/tmp/avatar.jpg'</span>, (size, tot
 </ul>
 <p>为了验证程序是否正确，我们可以将上文的<code>src/copy.js</code>和<code>src/download.js</code>中的测试程序放到<code>src/index.js</code>文件的末尾并执行（需要将旧的程序程序删除），比如：</p>
 <pre><code class="language-javascript">download(__filename, <span class="hljs-string">'/tmp/copy.js'</span>, (size, total) =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`进度<span class="hljs-subst">${size}</span>/<span class="hljs-subst">${total}</span>`</span>))
-  .then(filename =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
+  .then(<span class="hljs-function"><span class="hljs-params">filename</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`已保存到<span class="hljs-subst">${filename}</span>`</span>))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`出错：<span class="hljs-subst">${err}</span>`</span>));
 </code></pre>
 <p>正常情况下，其执行结果应该跟上文中的结果是一致的。</p>
 <h3><a id="3_419"></a>3、模块系统</h3>
@@ -505,7 +505,7 @@ import fs2 from 'fs';
 <pre><code class="language-javascript"><span class="hljs-meta">"use strict"</span>;
 
 <span class="hljs-built_in">Object</span>.defineProperty(exports, <span class="hljs-string">"__esModule"</span>, {
-  value: <span class="hljs-literal">true</span>
+  <span class="hljs-attr">value</span>: <span class="hljs-literal">true</span>
 });
 exports.c = c;
 exports[<span class="hljs-string">"default"</span>] = y;
@@ -588,7 +588,7 @@ _my_module2[<span class="hljs-string">'default'</span>];
 
 <span class="hljs-keyword">let</span> getTmpDir = os.tmpdir || os.tmpDir;
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = 6, chars = 'abcdefghijklmnopqrstuvwxyz0123456789'</span>) </span>{
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">randomString</span>(<span class="hljs-params">size = <span class="hljs-number">6</span>, chars = <span class="hljs-string">'abcdefghijklmnopqrstuvwxyz0123456789'</span></span>) </span>{
   <span class="hljs-keyword">let</span> max = chars.length + <span class="hljs-number">1</span>;
   <span class="hljs-keyword">let</span> str = <span class="hljs-string">''</span>;
   <span class="hljs-keyword">while</span> (size &gt; <span class="hljs-number">0</span>) {
@@ -642,8 +642,8 @@ _my_module2[<span class="hljs-string">'default'</span>];
 <span class="hljs-keyword">import</span> download <span class="hljs-keyword">from</span> <span class="hljs-string">'../src'</span>;
 <span class="hljs-keyword">import</span> {randomFilename} <span class="hljs-keyword">from</span> <span class="hljs-string">'../src/utils'</span>;
 
-<span class="hljs-keyword">let</span> readFile = f =&gt; fs.readFileSync(f).toString();
-<span class="hljs-keyword">let</span> getFileSize = f =&gt; fs.statSync(f).size;
+<span class="hljs-keyword">let</span> readFile = <span class="hljs-function"><span class="hljs-params">f</span> =&gt;</span> fs.readFileSync(f).toString();
+<span class="hljs-keyword">let</span> getFileSize = <span class="hljs-function"><span class="hljs-params">f</span> =&gt;</span> fs.statSync(f).size;
 
 describe(<span class="hljs-string">'es2015_demo'</span>, () =&gt; {
 
@@ -659,7 +659,7 @@ describe(<span class="hljs-string">'es2015_demo'</span>, () =&gt; {
       assert.equal(size, total);
       assert.equal(total, getFileSize(source));
 
-    }).then(filename =&gt; {
+    }).then(<span class="hljs-function"><span class="hljs-params">filename</span> =&gt;</span> {
 
       assert.equal(onProgress, <span class="hljs-literal">true</span>);
       assert.equal(target, filename);
@@ -667,7 +667,7 @@ describe(<span class="hljs-string">'es2015_demo'</span>, () =&gt; {
 
       done();
 
-    }).catch(err =&gt; {
+    }).catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
       <span class="hljs-keyword">throw</span> err;
     });
   });
@@ -814,15 +814,15 @@ src/utils.js -&gt; lib/utils.js
 <p>编辑文件<code>src/utils.js</code>，增加<code>callbackify()</code>函数：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">callbackify</span>(<span class="hljs-params">fn</span>) </span>{
   <span class="hljs-keyword">let</span> argc = fn.length;
-  <span class="hljs-keyword">return</span> (...args) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-function">(<span class="hljs-params">...args</span>) =&gt;</span> {
     <span class="hljs-keyword">let</span> callback = args[argc];
     <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> callback !== <span class="hljs-string">'function'</span>) callback = <span class="hljs-literal">null</span>;
     <span class="hljs-keyword">return</span> fn(...args)
-      .then(ret =&gt; {
+      .then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> {
         callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
         <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve(ret);
       })
-      .catch(err =&gt; {
+      .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
         callback &amp;&amp; callback(err);
         <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.reject(err);
       });
@@ -839,7 +839,7 @@ src/utils.js -&gt; lib/utils.js
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> callbackify(<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">download</span>(<span class="hljs-params">source, target, progress</span>) </span>{
   target = target || randomFilename(download.tmpDir);
   progress = progress || noop;
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
 
     mkdirp(path.dirname(target), err =&gt; {
       <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> callback(err);

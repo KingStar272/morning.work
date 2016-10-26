@@ -130,7 +130,7 @@ a:hover {
 <p>利用<code>async function / await</code>语法，我们可以很直观地书写异步程序：</p>
 <pre><code class="language-javascript"><span class="hljs-comment">// sleep 函数，返回一个 Promise 对象</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
     setTimeout(resolve, ms);
   });
 }
@@ -149,7 +149,7 @@ a:hover {
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">_asyncToGenerator</span>(<span class="hljs-params">fn</span>) </span>{ <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{ <span class="hljs-keyword">var</span> gen = fn.apply(<span class="hljs-keyword">this</span>, <span class="hljs-built_in">arguments</span>); <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">resolve, reject</span>) </span>{ <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">step</span>(<span class="hljs-params">key, arg</span>) </span>{ <span class="hljs-keyword">try</span> { <span class="hljs-keyword">var</span> info = gen[key](arg); <span class="hljs-keyword">var</span> value = info.value; } <span class="hljs-keyword">catch</span> (error) { reject(error); <span class="hljs-keyword">return</span>; } <span class="hljs-keyword">if</span> (info.done) { resolve(value); } <span class="hljs-keyword">else</span> { <span class="hljs-keyword">return</span> <span class="hljs-built_in">Promise</span>.resolve(value).then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">value</span>) </span>{ <span class="hljs-keyword">return</span> step(<span class="hljs-string">"next"</span>, value); }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{ <span class="hljs-keyword">return</span> step(<span class="hljs-string">"throw"</span>, err); }); } } <span class="hljs-keyword">return</span> step(<span class="hljs-string">"next"</span>); }); }; }
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
     setTimeout(resolve, ms);
   });
 }
@@ -176,7 +176,7 @@ a:hover {
 <p>基于以上两点的考虑，我们可以假设新的异步代码应该是这样的：</p>
 <pre><code class="language-javascript"><span class="hljs-comment">// sleep 函数，返回一个 Promise 对象</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
     setTimeout(resolve, ms);
   });
 }
@@ -195,8 +195,8 @@ a:hover {
 
  <span class="hljs-comment">// 执行函数，其返回一个 Promise 对象</span>
 test()
-  .then(i =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行了%s 次 sleep'</span>, i))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'出错'</span>, err));
+  .then(<span class="hljs-function"><span class="hljs-params">i</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行了%s 次 sleep'</span>, i))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'出错'</span>, err));
 </code></pre>
 <p>对比直接使用<code>async function / await</code>语法，我们发现只是在声明异步函数和<code>yield</code>这两行写法不同，它可以在 Node v4 及更高版本上可直接执行，并且可以直接在源码上进行调试。以下是上文的程序在 Visual Studio Code 上进行调试的界面（<code>coroutine</code>函数的实现将在下文讲解）：</p>
 <p><img src="../../images/2016-10/debug_coroutine.png" alt="调试 coroutine 程序"></p>
@@ -287,8 +287,8 @@ next();
 } <span class="hljs-keyword">else</span> {
   <span class="hljs-comment">// 等待 promise 回调</span>
   ret.value
-    .than(() =&gt; ret.next())
-    .catch(err =&gt; reject(err));
+    .than(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> ret.next())
+    .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> reject(err));
 }
 </code></pre>
 <p>以下是这个简单<code>coroutine</code>函数的代码：</p>
@@ -303,7 +303,7 @@ next();
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">coroutine</span>(<span class="hljs-params">genFn</span>) </span>{
   <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
     <span class="hljs-comment">// 函数执行结果是一个 promise 对象</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
       <span class="hljs-comment">// 首先执行 generator function，它会返回一个 Generator 对象</span>
       <span class="hljs-keyword">const</span> gen = genFn.apply(<span class="hljs-literal">null</span>, <span class="hljs-built_in">arguments</span>);
       <span class="hljs-keyword">let</span> ret;
@@ -347,8 +347,8 @@ next();
 });
 
 test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
-  .then(n =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行结束，n=%s'</span>, n))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'执行出错：'</span>, err));
+  .then(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行结束，n=%s'</span>, n))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'执行出错：'</span>, err));
 </code></pre>
 <p>说明：</p>
 <ul>
@@ -364,7 +364,7 @@ test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
 <span class="hljs-keyword">const</span> co = <span class="hljs-built_in">require</span>(<span class="hljs-string">'co'</span>);
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sleep</span>(<span class="hljs-params">ms</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
     setTimeout(resolve, ms);
   });
 }
@@ -378,8 +378,8 @@ test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
 });
 
 test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
-  .then(n =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行结束，n=%s'</span>, n))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'执行出错：'</span>, err));
+  .then(<span class="hljs-function"><span class="hljs-params">n</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'执行结束，n=%s'</span>, n))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.error(<span class="hljs-string">'执行出错：'</span>, err));
 </code></pre>
 <p>实际上<code>bluebird</code>模块和<code>co</code>模块还是有区别的：<code>bluebird</code>模块只支持<code>yield</code>一个<code>promise</code>对象，而<code>co</code>模块可以支持<code>promise</code>，<code>generator</code>，<code>array</code>，<code>object</code>和<code>Thunk</code>函数，可在异步函数内实现多个并发异步任务，比前者复杂得多。</p>
 <h2><a id="_321"></a>后记</h2>

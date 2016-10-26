@@ -141,7 +141,7 @@ a:hover {
   <span class="hljs-keyword">return</span> ret;
 }
 
-<span class="hljs-built_in">console</span>.log(merge({a: <span class="hljs-number">123</span>}, {b: <span class="hljs-number">456</span>}));
+<span class="hljs-built_in">console</span>.log(merge({<span class="hljs-attr">a</span>: <span class="hljs-number">123</span>}, {<span class="hljs-attr">b</span>: <span class="hljs-number">456</span>}));
 </code></pre>
 <p>然后执行<code>node merge.js</code>确保它是可以正确运行的（输出结果为<code>{ a: 123, b: 456 }</code>）。</p>
 <p>接着我们执行以下命令来使用 ESLint 检查：</p>
@@ -150,7 +150,7 @@ a:hover {
 <p>可以看到，没有任何输出结果。这是因为我们没有指定任何的配置，除非这个文件是有语法错误，否则应该是不会有任何提示的。现在我们先使用内置的<code>eslint:recommended</code>配置，它包含了一系列核心规则，能报告一些常见的问题。</p>
 <p>首先新建 ESLint 配置文件<code>.eslintrc.js</code>：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
-  extends: <span class="hljs-string">'eslint:recommended'</span>,
+  <span class="hljs-attr">extends</span>: <span class="hljs-string">'eslint:recommended'</span>,
 };
 </code></pre>
 <p>重新执行<code>eslint merge.js</code>可以看到输出了 2 个错误：</p>
@@ -167,8 +167,8 @@ a:hover {
 </ul>
 <p>针对第 1 条提示，我们可以禁用<code>no-console</code>规则。将配置文件<code>.eslintrc.js</code>改为这样：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
-  extends: <span class="hljs-string">'eslint:recommended'</span>,
-  rules: {
+  <span class="hljs-attr">extends</span>: <span class="hljs-string">'eslint:recommended'</span>,
+  <span class="hljs-attr">rules</span>: {
     <span class="hljs-string">'no-console'</span>: <span class="hljs-string">'off'</span>,
   },
 };
@@ -183,11 +183,11 @@ a:hover {
 <p>这是因为 JavaScript 有很多种运行环境，比如常见的有浏览器和 Node.js，另外还有很多软件系统使用 JavaScript 作为其脚本引擎，比如 PostgreSQL 就支持使用 JavaScript 来编写存储引擎，而这些运行环境可能并不存在<code>console</code>这个对象。另外在浏览器环境下会有<code>window</code>对象，而 Node.js 下没有；在 Node.js 下会有<code>process</code>对象，而浏览器环境下没有。</p>
 <p>所以在配置文件中我们还需要指定程序的目标环境：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
-  extends: <span class="hljs-string">'eslint:recommended'</span>,
-  env: {
-    node: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">extends</span>: <span class="hljs-string">'eslint:recommended'</span>,
+  <span class="hljs-attr">env</span>: {
+    <span class="hljs-attr">node</span>: <span class="hljs-literal">true</span>,
   },
-  rules: {
+  <span class="hljs-attr">rules</span>: {
     <span class="hljs-string">'no-console'</span>: <span class="hljs-string">'off'</span>,
   },
 };
@@ -218,11 +218,11 @@ a:hover {
 <p>上文我们以<code>eslint:recommended</code>为基础配置，然后在此之上修改<code>no-console</code>这条规则。而在大多数时候，我们可能会根据自己个人或团队的习惯，定制更多的规则，比如限定缩进是 2 个空格和使用单引号的字符串等。而如果每一个项目都要这样写到<code>.eslintrc.js</code>文件上，管理起来会比较麻烦。</p>
 <p>我们可以将定义好规则的<code>.eslintrc.js</code>文件存储到一个公共的位置，比如<code>public-eslintrc.js</code>：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
-  extends: <span class="hljs-string">'eslint:recommended'</span>,
-  env: {
-    node: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">extends</span>: <span class="hljs-string">'eslint:recommended'</span>,
+  <span class="hljs-attr">env</span>: {
+    <span class="hljs-attr">node</span>: <span class="hljs-literal">true</span>,
   },
-  rules: {
+  <span class="hljs-attr">rules</span>: {
     <span class="hljs-string">'no-console'</span>: <span class="hljs-string">'off'</span>,
     <span class="hljs-string">'indent'</span>: [ <span class="hljs-string">'error'</span>, <span class="hljs-number">2</span> ],
     <span class="hljs-string">'quotes'</span>: [ <span class="hljs-string">'error'</span>, <span class="hljs-string">'single'</span> ],
@@ -231,7 +231,7 @@ a:hover {
 </code></pre>
 <p>然后将原来的<code>.eslintrc.js</code>文件改成这样：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
-  extends: <span class="hljs-string">'./public-eslintrc.js'</span>,
+  <span class="hljs-attr">extends</span>: <span class="hljs-string">'./public-eslintrc.js'</span>,
 };
 </code></pre>
 <p>为了验证这样的修改是否生效，将<code>merge.js</code>中的<code>var ret = {};</code>这一行前面多加一个空格，再执行 ESLint 检查：</p>
@@ -247,7 +247,7 @@ a:hover {
 <p><strong>注意：由于我们的<code>eslint</code>命令是全局安装的，所有用到的<code>eslint-config-*</code>模块也必须全局安装，否则将无法正确载入。这是一个已知的 Bug，参考这里：<a href="https://github.com/eslint/eslint/issues/4822#issuecomment-167600953">Error: Cannot read config package for shareable config using global eslint #4822</a></strong></p>
 <p>然后将<code>.eslintrc.js</code>文件改成这样：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
-  extends: <span class="hljs-string">'lei'</span>,
+  <span class="hljs-attr">extends</span>: <span class="hljs-string">'lei'</span>,
 };
 </code></pre>
 <p>再执行 ESLint 检查，可以看到输出如下的提示：</p>
@@ -286,7 +286,7 @@ a:hover {
   <span class="hljs-keyword">return</span> ret;
 }
 
-<span class="hljs-built_in">console</span>.log(merge({ a: <span class="hljs-number">123</span> }, { b: <span class="hljs-number">456</span> }));
+<span class="hljs-built_in">console</span>.log(merge({ <span class="hljs-attr">a</span>: <span class="hljs-number">123</span> }, { <span class="hljs-attr">b</span>: <span class="hljs-number">456</span> }));
 </code></pre>
 <p>主要的变化有以下三部分：</p>
 <ul>
@@ -300,12 +300,12 @@ a:hover {
 <p>其原理就是在载入模块时输出原来<code>.eslintrc.js</code>的数据。比如我们可以创建一个模块<code>eslint-config-my</code>用于测试。</p>
 <p>新建文件<code>eslint-config-my/index.js</code>：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
-  extends: <span class="hljs-string">'eslint:recommended'</span>,
-  env: {
-    node: <span class="hljs-literal">true</span>,
-    es6: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">extends</span>: <span class="hljs-string">'eslint:recommended'</span>,
+  <span class="hljs-attr">env</span>: {
+    <span class="hljs-attr">node</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">es6</span>: <span class="hljs-literal">true</span>,
   },
-  rules: {
+  <span class="hljs-attr">rules</span>: {
     <span class="hljs-string">'no-console'</span>: <span class="hljs-string">'off'</span>,
     <span class="hljs-string">'indent'</span>: [ <span class="hljs-string">'error'</span>, <span class="hljs-number">2</span> ],
     <span class="hljs-string">'quotes'</span>: [ <span class="hljs-string">'error'</span>, <span class="hljs-string">'single'</span> ],
@@ -324,7 +324,7 @@ a:hover {
 </code></pre>
 <p>然后将文件<code>.eslintrc.js</code>改成这样：</p>
 <pre><code class="language-javascript"><span class="hljs-built_in">module</span>.exports = {
-  extends: <span class="hljs-string">'my'</span>,
+  <span class="hljs-attr">extends</span>: <span class="hljs-string">'my'</span>,
 };
 </code></pre>
 <p>说明：在<code>extends</code>中，<code>eslint-config-my</code>可简写为<code>my</code>。</p>

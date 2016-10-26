@@ -5,9 +5,9 @@
   "main": "build/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "babel-node build/preview.js",
+    "start": "n use 7.0.0 --harmony_async_await build/preview.js",
     "clean": "rm -rf page",
-    "build": "npm run clean && babel-node build"
+    "build": "npm run clean && n use 7.0.0 --harmony_async_await build"
   },
   "repository": {
     "type": "git",
@@ -23,9 +23,6 @@
   },
   "homepage": "https://github.com/leizongmin/morning.work",
   "dependencies": {
-    "babel-cli": "^6.3.13",
-    "babel-preset-es2015-node4": "^2.0.2",
-    "babel-preset-stage-0": "^6.3.13",
     "express": "^4.13.3",
     "highlight.js": "^9.3.0",
     "markdown-it": "^5.0.2",

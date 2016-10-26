@@ -270,9 +270,9 @@ buf.readUIntBE(<span class="hljs-number">0</span>, <span class="hljs-number">6</
 <span class="hljs-comment">// offset 本条记录在 Buffer 对象的开始位置</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readRecord</span> (<span class="hljs-params">buf, offset</span>) </span>{
   <span class="hljs-keyword">return</span> {
-    number: buf.readUIntBE(offset, <span class="hljs-number">3</span>),
-    lesson: buf.readUInt16BE(offset + <span class="hljs-number">3</span>),
-    score: buf.readInt8(offset + <span class="hljs-number">5</span>)
+    <span class="hljs-attr">number</span>: buf.readUIntBE(offset, <span class="hljs-number">3</span>),
+    <span class="hljs-attr">lesson</span>: buf.readUInt16BE(offset + <span class="hljs-number">3</span>),
+    <span class="hljs-attr">score</span>: buf.readInt8(offset + <span class="hljs-number">5</span>)
   };
 }
 
@@ -302,11 +302,11 @@ buf.readUIntBE(<span class="hljs-number">0</span>, <span class="hljs-number">6</
 </code></pre>
 <p>我们可以再编写一段程序来看看效果：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">var</span> list = [
-  {number: <span class="hljs-number">100001</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">99</span>},
-  {number: <span class="hljs-number">100002</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">88</span>},
-  {number: <span class="hljs-number">100003</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">77</span>},
-  {number: <span class="hljs-number">100004</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">66</span>},
-  {number: <span class="hljs-number">100005</span>, lesson: <span class="hljs-number">1001</span>, score: <span class="hljs-number">55</span>},
+  {<span class="hljs-attr">number</span>: <span class="hljs-number">100001</span>, <span class="hljs-attr">lesson</span>: <span class="hljs-number">1001</span>, <span class="hljs-attr">score</span>: <span class="hljs-number">99</span>},
+  {<span class="hljs-attr">number</span>: <span class="hljs-number">100002</span>, <span class="hljs-attr">lesson</span>: <span class="hljs-number">1001</span>, <span class="hljs-attr">score</span>: <span class="hljs-number">88</span>},
+  {<span class="hljs-attr">number</span>: <span class="hljs-number">100003</span>, <span class="hljs-attr">lesson</span>: <span class="hljs-number">1001</span>, <span class="hljs-attr">score</span>: <span class="hljs-number">77</span>},
+  {<span class="hljs-attr">number</span>: <span class="hljs-number">100004</span>, <span class="hljs-attr">lesson</span>: <span class="hljs-number">1001</span>, <span class="hljs-attr">score</span>: <span class="hljs-number">66</span>},
+  {<span class="hljs-attr">number</span>: <span class="hljs-number">100005</span>, <span class="hljs-attr">lesson</span>: <span class="hljs-number">1001</span>, <span class="hljs-attr">score</span>: <span class="hljs-number">55</span>},
 ];
 <span class="hljs-built_in">console</span>.log(list);
 

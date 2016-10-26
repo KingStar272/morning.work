@@ -125,14 +125,14 @@ a:hover {
     <h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
 <p>随着 ES6 的普及，越来越多的异步接口都开始同时支持<code>callback</code>和<code>promise</code>两种方式，我在最近的两篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>和<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html">《如何编写一个简单的 Redis 客户端》</a>中也使用<strong>一个简单的小技巧</strong>来实现这样的功能：</p>
 <pre><code class="language-javascript">request(method, path, params, callback) {
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((_resolve, _reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">_resolve, _reject</span>) =&gt;</span> {
 
-    <span class="hljs-keyword">const</span> resolve = ret =&gt; {
+    <span class="hljs-keyword">const</span> resolve = <span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> {
       _resolve(ret);
       callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
     };
 
-    <span class="hljs-keyword">const</span> reject = err =&gt; {
+    <span class="hljs-keyword">const</span> reject = <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
       _reject(err);
       callback &amp;&amp; callback(err);
     };
@@ -150,7 +150,7 @@ a:hover {
   <span class="hljs-keyword">if</span> (callback) {
     doRequest(method, path, params, callback);
   } <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
       doRequest(method, path, params, (err, ret) =&gt; {
         err ? reject(err) : resolve(ret);
       });
@@ -166,7 +166,7 @@ a:hover {
 <p>或者我们可以写成这样：</p>
 <pre><code class="language-javascript">request(method, path, params, callback) {
   <span class="hljs-keyword">if</span> (!callback) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
       <span class="hljs-comment">// 重新调用当前函数</span>
       request(method, path, params, (err, ret) =&gt; {
         err ? reject(err) : resolve(ret);
@@ -205,8 +205,8 @@ process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
 });
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
-    setImmediate(() =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+    setImmediate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
       resolve(<span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
     });
   });
@@ -233,7 +233,7 @@ unhandledRejection [Error: haha]
 
     <span class="hljs-comment">// 包装 callback，在此函数中保证 callback 只会调用一次</span>
     <span class="hljs-comment">// 再次调用会直接忽略</span>
-    <span class="hljs-keyword">const</span> cb = (err, ret) =&gt; {
+    <span class="hljs-keyword">const</span> cb = <span class="hljs-function">(<span class="hljs-params">err, ret</span>) =&gt;</span> {
       <span class="hljs-keyword">if</span> (cb.isCalled) <span class="hljs-keyword">return</span>;
       cb.isCalled = <span class="hljs-literal">true</span>;
       callback(err, ret);
@@ -267,9 +267,9 @@ unhandledRejection [Error: haha]
       <span class="hljs-keyword">return</span> fn.apply(<span class="hljs-literal">null</span>, args);
     }
     <span class="hljs-comment">// 这是 promise 方式调用的</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
       <span class="hljs-comment">// 创建一个 callback 函数用来对接 promise 的 resolve 和 reject</span>
-      args.push((err, ret) =&gt; {
+      args.push(<span class="hljs-function">(<span class="hljs-params">err, ret</span>) =&gt;</span> {
         err ? reject(err) : resolve(ret);
       });
       fn.apply(<span class="hljs-literal">null</span>, args);
@@ -286,7 +286,7 @@ process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
 });
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg, callback</span>) </span>{
-  setImmediate(() =&gt; {
+  setImmediate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
     callback(<span class="hljs-literal">null</span>, <span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
   });
 }
@@ -309,10 +309,10 @@ Error: haha
 </code></pre>
 <p>说明：在回调函数中，先执行<code>console.log(err, ret)</code>输出了结果，然后<code>throw new Error('haha')</code>再抛出一个错误，这时因为外层没有捕捉到，使得进程因为异常而退出了，这正是我们所期望的。</p>
 <p>如果我们改用<code>promise</code>的方式去调用：</p>
-<pre><code class="language-javascript">promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>).then(ret =&gt; {
+<pre><code class="language-javascript">promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>).then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> {
   <span class="hljs-built_in">console</span>.log(<span class="hljs-literal">null</span>, ret);
   <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
-}).catch(err =&gt; {
+}).catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
   <span class="hljs-built_in">console</span>.log(err);
 });
 </code></pre>

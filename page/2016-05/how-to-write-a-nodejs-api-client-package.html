@@ -151,16 +151,16 @@ a:hover {
 <pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
 
 <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> CNodeJS({
-  token: <span class="hljs-string">'xxxxxxx'</span>, <span class="hljs-comment">// accessToken，可为空</span>
+  <span class="hljs-attr">token</span>: <span class="hljs-string">'xxxxxxx'</span>, <span class="hljs-comment">// accessToken，可为空</span>
 });
 
 <span class="hljs-comment">// promise 方式调用</span>
-client.getTopics({page: <span class="hljs-number">1</span>})
-  .then(list =&gt; <span class="hljs-built_in">console</span>.log(list))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(err));
+client.getTopics({<span class="hljs-attr">page</span>: <span class="hljs-number">1</span>})
+  .then(<span class="hljs-function"><span class="hljs-params">list</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(list))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.error(err));
 
 <span class="hljs-comment">// callback 方式调用</span>
-client.getTopics({page: <span class="hljs-number">1</span>}, (err, list) =&gt; {
+client.getTopics({<span class="hljs-attr">page</span>: <span class="hljs-number">1</span>}, (err, list) =&gt; {
   <span class="hljs-keyword">if</span> (err) {
     <span class="hljs-built_in">console</span>.error(err);
   } <span class="hljs-keyword">else</span> {
@@ -204,12 +204,12 @@ $ git init
   }
 
   request(method, path, params, callback) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((resolve, reject) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
 
       <span class="hljs-keyword">const</span> opts = {
-        method: method.toUpperCase(),
-        url: <span class="hljs-keyword">this</span>.options.url + path,
-        json: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">method</span>: method.toUpperCase(),
+        <span class="hljs-attr">url</span>: <span class="hljs-keyword">this</span>.options.url + path,
+        <span class="hljs-attr">json</span>: <span class="hljs-literal">true</span>,
       };
 
       <span class="hljs-keyword">if</span> (opts.method === <span class="hljs-string">'GET'</span> || opts.method === <span class="hljs-string">'HEAD'</span>) {
@@ -250,17 +250,17 @@ $ git init
 <span class="hljs-keyword">const</span> CNodeJS = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./'</span>);
 <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> CNodeJS();
 
-client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, {page: <span class="hljs-number">1</span>})
-  .then(ret =&gt; <span class="hljs-built_in">console</span>.log(ret))
-  .catch(err =&gt; <span class="hljs-built_in">console</span>.error(err));
+client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, {<span class="hljs-attr">page</span>: <span class="hljs-number">1</span>})
+  .then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(ret))
+  .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> <span class="hljs-built_in">console</span>.error(err));
 </code></pre>
 <p>5、执行命令<code>node test.js</code>即可看到类似以下的结果：</p>
-<pre><code class="language-javascript">{ success: <span class="hljs-literal">true</span>,
-  data:
-   [ { id: <span class="hljs-string">'572afb6b15c24e592c16e1e6'</span>,
-       author_id: <span class="hljs-string">'504c28a2e2b845157708cb61'</span>,
-       tab: <span class="hljs-string">'share'</span>,
-       content: <span class="hljs-string">'.......'</span>
+<pre><code class="language-javascript">{ <span class="hljs-attr">success</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">data</span>:
+   [ { <span class="hljs-attr">id</span>: <span class="hljs-string">'572afb6b15c24e592c16e1e6'</span>,
+       <span class="hljs-attr">author_id</span>: <span class="hljs-string">'504c28a2e2b845157708cb61'</span>,
+       <span class="hljs-attr">tab</span>: <span class="hljs-string">'share'</span>,
+       <span class="hljs-attr">content</span>: <span class="hljs-string">'.......'</span>
 ...
 </code></pre>
 <p>至此我们已经完成了一个 API 客户端最基本的功能，接下来根据不同的 API 封装一下<code>request</code>方法即可。</p>
@@ -268,14 +268,14 @@ client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string"
 <p>前文已经提到，<strong>「作为一个 SDK，应该使用最 common 的技术或规范来实现」</strong>，所以除了<code>promise</code>之外还需要提供<code>callback</code>的支持。</p>
 <p>1、修改文件<code>index.js</code>中<code>request(method, path, params) { }</code>定义部分：</p>
 <pre><code class="language-javascript">request(method, path, params, callback) {
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>((_resolve, _reject) =&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">_resolve, _reject</span>) =&gt;</span> {
 
-    <span class="hljs-keyword">const</span> resolve = ret =&gt; {
+    <span class="hljs-keyword">const</span> resolve = <span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> {
       _resolve(ret);
       callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
     };
 
-    <span class="hljs-keyword">const</span> reject = err =&gt; {
+    <span class="hljs-keyword">const</span> reject = <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
       _reject(err);
       callback &amp;&amp; callback(err);
     };
@@ -292,7 +292,7 @@ client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string"
 <li><strong>此处关于同时支持<code>promise</code>和<code>callback</code>的实现方式有问题，详情请阅读另一篇文章<a href="http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html">《如何让异步接口同时支持 callback 和 promise》</a></strong></li>
 </ul>
 <p>2、将文件<code>test.js</code>中<code>client.request()</code>部分改为 callback 方式调用：</p>
-<pre><code class="language-javascript">client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, {page: <span class="hljs-number">1</span>}, (err, ret) =&gt; {
+<pre><code class="language-javascript">client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, {<span class="hljs-attr">page</span>: <span class="hljs-number">1</span>}, (err, ret) =&gt; {
   <span class="hljs-keyword">if</span> (err) {
     <span class="hljs-built_in">console</span>.error(err);
   } <span class="hljs-keyword">else</span> {
@@ -315,20 +315,20 @@ client.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string"
 }
 </code></pre>
 <p>但其返回的结果是这样结构的：</p>
-<pre><code class="language-javascript">{ success: <span class="hljs-literal">true</span>,
-  data: []
+<pre><code class="language-javascript">{ <span class="hljs-attr">success</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">data</span>: []
 }
 </code></pre>
 <p>要取得结果还要读取里面的<code>data</code>，针对这种情况我们可以改成这样：</p>
 <pre><code class="language-javascript">getTopics(params, callback) {
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.request(<span class="hljs-string">'GET'</span>, <span class="hljs-string">'topics'</span>, params, callback)
-             .then(ret =&gt; <span class="hljs-built_in">Promise</span>.resolve(ret.data));
+             .then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> <span class="hljs-built_in">Promise</span>.resolve(ret.data));
 }
 </code></pre>
 <p><code>getTopicDetail()</code>和<code>testToken()</code>可以这样实现：</p>
 <pre><code class="language-javascript">getTopicDetail(params, callback) {
   <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.request(<span class="hljs-string">'GET'</span>,<span class="hljs-string">`topic/<span class="hljs-subst">${params.id}</span>`</span>, params, callback)
-             .then(ret =&gt; <span class="hljs-built_in">Promise</span>.resolve(ret.data));
+             .then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> <span class="hljs-built_in">Promise</span>.resolve(ret.data));
 }
 
 testToken(callback) {

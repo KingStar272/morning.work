@@ -4,16 +4,16 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import path from 'path';
-import fs from 'fs';
-import rd from 'rd';
-import mkdirp from 'mkdirp';
-import tinyliquid from 'tinyliquid';
-import MarkdownIt from 'markdown-it';
-import hljs from 'highlight.js';
-import RSS from 'rss';
-import xss from 'xss';
-import authors from './authors';
+const path = require('path');
+const fs = require('fs');
+const rd = require('rd');
+const mkdirp = require('mkdirp');
+const tinyliquid = require('tinyliquid');
+const MarkdownIt = require('markdown-it');
+const hljs = require('highlight.js');
+const RSS = require('rss');
+const xss = require('xss');
+const authors = require('./authors');
 
 // 初始化Markdown渲染器
 let md = new MarkdownIt({
@@ -52,7 +52,7 @@ baseTplContext.onInclude(function (filename, callback) {
 });
 
 // 解析文章内容
-export function readFile(f) {
+function readFile(f) {
   let data = fs.readFileSync(f).toString().replace(/\r/g, '');
   data = prettyContent(data);
   let i = data.indexOf('\n\n');
@@ -164,7 +164,7 @@ function getPostList() {
 }
 
 // 渲染文章列表
-export function renderPostList(list, callback, tplList) {
+function renderPostList(list, callback, tplList) {
   list = list || getPostList();
   tplList = tplList || tinyliquid.parse(fs.readFileSync(path.resolve(__dirname, 'tpl_list.html')).toString());
   let context = tinyliquid.newContext({locals: {list: list}});
@@ -186,7 +186,7 @@ export function renderPostList(list, callback, tplList) {
 }
 
 // 渲染文章页面
-export function renderPost(item, callback, tplItem) {
+function renderPost(item, callback, tplItem) {
   if (typeof item === 'string') {
     item = readFile(item);
   }
@@ -205,7 +205,7 @@ export function renderPost(item, callback, tplItem) {
 }
 
 // 渲染RSS
-export function renderFeed(list, callback) {
+function renderFeed(list, callback) {
   list = list || getPostList();
 
   var feed = new RSS({
@@ -279,3 +279,9 @@ async function startBuild() {
 if (!module.parent) {
   startBuild();
 }
+
+
+exports.readFile = readFile;
+exports.renderPostList = renderPostList;
+exports.renderPost = renderPost;
+exports.renderFeed = renderFeed;

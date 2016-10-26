@@ -127,32 +127,32 @@ a:hover {
 <h2><a id="_7"></a>通过环境变量指定配置</h2>
 <p><a href="http://baike.baidu.com/view/95930.htm">环境变量（environment variables）</a> 一般是指在操作系统中用来指定操作系统运行环境的一些参数，如：临时文件夹位置和系统文件夹位置等。比如<code>HOME</code>表示当前用户的根目录，<code>TMPDIR</code>表示系统临时目录等，我们可以通过设置一些特定的环境变量，程序在启动时可以读取这些环境变量并做相应的初始化动作。</p>
 <p>在 Node.js 中可以通过<code>process.env</code>来访问当前的环境变量信息，比如：</p>
-<pre><code class="language-javascript">{ PATH: <span class="hljs-string">'/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'</span>,
-  TMPDIR: <span class="hljs-string">'/var/folders/rs/g4wqpvvj7bj08t35dxvfm0rr0000gn/T/'</span>,
-  LOGNAME: <span class="hljs-string">'glen'</span>,
-  XPC_FLAGS: <span class="hljs-string">'0x0'</span>,
-  HOME: <span class="hljs-string">'/Users/glen'</span>,
-  TERM: <span class="hljs-string">'xterm-256color'</span>,
-  COLORFGBG: <span class="hljs-string">'7;0'</span>,
-  USER: <span class="hljs-string">'glen'</span>,
-  ITERM_PROFILE: <span class="hljs-string">'Glen'</span>,
-  TERM_PROGRAM: <span class="hljs-string">'iTerm.app'</span>,
-  XPC_SERVICE_NAME: <span class="hljs-string">'0'</span>,
-  SHELL: <span class="hljs-string">'/bin/zsh'</span>,
-  ITERM_SESSION_ID: <span class="hljs-string">'w0t4p0'</span>,
-  PWD: <span class="hljs-string">'/Users/glen/work'</span>,
-  __CF_USER_TEXT_ENCODING: <span class="hljs-string">'0x1F5:0x0:0x0'</span>,
-  LC_CTYPE: <span class="hljs-string">'UTF-8'</span>,
-  SHLVL: <span class="hljs-string">'1'</span>,
-  OLDPWD: <span class="hljs-string">'/Users/glen/work'</span>,
-  ZSH: <span class="hljs-string">'/Users/glen/.oh-my-zsh'</span>,
-  PAGER: <span class="hljs-string">'less'</span>,
-  LESS: <span class="hljs-string">'-R'</span>,
-  LSCOLORS: <span class="hljs-string">'Gxfxcxdxbxegedabagacad'</span>,
-  AUTOJUMP_SOURCED: <span class="hljs-string">'1'</span>,
-  AUTOJUMP_ERROR_PATH: <span class="hljs-string">'/Users/glen/Library/autojump/errors.log'</span>,
-  RUST_SRC_PATH: <span class="hljs-string">'/Users/glen/work/source/rust/src'</span>,
-  _: <span class="hljs-string">'/usr/local/bin/node'</span> }
+<pre><code class="language-javascript">{ <span class="hljs-attr">PATH</span>: <span class="hljs-string">'/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'</span>,
+  <span class="hljs-attr">TMPDIR</span>: <span class="hljs-string">'/var/folders/rs/g4wqpvvj7bj08t35dxvfm0rr0000gn/T/'</span>,
+  <span class="hljs-attr">LOGNAME</span>: <span class="hljs-string">'glen'</span>,
+  <span class="hljs-attr">XPC_FLAGS</span>: <span class="hljs-string">'0x0'</span>,
+  <span class="hljs-attr">HOME</span>: <span class="hljs-string">'/Users/glen'</span>,
+  <span class="hljs-attr">TERM</span>: <span class="hljs-string">'xterm-256color'</span>,
+  <span class="hljs-attr">COLORFGBG</span>: <span class="hljs-string">'7;0'</span>,
+  <span class="hljs-attr">USER</span>: <span class="hljs-string">'glen'</span>,
+  <span class="hljs-attr">ITERM_PROFILE</span>: <span class="hljs-string">'Glen'</span>,
+  <span class="hljs-attr">TERM_PROGRAM</span>: <span class="hljs-string">'iTerm.app'</span>,
+  <span class="hljs-attr">XPC_SERVICE_NAME</span>: <span class="hljs-string">'0'</span>,
+  <span class="hljs-attr">SHELL</span>: <span class="hljs-string">'/bin/zsh'</span>,
+  <span class="hljs-attr">ITERM_SESSION_ID</span>: <span class="hljs-string">'w0t4p0'</span>,
+  <span class="hljs-attr">PWD</span>: <span class="hljs-string">'/Users/glen/work'</span>,
+  <span class="hljs-attr">__CF_USER_TEXT_ENCODING</span>: <span class="hljs-string">'0x1F5:0x0:0x0'</span>,
+  <span class="hljs-attr">LC_CTYPE</span>: <span class="hljs-string">'UTF-8'</span>,
+  <span class="hljs-attr">SHLVL</span>: <span class="hljs-string">'1'</span>,
+  <span class="hljs-attr">OLDPWD</span>: <span class="hljs-string">'/Users/glen/work'</span>,
+  <span class="hljs-attr">ZSH</span>: <span class="hljs-string">'/Users/glen/.oh-my-zsh'</span>,
+  <span class="hljs-attr">PAGER</span>: <span class="hljs-string">'less'</span>,
+  <span class="hljs-attr">LESS</span>: <span class="hljs-string">'-R'</span>,
+  <span class="hljs-attr">LSCOLORS</span>: <span class="hljs-string">'Gxfxcxdxbxegedabagacad'</span>,
+  <span class="hljs-attr">AUTOJUMP_SOURCED</span>: <span class="hljs-string">'1'</span>,
+  <span class="hljs-attr">AUTOJUMP_ERROR_PATH</span>: <span class="hljs-string">'/Users/glen/Library/autojump/errors.log'</span>,
+  <span class="hljs-attr">RUST_SRC_PATH</span>: <span class="hljs-string">'/Users/glen/work/source/rust/src'</span>,
+  <span class="hljs-attr">_</span>: <span class="hljs-string">'/usr/local/bin/node'</span> }
 </code></pre>
 <h3><a id="_42"></a>设置环境变量</h3>
 <p>环境变量的名字一般为大写，多个单词之间可通过下划线来连接。</p>
@@ -176,7 +176,7 @@ a:hover {
   <span class="hljs-comment">// debug 为 true 时，用于本地调试</span>
   debug: <span class="hljs-literal">true</span>,
 
-  name: <span class="hljs-string">'Nodeclub'</span>, <span class="hljs-comment">// 社区名字</span>
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'Nodeclub'</span>, <span class="hljs-comment">// 社区名字</span>
   description: <span class="hljs-string">'CNode：Node.js 专业中文社区'</span>, <span class="hljs-comment">// 社区的描述</span>
   keywords: <span class="hljs-string">'nodejs, node, express, connect, socket.io'</span>,
 
@@ -194,13 +194,13 @@ a:hover {
 }
 
 app.use(session({
-  secret: config.session_secret,
-  store: <span class="hljs-keyword">new</span> RedisStore({
-    port: config.redis_port,
-    host: config.redis_host,
+  <span class="hljs-attr">secret</span>: config.session_secret,
+  <span class="hljs-attr">store</span>: <span class="hljs-keyword">new</span> RedisStore({
+    <span class="hljs-attr">port</span>: config.redis_port,
+    <span class="hljs-attr">host</span>: config.redis_host,
   }),
-  resave: <span class="hljs-literal">true</span>,
-  saveUninitialized: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">resave</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">saveUninitialized</span>: <span class="hljs-literal">true</span>,
 }))
 
 app.listen(config.port, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
@@ -217,8 +217,8 @@ app.listen(config.port, <span class="hljs-function"><span class="hljs-keyword">f
   <span class="hljs-comment">// 文件上传配置</span>
   <span class="hljs-comment">// 注：如果填写 qn_access，则会上传到 7 牛，以下配置无效</span>
   upload: {
-    path: path.join(__dirname, <span class="hljs-string">'public/upload/'</span>),
-    url: <span class="hljs-string">'/public/upload/'</span>
+    <span class="hljs-attr">path</span>: path.join(__dirname, <span class="hljs-string">'public/upload/'</span>),
+    <span class="hljs-attr">url</span>: <span class="hljs-string">'/public/upload/'</span>
   },
 }
 </code></pre>
@@ -367,9 +367,9 @@ app.listen(config.port, <span class="hljs-function"><span class="hljs-keyword">f
 <span class="hljs-built_in">console</span>.log(config);
 </code></pre>
 <p>执行程序，可看到其输出的结果为默认的配置：</p>
-<pre><code class="language-javascript">{ Customer:
-   { dbConfig: { host: <span class="hljs-string">'localhost'</span>, port: <span class="hljs-number">5984</span>, dbName: <span class="hljs-string">'customers'</span> },
-     credit: { initialLimit: <span class="hljs-number">100</span>, initialDays: <span class="hljs-number">1</span> } } }
+<pre><code class="language-javascript">{ <span class="hljs-attr">Customer</span>:
+   { <span class="hljs-attr">dbConfig</span>: { <span class="hljs-attr">host</span>: <span class="hljs-string">'localhost'</span>, <span class="hljs-attr">port</span>: <span class="hljs-number">5984</span>, <span class="hljs-attr">dbName</span>: <span class="hljs-string">'customers'</span> },
+     <span class="hljs-attr">credit</span>: { <span class="hljs-attr">initialLimit</span>: <span class="hljs-number">100</span>, <span class="hljs-attr">initialDays</span>: <span class="hljs-number">1</span> } } }
 </code></pre>
 <p>假如要使用<code>production</code>的配置，则使用以下命令启动：</p>
 <pre><code class="language-bash">$ <span class="hljs-built_in">export</span> NODE_ENV=production &amp;&amp; node 1.js

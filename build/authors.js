@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   '老雷': {
     default: {
       name: '老雷',
@@ -20,6 +20,6 @@ export default {
       `,
       link: 'http://ucdok.com',
       avatar: '/images/logo_lei.jpg',
-    }
-  }
+    },
+  },
 };

@@ -4,14 +4,13 @@
  * @author Zongmin Lei <leizongmin@gmail.com>
  */
 
-import path from 'path';
-import fs from 'fs';
-import express from 'express';
-import serveStatic from 'serve-static';
-import open from 'open';
-import {readFile, renderPost, renderPostList, renderFeed} from './index';
+const path = require('path');
+const express = require('express');
+const serveStatic = require('serve-static');
+const open = require('open');
+const { readFile, renderPost, renderPostList, renderFeed } = require('./index');
 
-let app = express();
+const app = express();
 app.get('/', (req, res, next) => {
   renderPostList(false, next);
 });
@@ -19,7 +18,7 @@ app.get('/rss.xml', (req, res, next) => {
   renderFeed(false, next);
 });
 app.get('/page/*.html', (req, res, next) => {
-  let f = path.resolve(__dirname, `../source/${req.params[0]}.md`);
+  const f = path.resolve(__dirname, `../source/${ req.params[0] }.md`);
   renderPost(Object.assign({ is_preview: true }, readFile(f)), next);
 });
 

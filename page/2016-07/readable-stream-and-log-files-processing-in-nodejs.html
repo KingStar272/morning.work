@@ -128,7 +128,7 @@ a:hover {
 <p>所以，我们要实现一个实现了<code>Readable Stream</code>接口的<code>tailf</code>，在本文中我给它起了个名字叫<code>TailStream</code>。</p>
 <p>本文所实现的<code>TailStream</code>已加入<code>lei-stream</code>模块，使用方法为：</p>
 <pre><code class="language-javascript"><span class="hljs-comment">// 使用前先执行 npm install lei-stream 安装模块</span>
-<span class="hljs-keyword">const</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).tailStream(file, {position: <span class="hljs-string">'end'</span>});
+<span class="hljs-keyword">const</span> stream = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).tailStream(file, {<span class="hljs-attr">position</span>: <span class="hljs-string">'end'</span>});
 </code></pre>
 <p><code>lei-stream</code>模块详细介绍请参考这里：<a href="https://github.com/leizongmin/node-lei-stream">https://github.com/leizongmin/node-lei-stream</a></p>
 </blockquote>
@@ -414,7 +414,7 @@ _openFile() {
     <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err);
     <span class="hljs-keyword">this</span>._fd = fd;
 
-    <span class="hljs-keyword">const</span> done = () =&gt; {
+    <span class="hljs-keyword">const</span> done = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
       <span class="hljs-comment">// 定位完成后开始监听文件变化和尝试读取数据</span>
       <span class="hljs-keyword">this</span>._watchFile();
       <span class="hljs-keyword">this</span>._ready = <span class="hljs-literal">true</span>;
@@ -433,7 +433,7 @@ _openFile() {
 <p>说明：这里主要的改动为，打开文件后先判断如果<code>this._position = 'end'</code>，则调用<code>this._goToEnd()</code>定位到文件尾部，否则就可以直接尝试读取文件了。</p>
 <p>如果在创建<code>TailStream</code>实例的时候指定<code>position = 'end'</code>，比如这样：</p>
 <pre><code class="language-javascript"><span class="hljs-keyword">const</span> file = process.argv[<span class="hljs-number">2</span>];
-<span class="hljs-keyword">const</span> s = <span class="hljs-keyword">new</span> TailStream({file, position: <span class="hljs-string">'end'</span>});
+<span class="hljs-keyword">const</span> s = <span class="hljs-keyword">new</span> TailStream({file, <span class="hljs-attr">position</span>: <span class="hljs-string">'end'</span>});
 </code></pre>
 <p>重新运行测试程序时，我们应该能发现启动后并没有输出任何信息，因为此时已经定位到末尾，并不会输出文件前部分的内容，仅当继续往文件写入内容时测试程序才会将内容显示出来。</p>
 <h2><a id="_354"></a>停止</h2>
@@ -489,14 +489,14 @@ _tryRead() {
 <span class="hljs-keyword">const</span> writeLine = <span class="hljs-built_in">require</span>(<span class="hljs-string">'lei-stream'</span>).writeLine;
 
 <span class="hljs-comment">// 创建写日志文件流</span>
-<span class="hljs-keyword">const</span> s = writeLine(<span class="hljs-string">'test.log'</span>, {encoding: <span class="hljs-string">'json'</span>});
+<span class="hljs-keyword">const</span> s = writeLine(<span class="hljs-string">'test.log'</span>, {<span class="hljs-attr">encoding</span>: <span class="hljs-string">'json'</span>});
 
 <span class="hljs-comment">// 模拟日志输出</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">nextLog</span>(<span class="hljs-params"></span>) </span>{
   s.write({
-    time: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(),
-    loadavg: os.loadavg(),
-    memoryUsage: process.memoryUsage(),
+    <span class="hljs-attr">time</span>: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(),
+    <span class="hljs-attr">loadavg</span>: os.loadavg(),
+    <span class="hljs-attr">memoryUsage</span>: process.memoryUsage(),
   });
 }
 setInterval(nextLog, <span class="hljs-number">1000</span>);
@@ -515,10 +515,10 @@ setInterval(nextLog, <span class="hljs-number">1000</span>);
 
 <span class="hljs-comment">// 创建按行读取日志文件流</span>
 <span class="hljs-keyword">const</span> s = readLine(<span class="hljs-keyword">new</span> TailStream({
-  file: <span class="hljs-string">'test.log'</span>,  <span class="hljs-comment">// 日志文件名</span>
+  <span class="hljs-attr">file</span>: <span class="hljs-string">'test.log'</span>,  <span class="hljs-comment">// 日志文件名</span>
   position: <span class="hljs-string">'end'</span>,   <span class="hljs-comment">// 定位到尾部</span>
 }), {
-  encoding: <span class="hljs-string">'json'</span>,  <span class="hljs-comment">// 使用 JSON 编码</span>
+  <span class="hljs-attr">encoding</span>: <span class="hljs-string">'json'</span>,  <span class="hljs-comment">// 使用 JSON 编码</span>
   autoNext: <span class="hljs-literal">false</span>,   <span class="hljs-comment">// 不自动读下一行</span>
 });
 
@@ -564,7 +564,7 @@ s.on(<span class="hljs-string">'data'</span>, data =&gt; {
     <span class="hljs-keyword">this</span>._file = options.file;
     <span class="hljs-comment">// 执行 tail 命令</span>
     <span class="hljs-keyword">this</span>._process = child_process.spawn(<span class="hljs-string">'tail'</span>, [<span class="hljs-string">'-c'</span>, <span class="hljs-string">'0'</span>, <span class="hljs-string">'-f'</span>, options.file], {
-      cwd: __dirname,
+      <span class="hljs-attr">cwd</span>: __dirname,
     });
     <span class="hljs-keyword">this</span>._process.on(<span class="hljs-string">'error'</span>, err =&gt; <span class="hljs-keyword">this</span>.emit(<span class="hljs-string">'error'</span>, err));
     <span class="hljs-comment">// 将收到的数据推送到缓冲区</span>
