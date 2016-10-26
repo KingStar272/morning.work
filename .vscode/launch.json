@@ -5,14 +5,15 @@
       "name": "Launch",
       "type": "node2",
       "request": "launch",
-      "program": "${workspaceRoot}/examples/2016-10/async/test.js",
+      "program": "${workspaceRoot}/build/index.js",
       "stopOnEntry": false,
       "args": [],
       "cwd": "${workspaceRoot}",
       "preLaunchTask": null,
       "runtimeExecutable": null,
       "runtimeArgs": [
-        "--nolazy"
+        "--nolazy",
+        "--harmony_async_await"
       ],
       "env": {
         "NODE_ENV": "development"
