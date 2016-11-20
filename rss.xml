@@ -1,4 +1,296 @@
-<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Wed, 26 Oct 2016 05:51:39 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[基于 generator 与 promise 的异步编程解决方案]]></title><description><![CDATA[<h2><a id="_2"></a>前言</h2>
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0"><channel><title><![CDATA[早起搬砖 morning.work]]></title><description><![CDATA[早起搬砖 morning.work]]></description><link>http://morning.work</link><generator>RSS for Node</generator><lastBuildDate>Sun, 20 Nov 2016 15:02:45 GMT</lastBuildDate><atom:link href="http://morning.work/rss.xml" rel="self" type="application/rss+xml"/><language><![CDATA[zh-CN,en]]></language><ttl>60</ttl><item><title><![CDATA[如何打造一款属于自己的 Visual Studio Code 颜色主题]]></title><description><![CDATA[<h2><a id="_3"></a>前言</h2>
+<p><a href="https://code.visualstudio.com">Visual Studio Code</a> 是我在最近一年中最喜欢的一款编辑器，微软每一次的更新都会给大家带来惊喜，更是令人愈加喜欢。之前一直使用内置的颜色主题<code>Light+</code>和<code>Dark+</code>，但近来突然觉得前者颜色区分度不高，一眼看上去就密密麻麻的一对代码，而后者则是被选中的文本背景色太浅，跟编辑器的背景颜色很相似，很难区分出来，于是萌生了要制作一款自己的颜色主题的想法。经过几天的研究，终于捣鼓出来了<a href="https://github.com/leizongmin/lei-theme-vscode">Lei Theme</a>系列颜色主题。</p>
+<p>先来看看其中两款主题的效果：</p>
+<p><img src="https://github.com/leizongmin/lei-theme-vscode/raw/master/screen/lei-light.png" alt="lei-light"></p>
+<p><img src="https://github.com/leizongmin/lei-theme-vscode/raw/master/screen/lei-dark-blue.png" alt="lei-dark-blue"></p>
+<p>一般来说，我们并不需要重头来制作一款颜色主题，首先需要选择一款自己最喜欢的颜色主题（或者说先找一款与自己的想法最相似的颜色主题），然后在此基础上进行些许调整即可。另外如果想将颜色主题发布到微软的 Visual Studio Code 扩展商店上，还需要注册一个微软开发者账号，并通过<a href="https://www.npmjs.com/package/vsce">vsce</a>工具来发布出去，下文会对此进行详细说明。</p>
+<h2><a id="tmTheme__16"></a>tmTheme 格式的颜色主题</h2>
+<p>TextMate 曾是多年前最流行的代码编辑器之一，其颜色主题的文件后缀为<code>.tmTheme</code>，在本文中我们将其简称为<code>tmTheme</code>格式。Visual Studio Studio 的颜色主题采用的是标准的 TextMate 主题格式，我们可以参考这篇文章<a href="http://www.apeth.com/nonblog/stories/textmatebundle.html">Writing a TextMate Grammar: Some Lessons Learned</a>，大概可以理解为这样：<strong>编辑器对代码进行解析后，会为每个元素指定一个<code>scope</code>，这个<code>scope</code>即表明此元素是一个关键字还是一个常量，又或者是一个标点符号，通过<code>tmTheme</code>格式的文件来定义相应<code>scope</code>的文字样式。</strong></p>
+<p>根据该文章可知道以下是常见的<code>scope</code>列表：</p>
+<pre><code>comment
+constant
+constant.character.escape
+constant.language
+constant.numeric
+declaration.section entity.name.section
+declaration.tag
+deco.folding
+entity.name.function
+entity.name.tag
+entity.name.type
+entity.other.attribute-name
+entity.other.inherited-class
+invalid
+invalid.deprecated.trailing-whitespace
+keyword
+keyword.control.import
+keyword.operator.js
+markup.heading
+markup.list
+markup.quote
+meta.embedded
+meta.preprocessor
+meta.section entity.name.section
+meta.tag
+storage
+storage.type.method
+string
+string source
+string.unquoted
+support.class
+support.constant
+support.function
+support.type
+support.variable
+text source
+variable
+variable.language
+variable.other
+variable.parameter
+</code></pre>
+<p>以下是一个<code>tmTheme</code>格式文件的代码片段：</p>
+<pre><code class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>Keyword<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>scope<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>keyword.control,keyword.other,variable.language,storage.type,storage.modifier,keyword.function<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>settings<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>foreground<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>#0808D1<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>Invalid<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>scope<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>invalid<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>settings<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>foreground<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>#cd3131<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+</code></pre>
+<p>从上面的代码可以看出，其实这个<code>tmTheme</code>格式的文件似乎也挺简单的，然而初学者而言，难的是<strong>不知道<code>scope</code>怎么写</strong>，下文会循序渐进地对此进行说明。</p>
+<h2><a id="_94"></a>创建颜色主题项目</h2>
+<p>根据官方文档，我们先执行以下命令安装<a href="http://yeoman.io/">Yeoman</a>代码生成工具来创建一个默认的颜色主题项目：</p>
+<pre><code class="language-bash">$ npm install -g yo generator-code
+</code></pre>
+<p>安装完毕之后，进入<code>~/.vscode/extensions</code>目录执行以下命令启动生成器：</p>
+<pre><code class="language-bash">$ yo code
+</code></pre>
+<p>说明：<code>~/.vscode/extensions</code>表示用户根目录下的<code>.vscode/extensions</code>目录，之所以在此处新建项目主要是为了不用发布到扩展商店也可以在本地进行使用，并且方便调试。</p>
+<p>选择<code>New Color Theme</code>创建颜色主题项目：</p>
+<pre><code>     _-----_     ╭──────────────────────────╮
+    |       |    │   Welcome to the Visual  │
+    |--(o)--|    │   Studio Code Extension  │
+   `---------´   │        generator!        │
+    ( _´U`_ )    ╰──────────────────────────╯
+    /___A___\   /
+     |  ~  |
+   __'.___.'__
+ ´   `  |° ´ Y `
+
+? What type of extension do you want to create?
+  New Extension (TypeScript)
+  New Extension (JavaScript)
+❯ New Color Theme
+  New Language Support
+  New Code Snippets
+</code></pre>
+<p>接着需要在命令行下交互式地填写一些问题，以下是我在执行过程中填写的内容：</p>
+<pre><code>? What type of extension do you want to create? New Color Theme
+URL (http, https) or file name of the tmTheme file, e.g., http://www.monokai.nl/blog/wp-content/asdev/Monokai.tmTheme.
+? URL or file name: http://www.monokai.nl/blog/wp-content/asdev/Monokai.tmTheme
+? What's the name of your extension? my-theme
+? What's the identifier of your extension? my-theme
+? What's the description of your extension?
+? What's your publisher name? leizongmin
+? What's the name of your theme shown to the user? my-theme
+? Select a base theme: Dark
+</code></pre>
+<p>需要说明的是，第一个问题<code>URL (http, https) or file name of the tmTheme file</code>需要提供一个已有的<code>tmTheme</code>文件作为基础，此处可直接复制示例中的<code>URL</code>。</p>
+<p>稍等片刻，工具自动生成了项目之后，会提示我们执行以下命令开始编辑代该项目：</p>
+<pre><code>$ cd my-theme
+$ code .
+</code></pre>
+<p>以下是生成的项目的文件结构：</p>
+<pre><code>.
+├── README.md
+├── package.json （扩展信息文件）
+├── themes
+│   └── Monokai.tmTheme （颜色主题定义文件）
+└── vsc-extension-quickstart.md （帮助文件，上面详细说明操作步骤）
+</code></pre>
+<p>首先看看<code>package.json</code>文件：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"my-theme"</span>,
+  <span class="hljs-attr">"displayName"</span>: <span class="hljs-string">"my-theme"</span>,
+  <span class="hljs-attr">"description"</span>: <span class="hljs-string">""</span>,
+  <span class="hljs-attr">"version"</span>: <span class="hljs-string">"0.0.1"</span>,
+  <span class="hljs-attr">"publisher"</span>: <span class="hljs-string">"leizongmin"</span>,
+  <span class="hljs-attr">"engines"</span>: {
+    <span class="hljs-attr">"vscode"</span>: <span class="hljs-string">"^1.5.0"</span>
+  },
+  <span class="hljs-attr">"categories"</span>: [
+    <span class="hljs-string">"Themes"</span>
+  ],
+  <span class="hljs-attr">"contributes"</span>: {
+    <span class="hljs-attr">"themes"</span>: [
+      {
+        <span class="hljs-attr">"label"</span>: <span class="hljs-string">"my-theme"</span>,
+        <span class="hljs-attr">"uiTheme"</span>: <span class="hljs-string">"vs-dark"</span>,
+        <span class="hljs-attr">"path"</span>: <span class="hljs-string">"./themes/Monokai.tmTheme"</span>
+      }
+    ]
+  }
+}
+</code></pre>
+<p><code>contributes</code>中定义了此扩展项目包含的内容，其中<code>themes</code>表示颜色主题，是一个数组，我们可在此处放入多个颜色主题。以下是<code>themes</code>中每个元素的定义：</p>
+<ul>
+<li><code>label</code>表示颜色主题的名称，即在<code>Preferences: Color Theme</code>列表中显示的名称</li>
+<li><code>uiTheme</code>是指编辑器 UI 的颜色，可选为<code>vs-light</code>和<code>vs-dark</code>，如果我们的颜色主题是深色系的，就选<code>vs-dark</code></li>
+<li><code>path</code>是<code>tmTheme</code>文件的位置</li>
+</ul>
+<p>为了避免混淆，我们可以将文件<code>./themes/Monokai.tmTheme</code>改名为<code>./themes/my-theme.tmTheme</code>，并修改<code>package.json</code>相应的位置。</p>
+<p>现在在 Visual Studio Code 中按快捷键<code>⌘Command + Shift + P</code>打开命令面板（Windows / Linux 系统应为<code>Ctrl + Shift + P</code>），输入<code>Color Theme</code>并按回车，再中列表中选择<code>my-theme</code>按回车即可使用刚刚创建的新颜色主题：</p>
+<p><img src="../../images/2016-11/my-theme-1.png" alt="my-theme"></p>
+<p>从上图可以看出，这其实就是一个标准的<code>Monokai</code>主题。</p>
+<h2><a id="tmTheme__207"></a>tmTheme 编辑器</h2>
+<p>从生成的<code>vsc-extension-quickstart.md</code>文件中我们得知有一款 Web 版的在线 <a href="https://tmtheme-editor.herokuapp.com">tmTheme 编辑器</a>，通过该编辑器可以进行可视化地编辑 tmTheme 文件。比如以下视频是更改<code>String</code>和<code>Keyword</code>颜色的示例：</p>
+<p><video src="../../images/2016-11/tmtheme-editor-change-color.mp4" controls width="100%" loop="loop">你的浏览器不支持 <code>video</code> 标签.</video></p>
+<p>主要的操作方法为：</p>
+<ul>
+<li>在左侧<code>Scope Name</code>列表中选中一项，然后双击<code>FG</code>列上的颜色（FG 表示 foreground，即前景颜色），然后选择要更改的颜色即可，可以看到代码预览区域的颜色会实时改变</li>
+<li>点击顶部栏的【Download】按钮即可下载编辑后的<code>tmTheme</code>文件，直接将其覆盖项目中的<code>./themes/my-theme.tmTheme</code>文件即可</li>
+<li>在 Visual Studio Code 中按快捷键<code>⌘Command + Shift + P</code>打开命令面板，输入<code>Reload Window</code>并按回车即可看到修改后的颜色主题</li>
+</ul>
+<p>但是，在一些实现细节上，Visual Studio Code 并不与该 tmTheme 编辑器一致，所以我们在该在线编辑器上看到的效果可能与 Visual Studio Code 上稍有不同，所以我们可能还需要直接编辑<code>tmTheme</code>文件。</p>
+<h2><a id="_scope__222"></a>如何知道 scope 是什么</h2>
+<p>下面是这款主题中，模板字符串的渲染效果：</p>
+<p><img src="../../images/2016-11/my-theme-2.png" alt="template-string"></p>
+<p>从图中可以看到，模板字符串中的字符串和变量的颜色都是一样的，而假如我想改变模板字符串中变量的颜色，却是无从下手，因为即使翻遍 TextMate 官方文档中关于 tmTheme 的介绍也找不到模板字符串的<code>scope</code>是什么。</p>
+<p>其实我们可以借助 Visual Studio Code 的开发者工具来找到任意元素的<code>scope</code>，以下是演示视频：</p>
+<p><video src="../../images/2016-11/vscode-developer-tools.mp4" controls width="100%" loop="loop">你的浏览器不支持 <code>video</code> 标签.</video></p>
+<p>从开发者工具中我们可以看到模板字符串中<code>${</code>的样式是：</p>
+<pre><code>token block ts punctuation definition meta string begin function arrow new expr template expression template-expression
+</code></pre>
+<p>而模板变量<code>file</code>的样式是：</p>
+<pre><code>token block ts meta variable other readwrite string function arrow new expr template expression
+</code></pre>
+<p>再结合文首对于<code>scope</code>介绍的文章，我们假设我们要的<code>scope</code>名为<code>template.expression</code>。接着打开文件<code>./themes/my-theme.tmTheme</code>，仿照该文件的格式，我们添加以下代码在对应位置：</p>
+<pre><code class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>Template Expression<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>scope<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>template.expression<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>settings<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>foreground<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>#23C4FA<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+</code></pre>
+<p>再按快捷键<code>⌘Command + Shift + P</code>打开命令面板，执行<code>Reload Window</code>，此时可以看到模板字符串中的变量颜色跟字符串的颜色不一样了：</p>
+<p><img src="../../images/2016-11/my-theme-3.png" alt="template-string"></p>
+<h2><a id="tmTheme__267"></a>tmTheme 文件处理规则</h2>
+<p>尽管已经实现了我们想要的效果，相信阅读到这里的时候很多人还是一头雾水，并不知道为何<code>scope</code>是<code>template.expression</code>。我在刚开始时虽然也猜想到是像 CSS 的类选择器一样，但还是不太确定，直到阅读到 Visual Studio Code 的源码后才得以印证。</p>
+<p>以下是<a href="https://github.com/Microsoft/vscode">Visual Studio Code</a>源码中负责处理<code>tmTheme</code>的<code>scope</code>的程序文件<code>src/vs/workbench/services/themes/electron-browser/stylesContributions.ts</code>（<a href="https://github.com/Microsoft/vscode/blob/master/src/vs/workbench/services/themes/electron-browser/stylesContributions.ts#L93">点此查看完整文件</a>）:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TokenStylesContribution {
+
+  <span class="hljs-keyword">public</span> contributeStyles(themeId: <span class="hljs-built_in">string</span>, themeDocument: IThemeDocument, cssRules: <span class="hljs-built_in">string</span>[]): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">let</span> theme = <span class="hljs-keyword">new</span> Theme(themeId, themeDocument);
+    theme.getSettings().forEach((s: IThemeSetting, index, arr) =&gt; {
+      <span class="hljs-comment">// @martin TS(2.0.2) - s.scope is already a string[] so no need for all this checking.</span>
+      <span class="hljs-comment">// However will add a cast at split to keep semantic in case s.scope is wrongly typed.</span>
+      <span class="hljs-keyword">let</span> scope: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">string</span>[] = s.scope;
+      <span class="hljs-keyword">let</span> settings = s.settings;
+      <span class="hljs-keyword">if</span> (scope &amp;&amp; settings) {
+        <span class="hljs-keyword">let</span> rules = <span class="hljs-built_in">Array</span>.isArray(scope) ? &lt;<span class="hljs-built_in">string</span>[]&gt;scope : (scope as <span class="hljs-built_in">string</span>).split(<span class="hljs-string">','</span>);
+        <span class="hljs-keyword">let</span> statements = <span class="hljs-keyword">this</span>._settingsToStatements(settings);
+        rules.forEach(rule =&gt; {
+          rule = rule.trim().replace(<span class="hljs-regexp">/ /g</span>, <span class="hljs-string">'.'</span>); <span class="hljs-comment">// until we have scope hierarchy in the editor dom: replace spaces with .</span>
+
+          cssRules.push(<span class="hljs-string">`.monaco-editor.<span class="hljs-subst">${theme.getSelector()}</span> .token.<span class="hljs-subst">${rule}</span> { <span class="hljs-subst">${statements}</span> }`</span>);
+        });
+      }
+    });
+  }
+
+  <span class="hljs-keyword">private</span> _settingsToStatements(settings: IThemeSettingStyle): <span class="hljs-built_in">string</span> {
+    <span class="hljs-keyword">let</span> statements: <span class="hljs-built_in">string</span>[] = [];
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> settingName <span class="hljs-keyword">in</span> settings) {
+      <span class="hljs-keyword">const</span> value = settings[settingName];
+      <span class="hljs-keyword">switch</span> (settingName) {
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'foreground'</span>:
+          <span class="hljs-keyword">let</span> foreground = <span class="hljs-keyword">new</span> Color(value);
+          statements.push(<span class="hljs-string">`color: <span class="hljs-subst">${foreground}</span>;`</span>);
+          <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'background'</span>:
+          <span class="hljs-comment">// do not support background color for now, see bug 18924</span>
+          <span class="hljs-comment">//let background = new Color(value);</span>
+          <span class="hljs-comment">//statements.push(`background-color: ${background};`);</span>
+          <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'fontStyle'</span>:
+          <span class="hljs-keyword">let</span> segments = value.split(<span class="hljs-string">' '</span>);
+          segments.forEach(s =&gt; {
+            <span class="hljs-keyword">switch</span> (s) {
+              <span class="hljs-keyword">case</span> <span class="hljs-string">'italic'</span>:
+                statements.push(<span class="hljs-string">`font-style: italic;`</span>);
+                <span class="hljs-keyword">break</span>;
+              <span class="hljs-keyword">case</span> <span class="hljs-string">'bold'</span>:
+                statements.push(<span class="hljs-string">`font-weight: bold;`</span>);
+                <span class="hljs-keyword">break</span>;
+              <span class="hljs-keyword">case</span> <span class="hljs-string">'underline'</span>:
+                statements.push(<span class="hljs-string">`text-decoration: underline;`</span>);
+                <span class="hljs-keyword">break</span>;
+            }
+          });
+      }
+    }
+    <span class="hljs-keyword">return</span> statements.join(<span class="hljs-string">' '</span>);
+  }
+}
+</code></pre>
+<p>我们再来回顾一下上文<code>tmTheme</code>文件每一项<code>scope</code>的配置内容：</p>
+<pre><code class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>Template Expression<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>scope<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>template.expression<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>settings<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>foreground<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>#23C4FA<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+</code></pre>
+<p>其中第一项<code>name</code>表示的是我们给该规则起的名称；<code>scope</code>则是适用的<code>scope</code>，如果多个可以用逗号分隔，比如<code>User-defined constant</code>的<code>scope</code>值就为<code>constant.character, constant.other</code>；<code>settings</code>则是具体的样式信息，比如颜色值。</p>
+<p>从源码中可以看出，支持的样式只有<code>foreground</code>和<code>fontStyle</code>，而<code>background</code>则从注释中可以看出由于某原因导致 Visual Studio Code 暂时不支持。</p>
+<p><code>scope</code>值为<code>template.expression</code>则可被认为是 CSS 类选择器<code>token.template.expression</code>，在前文的 Developer Tools 的演示视频中，模板字符串的变量名在渲染时其 HTML 为<code>&lt;span class=&quot;token block ts meta variable other readwrite string function arrow new expr template expression&quot;&gt;...&lt;/span&gt;</code>，如果我们熟悉 CSS 的话应该能一眼就看出来<code>.token.template.expression</code>是会匹配到该标签的。所以，我们可以简单地把<code>scope</code>当作是 CSS 的类选择器。</p>
+<p>需要注意的是，如果我们在定义<code>scope</code>时写得不够详细，可能会错误地匹配到其他元素，致使调好了一部分，另一部分却被调坏了，所以要做得完美也并非易事。</p>
+<h2><a id="_357"></a>发布到扩展商店</h2>
+<p>要将扩展发布到扩展商店以便让更多人可以使用到，我们需要借助<code>vsce</code>命令行工具，可以参考文档<a href="https://code.visualstudio.com/docs/tools/vscecli">vsce - Publishing Tool Reference</a>。以下是其基本步骤：</p>
+<ul>
+<li>安装 vsce 命令行工具。执行命令<code>npm install -g vsce</code></li>
+<li>注册 Visual Studio Team Services 账号，并获取到 Access Token</li>
+<li>创建 Publisher。执行命令<code>vsce create-publisher</code></li>
+<li>登录到 Publisher。执行命令<code>vsce login</code></li>
+<li>发布扩展。执行命令<code>vsce publish</code></li>
+</ul>
+<p>详细操作步骤建议参考相应的官方文档。</p>
+<h2><a id="_370"></a>后记</h2>
+<p>本文并没有详细到手把手教地去讲解如何打造一款 Visual Studio Code 颜色主题，仅仅是提到了几个我在折腾过程中认为比较关键，而又很难通过文档去查到的要点。爱折腾是程序员的天性，希望本文能让爱折腾的你少走一些弯路，把喜爱的 Visual Studio Code 玩出花来。</p>
+<h2><a id="_375"></a>相关链接</h2>
+<ul>
+<li><a href="https://code.visualstudio.com/docs/customization/themes#_adding-a-new-theme">Visual Studio Code Themes - Adding a new Theme</a></li>
+<li><a href="http://www.apeth.com/nonblog/stories/textmatebundle.html">Writing a TextMate Grammar: Some Lessons Learned</a></li>
+<li><a href="https://code.visualstudio.com/docs/tools/vscecli">vsce - Publishing Tool Reference</a></li>
+<li><a href="https://github.com/leizongmin/lei-theme-vscode">Lei Theme for Visual Studio Code</a></li>
+</ul>
+]]></description><link>http://morning.work/page/2016-11/how-to-make-vscode-color-theme.html</link><guid isPermaLink="true">http://morning.work/page/2016-11/how-to-make-vscode-color-theme.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 15 Nov 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[基于 generator 与 promise 的异步编程解决方案]]></title><description><![CDATA[<h2><a id="_2"></a>前言</h2>
 <p>一直以来，“异步”编程问题一直困扰着广大的 JavaScript 开发者。近年来出现了各种异步解决方案，从基于最原始的<code>callback</code>方式的<code>async</code>函数，到<code>promise</code>标准，再到基于<code>generator</code>的<code>co</code>库，以及即将纳入 ES7 标准的<code>async function / await</code>语法，但是由于各种现实的原因，它们的表现并不尽人意。</p>
 <p>原始的<code>callback</code>方式简单明了，不需要过多的依赖，但是在异步逻辑较复杂的场景下写出来的程序并不太直观，就我个人的使用经验而言，尽管多年来已经练就了一身可以穿梭在各种嵌套回调的“乱码”之中，每次重新看这些代码都头疼不已。</p>
 <p>JavaScript 异步解决方案都是朝着更直观（跟写同步代码一样）的方向发展的，比如近来呼声最高的<code>async function / await</code>语法，直接从语言层面解决问题，使用体验那是好得没法说的。但是，这是一个 ES7 （ES2017，即明年才会发布的 ES 标准）标准的语法，目前并没有得到各 JavaScript 引擎的内置支持。虽然我们照样可以使用 Babel 神器来将它编译成 ES5 / ES6 的语法，然后运行在现有的 JavaScript 引擎之上。然而使用 Babel 编译后的代码并不易于维护，首先这些代码修改后要先经过一次编译，当我们在生产环境上执行编译后的代码时，很难准确地定位到源码出错的位置。另外，根据最新可靠的消息，Node  v7 版本会在语法层面上支持<code>async function / await</code>语法，但该版本原计划于 9 月 30 号发布却跳票了，而且按照往年的惯例，也要在 1 年后发布的 Node v8 LTS 版本上才会正式支持该语法，这对于追求稳定的企业来说还需要一个漫长的等待过程。</p>
@@ -505,7 +797,231 @@ test(<span class="hljs-number">10</span>, <span class="hljs-number">500</span>)
 <li><a href="https://csspod.com/getting-started-with-eslint/">ESLint 使用入门</a></li>
 <li><a href="http://eslint.cn/">ESLinit 中文版文档</a></li>
 </ul>
-]]></description><link>http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 30 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何编写一个简单的 Redis 客户端]]></title><description><![CDATA[<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这 <em>不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块</em> ，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
+]]></description><link>http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/getting-started-with-eslint.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Tue, 30 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何让异步接口同时支持 callback 和 promise]]></title><description><![CDATA[<h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
+<p>随着 ES6 的普及，越来越多的异步接口都开始同时支持<code>callback</code>和<code>promise</code>两种方式，我在最近的两篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>和<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html">《如何编写一个简单的 Redis 客户端》</a>中也使用<strong>一个简单的小技巧</strong>来实现这样的功能：</p>
+<pre><code class="language-javascript">request(method, path, params, callback) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">_resolve, _reject</span>) =&gt;</span> {
+
+    <span class="hljs-keyword">const</span> resolve = <span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> {
+      _resolve(ret);
+      callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
+    };
+
+    <span class="hljs-keyword">const</span> reject = <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
+      _reject(err);
+      callback &amp;&amp; callback(err);
+    };
+
+    <span class="hljs-comment">// 以下部分不变</span>
+    <span class="hljs-comment">// ...</span>
+  });
+}
+</code></pre>
+<p>上文的代码使得<code>request()</code>函数可以返回一个<code>Promise</code>对象，同时如果传入了一个<code>callback</code>参数它也能工作良好，这似乎已经能满足了前文的目标。</p>
+<p>但这样的做法带来的一个问题是，<strong>如果我们使用<code>callback</code>方式，当<code>request()</code>函数在执行时回调了一个错误对象（即执行了<code>callback(err)</code>和<code>reject(err)</code>），此时会触发一个<code>unhandledRejection</code>事件</strong>。大多数情况下这样也并不会影响到我们程序的功能，它还是能够正常的工作，但是这些本该可以避免的<code>unhandledRejection</code>事件会对我们调试程序时造成很大的干扰。</p>
+<p>究其原因，正确的**实现同时支持<code>callback</code>和<code>promise</code>**必须做到，当使用者传入<code>callback</code>参数时不应该返回一个 Promise 对象。如果返回了一个 Promise 对象，而使用者并不会调用<code>.catch()</code>去捕捉可能发生的错误，这样就会导致触发<code>unhandledRejection</code>事件。</p>
+<p>所以，针对上文的例子我们可以改成这样：</p>
+<pre><code class="language-javascript">request(method, path, params, callback) {
+  <span class="hljs-keyword">if</span> (callback) {
+    doRequest(method, path, params, callback);
+  } <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+      doRequest(method, path, params, (err, ret) =&gt; {
+        err ? reject(err) : resolve(ret);
+      });
+    });
+  }
+
+  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doRequest</span>(<span class="hljs-params">method, path, params, callback</span>) </span>{
+    <span class="hljs-comment">// 以下部分不变</span>
+    <span class="hljs-comment">// ...</span>
+  }
+}
+</code></pre>
+<p>或者我们可以写成这样：</p>
+<pre><code class="language-javascript">request(method, path, params, callback) {
+  <span class="hljs-keyword">if</span> (!callback) {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+      <span class="hljs-comment">// 重新调用当前函数</span>
+      request(method, path, params, (err, ret) =&gt; {
+        err ? reject(err) : resolve(ret);
+      });
+    });
+  }
+
+  <span class="hljs-comment">// 以下部分不变</span>
+  <span class="hljs-comment">// ...</span>
+}
+</code></pre>
+<h2><a id="_callback__71"></a>重复执行 callback 的坑</h2>
+<p>也许以上的写法并没有那么直观，我们更希望有这么一个<code>promiseToCallback</code>函数（代码来自<a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">《<code>callback</code>和<code>promise</code>的错误捕获
+》</a>]，有删改）：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
+    <span class="hljs-keyword">const</span> callback = args.pop();
+    fn.apply(<span class="hljs-literal">null</span>, args)
+      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
+        callback(<span class="hljs-literal">null</span>, result);
+      })
+      .catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
+        <span class="hljs-built_in">console</span>.error(err);
+        callback(err);
+      });
+  };
+}
+</code></pre>
+<p>正如该文章所说的那样，上文这个代码在<code>callback</code>执行出错时，会被<code>.catch()</code>捕捉到，从而又重复执行了一次<code>callback</code>，这样往往会将我们带入一个更大的坑里面。</p>
+<p>我们可以通过以下代码来测试这个<code>promiseToCallback()</code>所存在的问题：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unhandledRejection'</span>, err);
+});
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+    setImmediate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      resolve(<span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
+    });
+  });
+}
+
+promiseToCallback(hello)(<span class="hljs-string">'test'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(err, ret);
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
+});
+</code></pre>
+<p>执行程序后输出结果如下：</p>
+<pre><code>null 'hello, test'
+[Error: haha]
+[Error: haha] undefined
+unhandledRejection [Error: haha]
+</code></pre>
+<p>其中第一行的输出是正常回调时的输出，但是在回调里面有抛出了一个<code>haha</code>错误，被<code>promiseToCallback</code>的<code>.catch()</code>捕捉到，然后它先把这个<code>err</code>对象打印出来，再重复执行了一遍回调函数，在回调函数中又输出了一遍。同时，在这次的回调函数中，有抛出了一个<code>haha</code>错误，此时<code>promiseToCallback</code>中的<code>.catch()</code>已经不能再捕捉到这个错误了，然后被注册的<code>unhandledRejection</code>事件监听器监听到，并将其打印了出来。</p>
+<p>在此先不讨论这个<code>promiseToCallback()</code>是否满足了<strong>同时支持<code>callback</code>和<code>promise</code>这个前提</strong>，就重复执行<code>callback</code>的问题我们是万万不能使用它的。</p>
+<p>当然我们也可以有办法使得它不会重复执行回调函数：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
+    <span class="hljs-keyword">const</span> callback = args.pop();
+
+    <span class="hljs-comment">// 包装 callback，在此函数中保证 callback 只会调用一次</span>
+    <span class="hljs-comment">// 再次调用会直接忽略</span>
+    <span class="hljs-keyword">const</span> cb = <span class="hljs-function">(<span class="hljs-params">err, ret</span>) =&gt;</span> {
+      <span class="hljs-keyword">if</span> (cb.isCalled) <span class="hljs-keyword">return</span>;
+      cb.isCalled = <span class="hljs-literal">true</span>;
+      callback(err, ret);
+    };
+
+    fn.apply(<span class="hljs-literal">null</span>, args)
+      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
+        cb(<span class="hljs-literal">null</span>, result);
+      })
+      .catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
+        <span class="hljs-built_in">console</span>.error(err);
+        cb(err);
+      });
+  };
+}
+</code></pre>
+<p>我们通过一个<code>isCalled</code>属性来保证了回调函数只会被执行一次，它确实保证了<code>callback</code>不被重复执行，但同时它也悄悄地将<code>callback</code>发生的错误藏了起来，说不定这又成了将来某一天困扰你多时的坑。</p>
+<h2><a id="_162"></a>也许这是最佳的解决方案</h2>
+<p>说了这么一大堆，要使得很好地同时支持<code>callback</code>和<code>promise</code>，关键是要处理好这两个问题：</p>
+<ul>
+<li>避免<code>unhandledRejection</code>事件（一定要使用<code>promise.catch()</code>捕捉错误）</li>
+<li>避免多次执行<code>callback</code></li>
+</ul>
+<p>而我觉得处理好这两个问题其实只需要记住这一个原则：<strong>「原始函数使用 callback 实现，仅在必要时才返回 promise」</strong>。下面是根据这一原则实现的<code>promiseOrCallback</code>函数：</p>
+<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseOrCallback</span>(<span class="hljs-params">fn, argc</span>) </span>{
+  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
+    <span class="hljs-comment">// 判断调用函数时实际传过来的参数数量</span>
+    <span class="hljs-keyword">if</span> (args.length &gt; argc) {
+      <span class="hljs-comment">// 这是 callback 方式调用的</span>
+      <span class="hljs-keyword">return</span> fn.apply(<span class="hljs-literal">null</span>, args);
+    }
+    <span class="hljs-comment">// 这是 promise 方式调用的</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+      <span class="hljs-comment">// 创建一个 callback 函数用来对接 promise 的 resolve 和 reject</span>
+      args.push(<span class="hljs-function">(<span class="hljs-params">err, ret</span>) =&gt;</span> {
+        err ? reject(err) : resolve(ret);
+      });
+      fn.apply(<span class="hljs-literal">null</span>, args);
+    });
+  };
+}
+</code></pre>
+<p>说明：在包装函数时，<strong>需要明确知道这个函数会接收多少个参数</strong>，假设<code>argc = 1</code>，那么当调用包装后的函数时传入了<code>2</code>个参数，则会认为它是以<code>callback</code>方式调用的，否则会返回一个<code>promise</code>。</p>
+<p>我们可以使用以下程序来测试：</p>
+<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
+
+process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unhandledRejection'</span>, err);
+});
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg, callback</span>) </span>{
+  setImmediate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    callback(<span class="hljs-literal">null</span>, <span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
+  });
+}
+
+promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>, (err, ret) =&gt; {
+  <span class="hljs-built_in">console</span>.log(err, ret);
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
+});
+</code></pre>
+<p>其执行结果应该是这样的：</p>
+<pre><code>null 'hello, test'
+/tmp/test.js:45
+  throw new Error('haha');
+  ^
+
+Error: haha
+    at /tmp/test.js:45:9
+    at Immediate._onImmediate (/tmp/test.js:39:5)
+    at processImmediate [as _immediateCallback] (timers.js:383:17)
+</code></pre>
+<p>说明：在回调函数中，先执行<code>console.log(err, ret)</code>输出了结果，然后<code>throw new Error('haha')</code>再抛出一个错误，这时因为外层没有捕捉到，使得进程因为异常而退出了，这正是我们所期望的。</p>
+<p>如果我们改用<code>promise</code>的方式去调用：</p>
+<pre><code class="language-javascript">promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>).then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-literal">null</span>, ret);
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
+}).catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(err);
+});
+</code></pre>
+<p>则其执行结果是这样的：</p>
+<pre><code>null 'hello, test'
+[Error: haha]
+</code></pre>
+<p>说明：在<code>.then()</code>的回调函数内，我们先输出结果，在<code>throw</code>出一个错误时，并<code>.catch()</code>捕捉到并打印了出来，这符合<code>promise</code>的行为。</p>
+<p><strong>如果你要问「原始函数是基于 promise 实现的，想支持 callback 怎么办」，我建议你最好放弃这个想法。</strong></p>
+<h2><a id="_254"></a>接口设计的哲学</h2>
+<p>在本文发出去之后，得到了大神<a href="http://weibo.com/haxy">@Hax</a>的点评：</p>
+<blockquote>
+<p>有些代码直接调，不传<code>cb</code>因为它想触发副作用，结果你改成了<code>p</code>，然后还是掉坑了……</p>
+</blockquote>
+<p>结合上下文我们可以理解为，在上文我们通过判断是否传入了一个<code>callback</code>参数来判断异步方式，在合适的时候再返回<code>promise</code>。但是，假如我们仅仅是想触发一个副作用（执行异步函数，但并不关心它的回调结果），由于没有传入<code>callback</code>参数，此时会被自动识别为<code>promise</code>方式调用，于是它返回了一个<code>promise</code>对象。而当函数执行时回调了一个<code>err</code>对象时，我们又重新掉进了前文所说的<code>unhandledRejection</code>的坑里面。</p>
+<p>通过判断参数数量这样的方式来实现不同异步方式的转换并<strong>不严谨</strong>。所以，针对<strong>不同的异步方式应该使用不同的接口</strong>，比如我们可以规定所有异步方法默认都是<code>callback</code>方式（如<code>request</code>），而<code>promise</code>方式都有<code>P</code>后缀（如<code>requestP</code>）。</p>
+<p><a href="http://weibo.com/haxy">@Hax</a>继续评论道：</p>
+<blockquote>
+<p>是的，这是为啥 Node.js 的人最后决定把<code>promise</code>化的 API 单独分开</p>
+<p>我个人觉得<code>xxxP</code>名字也不是很友好。其实用不同的包就好了。</p>
+<pre><code class="language-javascript"><span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/callback'</span>
+<span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/promise'</span>
+</code></pre>
+</blockquote>
+<p>所以，封装成单独的包才是更优雅的方式。最后还有一句话，<strong>切勿混用<code>callback</code>和<code>promise</code></strong>。</p>
+<h2><a id="_278"></a>总结</h2>
+<p>大多数时候，我们只需要一点点小技巧就能使得程序看起来正常地工作起来。然而要写出<strong>完美</strong>的程序却并不是一件简单的事情。</p>
+<h2><a id="_283"></a>相关链接</h2>
+<ul>
+<li><a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">callback 和 promise 的错误捕获</a></li>
+<li><a href="http://www.jianshu.com/p/9e4026614fbe">Promise 陷阱</a></li>
+<li><a href="http://liubin.org/promises-book">JavaScript Promise 迷你书（中文版）</a></li>
+</ul>
+]]></description><link>http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Wed, 03 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何编写一个简单的 Redis 客户端]]></title><description><![CDATA[<p>前几天写了篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>（<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</a> ），有人说这 <em>不能算是一个 API 客户端，顶多是一个支持 GET / POST 操作的模块</em> ，羞得我老脸微微一红，故作镇静地自然自语道，简单是简单点了，好歹也是个 API 客户端嘛。</p>
 <p>这次要写的这个 Redis 客户端应该算是个客户端了，需要直接发起<code>TCP/IP</code>连接去跟服务器通讯，需要自己解析客户端返回的结果，还要做一些简单的容错处理，如果要做到足够健壮也不容易，不过就本文要实现一个基本可用的例子来说，还是简单了点。</p>
 <p>无论是实现 REST 的 API 客户端还是这样一个 Redis 客户端，虽然具体实现的细节不同，但是，<strong>套路</strong>还是<strong>一样</strong>的。二十一世纪行走江湖最重要的是什么？套路！套路！套路！所以呢，本文还是跟之前一样的套路。</p>
 <h2><a id="Redis__9"></a>Redis 协议</h2>
@@ -1253,231 +1769,7 @@ testToken(callback) {
 <ul>
 <li><a href="http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html">如何让异步接口同时支持 callback 和 promise</a></li>
 </ul>
-]]></description><link>http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</link><guid isPermaLink="true">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Wed, 03 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[如何让异步接口同时支持 callback 和 promise]]></title><description><![CDATA[<h2><a id="_unhandledRejection__2"></a>避免 unhandledRejection 事件</h2>
-<p>随着 ES6 的普及，越来越多的异步接口都开始同时支持<code>callback</code>和<code>promise</code>两种方式，我在最近的两篇文章<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html">《如何用 Node.js 编写一个 API 客户端》</a>和<a href="http://morning.work/page/2016-05/how-to-write-a-nodejs-redis-client.html">《如何编写一个简单的 Redis 客户端》</a>中也使用<strong>一个简单的小技巧</strong>来实现这样的功能：</p>
-<pre><code class="language-javascript">request(method, path, params, callback) {
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">_resolve, _reject</span>) =&gt;</span> {
-
-    <span class="hljs-keyword">const</span> resolve = <span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> {
-      _resolve(ret);
-      callback &amp;&amp; callback(<span class="hljs-literal">null</span>, ret);
-    };
-
-    <span class="hljs-keyword">const</span> reject = <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
-      _reject(err);
-      callback &amp;&amp; callback(err);
-    };
-
-    <span class="hljs-comment">// 以下部分不变</span>
-    <span class="hljs-comment">// ...</span>
-  });
-}
-</code></pre>
-<p>上文的代码使得<code>request()</code>函数可以返回一个<code>Promise</code>对象，同时如果传入了一个<code>callback</code>参数它也能工作良好，这似乎已经能满足了前文的目标。</p>
-<p>但这样的做法带来的一个问题是，<strong>如果我们使用<code>callback</code>方式，当<code>request()</code>函数在执行时回调了一个错误对象（即执行了<code>callback(err)</code>和<code>reject(err)</code>），此时会触发一个<code>unhandledRejection</code>事件</strong>。大多数情况下这样也并不会影响到我们程序的功能，它还是能够正常的工作，但是这些本该可以避免的<code>unhandledRejection</code>事件会对我们调试程序时造成很大的干扰。</p>
-<p>究其原因，正确的**实现同时支持<code>callback</code>和<code>promise</code>**必须做到，当使用者传入<code>callback</code>参数时不应该返回一个 Promise 对象。如果返回了一个 Promise 对象，而使用者并不会调用<code>.catch()</code>去捕捉可能发生的错误，这样就会导致触发<code>unhandledRejection</code>事件。</p>
-<p>所以，针对上文的例子我们可以改成这样：</p>
-<pre><code class="language-javascript">request(method, path, params, callback) {
-  <span class="hljs-keyword">if</span> (callback) {
-    doRequest(method, path, params, callback);
-  } <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
-      doRequest(method, path, params, (err, ret) =&gt; {
-        err ? reject(err) : resolve(ret);
-      });
-    });
-  }
-
-  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">doRequest</span>(<span class="hljs-params">method, path, params, callback</span>) </span>{
-    <span class="hljs-comment">// 以下部分不变</span>
-    <span class="hljs-comment">// ...</span>
-  }
-}
-</code></pre>
-<p>或者我们可以写成这样：</p>
-<pre><code class="language-javascript">request(method, path, params, callback) {
-  <span class="hljs-keyword">if</span> (!callback) {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
-      <span class="hljs-comment">// 重新调用当前函数</span>
-      request(method, path, params, (err, ret) =&gt; {
-        err ? reject(err) : resolve(ret);
-      });
-    });
-  }
-
-  <span class="hljs-comment">// 以下部分不变</span>
-  <span class="hljs-comment">// ...</span>
-}
-</code></pre>
-<h2><a id="_callback__71"></a>重复执行 callback 的坑</h2>
-<p>也许以上的写法并没有那么直观，我们更希望有这么一个<code>promiseToCallback</code>函数（代码来自<a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">《<code>callback</code>和<code>promise</code>的错误捕获
-》</a>]，有删改）：</p>
-<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
-    <span class="hljs-keyword">const</span> callback = args.pop();
-    fn.apply(<span class="hljs-literal">null</span>, args)
-      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
-        callback(<span class="hljs-literal">null</span>, result);
-      })
-      .catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
-        <span class="hljs-built_in">console</span>.error(err);
-        callback(err);
-      });
-  };
-}
-</code></pre>
-<p>正如该文章所说的那样，上文这个代码在<code>callback</code>执行出错时，会被<code>.catch()</code>捕捉到，从而又重复执行了一次<code>callback</code>，这样往往会将我们带入一个更大的坑里面。</p>
-<p>我们可以通过以下代码来测试这个<code>promiseToCallback()</code>所存在的问题：</p>
-<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
-
-process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unhandledRejection'</span>, err);
-});
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
-    setImmediate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-      resolve(<span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
-    });
-  });
-}
-
-promiseToCallback(hello)(<span class="hljs-string">'test'</span>, (err, ret) =&gt; {
-  <span class="hljs-built_in">console</span>.log(err, ret);
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
-});
-</code></pre>
-<p>执行程序后输出结果如下：</p>
-<pre><code>null 'hello, test'
-[Error: haha]
-[Error: haha] undefined
-unhandledRejection [Error: haha]
-</code></pre>
-<p>其中第一行的输出是正常回调时的输出，但是在回调里面有抛出了一个<code>haha</code>错误，被<code>promiseToCallback</code>的<code>.catch()</code>捕捉到，然后它先把这个<code>err</code>对象打印出来，再重复执行了一遍回调函数，在回调函数中又输出了一遍。同时，在这次的回调函数中，有抛出了一个<code>haha</code>错误，此时<code>promiseToCallback</code>中的<code>.catch()</code>已经不能再捕捉到这个错误了，然后被注册的<code>unhandledRejection</code>事件监听器监听到，并将其打印了出来。</p>
-<p>在此先不讨论这个<code>promiseToCallback()</code>是否满足了<strong>同时支持<code>callback</code>和<code>promise</code>这个前提</strong>，就重复执行<code>callback</code>的问题我们是万万不能使用它的。</p>
-<p>当然我们也可以有办法使得它不会重复执行回调函数：</p>
-<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseToCallback</span>(<span class="hljs-params">fn</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
-    <span class="hljs-keyword">const</span> callback = args.pop();
-
-    <span class="hljs-comment">// 包装 callback，在此函数中保证 callback 只会调用一次</span>
-    <span class="hljs-comment">// 再次调用会直接忽略</span>
-    <span class="hljs-keyword">const</span> cb = <span class="hljs-function">(<span class="hljs-params">err, ret</span>) =&gt;</span> {
-      <span class="hljs-keyword">if</span> (cb.isCalled) <span class="hljs-keyword">return</span>;
-      cb.isCalled = <span class="hljs-literal">true</span>;
-      callback(err, ret);
-    };
-
-    fn.apply(<span class="hljs-literal">null</span>, args)
-      .then(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">result</span>) </span>{
-        cb(<span class="hljs-literal">null</span>, result);
-      })
-      .catch(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err</span>) </span>{
-        <span class="hljs-built_in">console</span>.error(err);
-        cb(err);
-      });
-  };
-}
-</code></pre>
-<p>我们通过一个<code>isCalled</code>属性来保证了回调函数只会被执行一次，它确实保证了<code>callback</code>不被重复执行，但同时它也悄悄地将<code>callback</code>发生的错误藏了起来，说不定这又成了将来某一天困扰你多时的坑。</p>
-<h2><a id="_162"></a>也许这是最佳的解决方案</h2>
-<p>说了这么一大堆，要使得很好地同时支持<code>callback</code>和<code>promise</code>，关键是要处理好这两个问题：</p>
-<ul>
-<li>避免<code>unhandledRejection</code>事件（一定要使用<code>promise.catch()</code>捕捉错误）</li>
-<li>避免多次执行<code>callback</code></li>
-</ul>
-<p>而我觉得处理好这两个问题其实只需要记住这一个原则：<strong>「原始函数使用 callback 实现，仅在必要时才返回 promise」</strong>。下面是根据这一原则实现的<code>promiseOrCallback</code>函数：</p>
-<pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">promiseOrCallback</span>(<span class="hljs-params">fn, argc</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-keyword">const</span> args = <span class="hljs-built_in">Array</span>.prototype.slice.apply(<span class="hljs-built_in">arguments</span>);
-    <span class="hljs-comment">// 判断调用函数时实际传过来的参数数量</span>
-    <span class="hljs-keyword">if</span> (args.length &gt; argc) {
-      <span class="hljs-comment">// 这是 callback 方式调用的</span>
-      <span class="hljs-keyword">return</span> fn.apply(<span class="hljs-literal">null</span>, args);
-    }
-    <span class="hljs-comment">// 这是 promise 方式调用的</span>
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
-      <span class="hljs-comment">// 创建一个 callback 函数用来对接 promise 的 resolve 和 reject</span>
-      args.push(<span class="hljs-function">(<span class="hljs-params">err, ret</span>) =&gt;</span> {
-        err ? reject(err) : resolve(ret);
-      });
-      fn.apply(<span class="hljs-literal">null</span>, args);
-    });
-  };
-}
-</code></pre>
-<p>说明：在包装函数时，<strong>需要明确知道这个函数会接收多少个参数</strong>，假设<code>argc = 1</code>，那么当调用包装后的函数时传入了<code>2</code>个参数，则会认为它是以<code>callback</code>方式调用的，否则会返回一个<code>promise</code>。</p>
-<p>我们可以使用以下程序来测试：</p>
-<pre><code class="language-javascript"><span class="hljs-meta">'use strict'</span>;
-
-process.on(<span class="hljs-string">'unhandledRejection'</span>, err =&gt; {
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'unhandledRejection'</span>, err);
-});
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hello</span>(<span class="hljs-params">msg, callback</span>) </span>{
-  setImmediate(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-    callback(<span class="hljs-literal">null</span>, <span class="hljs-string">`hello, <span class="hljs-subst">${ msg }</span>`</span>);
-  });
-}
-
-promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>, (err, ret) =&gt; {
-  <span class="hljs-built_in">console</span>.log(err, ret);
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
-});
-</code></pre>
-<p>其执行结果应该是这样的：</p>
-<pre><code>null 'hello, test'
-/tmp/test.js:45
-  throw new Error('haha');
-  ^
-
-Error: haha
-    at /tmp/test.js:45:9
-    at Immediate._onImmediate (/tmp/test.js:39:5)
-    at processImmediate [as _immediateCallback] (timers.js:383:17)
-</code></pre>
-<p>说明：在回调函数中，先执行<code>console.log(err, ret)</code>输出了结果，然后<code>throw new Error('haha')</code>再抛出一个错误，这时因为外层没有捕捉到，使得进程因为异常而退出了，这正是我们所期望的。</p>
-<p>如果我们改用<code>promise</code>的方式去调用：</p>
-<pre><code class="language-javascript">promiseOrCallback(hello, <span class="hljs-number">1</span>)(<span class="hljs-string">'test'</span>).then(<span class="hljs-function"><span class="hljs-params">ret</span> =&gt;</span> {
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-literal">null</span>, ret);
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">'haha'</span>);
-}).catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
-  <span class="hljs-built_in">console</span>.log(err);
-});
-</code></pre>
-<p>则其执行结果是这样的：</p>
-<pre><code>null 'hello, test'
-[Error: haha]
-</code></pre>
-<p>说明：在<code>.then()</code>的回调函数内，我们先输出结果，在<code>throw</code>出一个错误时，并<code>.catch()</code>捕捉到并打印了出来，这符合<code>promise</code>的行为。</p>
-<p><strong>如果你要问「原始函数是基于 promise 实现的，想支持 callback 怎么办」，我建议你最好放弃这个想法。</strong></p>
-<h2><a id="_254"></a>接口设计的哲学</h2>
-<p>在本文发出去之后，得到了大神<a href="http://weibo.com/haxy">@Hax</a>的点评：</p>
-<blockquote>
-<p>有些代码直接调，不传<code>cb</code>因为它想触发副作用，结果你改成了<code>p</code>，然后还是掉坑了……</p>
-</blockquote>
-<p>结合上下文我们可以理解为，在上文我们通过判断是否传入了一个<code>callback</code>参数来判断异步方式，在合适的时候再返回<code>promise</code>。但是，假如我们仅仅是想触发一个副作用（执行异步函数，但并不关心它的回调结果），由于没有传入<code>callback</code>参数，此时会被自动识别为<code>promise</code>方式调用，于是它返回了一个<code>promise</code>对象。而当函数执行时回调了一个<code>err</code>对象时，我们又重新掉进了前文所说的<code>unhandledRejection</code>的坑里面。</p>
-<p>通过判断参数数量这样的方式来实现不同异步方式的转换并<strong>不严谨</strong>。所以，针对<strong>不同的异步方式应该使用不同的接口</strong>，比如我们可以规定所有异步方法默认都是<code>callback</code>方式（如<code>request</code>），而<code>promise</code>方式都有<code>P</code>后缀（如<code>requestP</code>）。</p>
-<p><a href="http://weibo.com/haxy">@Hax</a>继续评论道：</p>
-<blockquote>
-<p>是的，这是为啥 Node.js 的人最后决定把<code>promise</code>化的 API 单独分开</p>
-<p>我个人觉得<code>xxxP</code>名字也不是很友好。其实用不同的包就好了。</p>
-<pre><code class="language-javascript"><span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/callback'</span>
-<span class="hljs-keyword">import</span> xxx <span class="hljs-keyword">from</span> <span class="hljs-string">'api/promise'</span>
-</code></pre>
-</blockquote>
-<p>所以，封装成单独的包才是更优雅的方式。最后还有一句话，<strong>切勿混用<code>callback</code>和<code>promise</code></strong>。</p>
-<h2><a id="_278"></a>总结</h2>
-<p>大多数时候，我们只需要一点点小技巧就能使得程序看起来正常地工作起来。然而要写出<strong>完美</strong>的程序却并不是一件简单的事情。</p>
-<h2><a id="_283"></a>相关链接</h2>
-<ul>
-<li><a href="http://www.plusman.cn/2016/05/09/b7-error-catch/">callback 和 promise 的错误捕获</a></li>
-<li><a href="http://www.jianshu.com/p/9e4026614fbe">Promise 陷阱</a></li>
-<li><a href="http://liubin.org/promises-book">JavaScript Promise 迷你书（中文版）</a></li>
-</ul>
-]]></description><link>http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html</link><guid isPermaLink="true">http://morning.work/page/maintainable-nodejs/promise-and-callback-problem.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Wed, 03 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 的 Readable Stream 与日志文件处理]]></title><description><![CDATA[<blockquote>
+]]></description><link>http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</link><guid isPermaLink="true">http://morning.work/page/2016-05/how-to-write-a-nodejs-api-client-package.html</guid><dc:creator><![CDATA[老雷]]></dc:creator><pubDate>Wed, 03 Aug 2016 00:00:00 GMT</pubDate></item><item><title><![CDATA[Node.js 的 Readable Stream 与日志文件处理]]></title><description><![CDATA[<blockquote>
 <p>在上一篇文章<a href="http://morning.work/page/2016-07/how-to-implement-a-tail-f-command-in-nodejs.html">《如何实时监听文件的新增内容：一个简单 tailf 命令的实现》</a>里面，我们已经实现了一个<code>tailf</code>函数用来监听文件的新增内容，看起来它也工作良好。然而当我想把它应用到手头正要做的日志文件处理时，却发现这样一个<strong>非标准的接口很难与之前编写的模块愉快地合作</strong>。</p>
 <p>我在去年的文章<a href="http://morning.work/page/2015-07/read_and_write_big_file_in_nodejs.html">《在 Node.js 中读写大文件》</a>中实现了一个<code>readLine(stream)</code>函数，其接收的参数是一个<code>Readable Stream</code>对象，能按照给定的规则（比如使用<code>\n</code>换行）来<code>emit</code>出每一行的内容，再结合<code>tailf</code>来监听文件的新增内容，我们就可以很轻易地对新增的内容进行按行切分。</p>
 <p>所以，我们要实现一个实现了<code>Readable Stream</code>接口的<code>tailf</code>，在本文中我给它起了个名字叫<code>TailStream</code>。</p>

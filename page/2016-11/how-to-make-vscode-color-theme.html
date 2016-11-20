@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<base target="_blank">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" >
+<title>如何打造一款属于自己的 Visual Studio Code 颜色主题 - 早起搬砖 morning.work</title>
+<link rel="stylesheet" href="/styles/github.css" />
+<link rel="stylesheet" href="/article.css" />
+<style>
+body {
+  -webkit-text-size-adjust: none;
+  -webkit-tap-highlight-color: rgba(200,0,0,0.4);
+}
+body {
+  width: 94%;
+  max-width: 800px;
+  margin: auto;
+  color: rgba(0, 0, 0, 0.9);
+  word-break: break-word;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: subpixel-antialiased;
+  font-family: Exo,'-apple-system','Open Sans',HelveticaNeue-Light,'Helvetica Neue Light','Helvetica Neue','Hiragino Sans GB','Microsoft YaHei',Helvetica,Arial,sans-serif;
+  font-weight: 350;
+}
+@media (min-width: 900px) {
+  html {
+    background-color: #f7f7f8;
+  }
+  body {
+    background-color: #fff;
+    padding: 0 50px;
+    padding-bottom: 1px;
+  }
+}
+#ds-thread {
+  margin-top: 20px;
+}
+a {
+  color: #008E59;
+  text-decoration: none;
+}
+a:hover {
+  color: #B60000;
+}
+#title {
+  margin-bottom: 0;
+  line-height: 1.2em;
+  margin-top: 2em;
+  font-size: 1.8em;
+  font-weight: 500;
+}
+#date {
+  font-size: 0.875em;
+  margin-top: 1em;
+}
+#remaining-time {
+  font-size: 0.875em;
+  margin-top: 0.5em;
+}
+#nav {
+  border-bottom: 2px solid #eee;
+  font-size: 18px;
+}
+#license, #about {
+  font-size: 14px;
+  background-color: #f7f7f8;
+  padding: 16px;
+}
+#license {
+  margin-bottom: 4em;
+  font-weight: bold;
+  color: #222;
+}
+.article {
+  min-height: 200px;
+  margin-top: 4em;
+  margin-bottom: 4em;
+}
+.author {
+  display: flex;
+}
+.author .avatar img {
+  width: 100%;
+}
+.author .avatar {
+  flex: 1;
+  min-width: 80px;
+}
+.author .description {
+  flex: 8;
+  margin-left: 1em;
+}
+</style>
+</head>
+<body>
+
+  <nav id="nav">
+    <a href="http://morning.work" target="_self">早起搬砖 morning.work</a>
+<a href="http://morning.work/rss.xml" target="_blank" title="订阅 早起搬砖 morning.work">
+  <img style="vertical-align:middle;" width="20" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAUzSURBVHjavFdbbFRVFF3nPjoz7dTWTittaW0jUDRAUqaNojyqREnEQKgfUj9MqqAmhqRt/OCD4CuY+Kckoh+aiGKC+gMJbdHoRysJ8dkhhmJLNdDKtJU+6GMK87j3Hs85d2Z6HzNtMYWb3Dn3NWftvfba+5xNYDl+e6Fkj6yqb/oDRbWq14vlPBLRKCITkxf0ROLt+hNjp1PPSRK4kA3vF1dXNRcWlyA2OQU9eos9opAkAiKxD+XkKO6t15aRWO7J/MgmAZU8MEgexgZHMX518Dh72sYMmVKShnxWuWHdHtxKIDIYTgMuDzgfmSOIQkYMpdUF8OY92Hytt4/jvkg47czzU16iQovM3QFwmNck+Yyduu7D6NA0Z6JR4THntFs9V4tWQg6Ui3s6MwKDncsFTnXKLJhDSeUK3AgPtyhccDzmVs999buRt/1Vm4i0od+hX7+MRG87jPGB/w1u8FPj9xEw7McVrnYuOCvtpjTth3J/nTg99c8LRhKhr6D3dTB5R24bXFwbMXBsyZzeoXaycEpJ95TB09AGX/NpqLVNtw8urnVzLvHjFNxiFqRy2OOHuqUVnue+ACkoWzo4O6lGzTmuHq6nPvY2m9rVqjrIK2rMEKxqyG5NPAKt+wjo0LklgfNxJkZMA3KJvqRUk3z5UFY3QH14P0h+WUY79HPvgv7VuSg4ZRGY1YgZgqXmORccF17sy2ehnf9AeO085K2HQFbtXBScj0LcpgF2cN+WV+DZ/LJQu6gD4R7oV7pBJwbSgtMvfiPoVp56DySwxm7EtkMs1WdAB7qzggsDJKQYsHucSkOudrkiCPWR/fA2nYCn8SNIK4NptSMyAu3sAdDRkIsJdfth0LzSrODUoPNZ4KI9SxJI5UHk7D4GdQfz2us31c7CoHMjRkKuDPHseCMrONVhNcDJwMJpKFVvg9L4OaTiNWm1x789KCqkrXhVBiEz0WYCT2nAzQAD1/vaETv1GrRfP4Vx5cfMNcDPwvP0h0DhanPym7OIf/+O67vcJ1/PCJ4KgdzaUP6Wz+dU+5yIL6fV+PsHGAOdwlPpvvUOyeeAVGyCdqkDNB6DPjsBSrnndfOGevOh3RhGItxvA+fX1CtbGFhgYUFkFMZPR6F1HnClHq8HyubWtJexX06CRmdt33hrd7nA7SFY4qoGpnYuOKcRykPPgDCBcsHx9Iv+fNL2PueBehCWUfYQIIMGLOCcOmXDXsh1+yCt35tUPfvzGFuSvzvoinXOxqa02qOhM6733nVP2MAdaej2XN11DPKjLZCD+yBvahGCo7JfTKAN9UD7s8Oe9zUNIhz8fWI8DG2k38WCFdxugANcXrvTVd1IEbuv3Jour7Hzn7jLMBNfKs7R3i67gRVrbeCOEDhinmWhAatsqdquM2XzHZINhK2cqTjHr/XZdVJUbgN3MWAVXKbSyg9jesRW2xP9di+lwrL5ojM3m2H/kG9hwcIA37c71W6wJdW2J2S5nrjYbq/t1AHAhJsKQeyfPvf6IMJgghPJhFZ4x0KlfLFvt22du45Au/A1SOlGc0P672XXwhLtOcM0kTTEMMd0qkVmMNXxMd/tsedUjInr4SQDgOfeXMSiN0FCL5WHah4L1qqYXPJOJlttd+a5M+YpcG5poLYKQ5f+6JJ4r8bbJYP47hq4r7QAs9PjYNhHJd4o8l5taiwuOpa7AS4XKqI/5NjJbTnaWK92nLdLuhQAJayRNMiygXPBeQN+Qbvu0zDc3y+aUzhbkGR73sI7ljvUnndx2q3t+X8CDAD66FtrIL864AAAAABJRU5ErkJggg==">
+</a>
+  </nav>
+
+
+  <h1 id="title">如何打造一款属于自己的 Visual Studio Code 颜色主题</h1>
+
+  <div id="date">
+              <a href="http://ucdok.com" title="
+        Web开发者、
+        &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
+        &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
+        个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
+        GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
+      " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
+    创作于 2016-11-15            </div>
+  <div id="remaining-time">
+    全文约 8807 字，预计阅读时间为 0 时 45 分钟
+  </div>
+
+  <article class="article">
+    <h2><a id="_3"></a>前言</h2>
+<p><a href="https://code.visualstudio.com">Visual Studio Code</a> 是我在最近一年中最喜欢的一款编辑器，微软每一次的更新都会给大家带来惊喜，更是令人愈加喜欢。之前一直使用内置的颜色主题<code>Light+</code>和<code>Dark+</code>，但近来突然觉得前者颜色区分度不高，一眼看上去就密密麻麻的一对代码，而后者则是被选中的文本背景色太浅，跟编辑器的背景颜色很相似，很难区分出来，于是萌生了要制作一款自己的颜色主题的想法。经过几天的研究，终于捣鼓出来了<a href="https://github.com/leizongmin/lei-theme-vscode">Lei Theme</a>系列颜色主题。</p>
+<p>先来看看其中两款主题的效果：</p>
+<p><img src="https://github.com/leizongmin/lei-theme-vscode/raw/master/screen/lei-light.png" alt="lei-light"></p>
+<p><img src="https://github.com/leizongmin/lei-theme-vscode/raw/master/screen/lei-dark-blue.png" alt="lei-dark-blue"></p>
+<p>一般来说，我们并不需要重头来制作一款颜色主题，首先需要选择一款自己最喜欢的颜色主题（或者说先找一款与自己的想法最相似的颜色主题），然后在此基础上进行些许调整即可。另外如果想将颜色主题发布到微软的 Visual Studio Code 扩展商店上，还需要注册一个微软开发者账号，并通过<a href="https://www.npmjs.com/package/vsce">vsce</a>工具来发布出去，下文会对此进行详细说明。</p>
+<h2><a id="tmTheme__16"></a>tmTheme 格式的颜色主题</h2>
+<p>TextMate 曾是多年前最流行的代码编辑器之一，其颜色主题的文件后缀为<code>.tmTheme</code>，在本文中我们将其简称为<code>tmTheme</code>格式。Visual Studio Studio 的颜色主题采用的是标准的 TextMate 主题格式，我们可以参考这篇文章<a href="http://www.apeth.com/nonblog/stories/textmatebundle.html">Writing a TextMate Grammar: Some Lessons Learned</a>，大概可以理解为这样：<strong>编辑器对代码进行解析后，会为每个元素指定一个<code>scope</code>，这个<code>scope</code>即表明此元素是一个关键字还是一个常量，又或者是一个标点符号，通过<code>tmTheme</code>格式的文件来定义相应<code>scope</code>的文字样式。</strong></p>
+<p>根据该文章可知道以下是常见的<code>scope</code>列表：</p>
+<pre><code>comment
+constant
+constant.character.escape
+constant.language
+constant.numeric
+declaration.section entity.name.section
+declaration.tag
+deco.folding
+entity.name.function
+entity.name.tag
+entity.name.type
+entity.other.attribute-name
+entity.other.inherited-class
+invalid
+invalid.deprecated.trailing-whitespace
+keyword
+keyword.control.import
+keyword.operator.js
+markup.heading
+markup.list
+markup.quote
+meta.embedded
+meta.preprocessor
+meta.section entity.name.section
+meta.tag
+storage
+storage.type.method
+string
+string source
+string.unquoted
+support.class
+support.constant
+support.function
+support.type
+support.variable
+text source
+variable
+variable.language
+variable.other
+variable.parameter
+</code></pre>
+<p>以下是一个<code>tmTheme</code>格式文件的代码片段：</p>
+<pre><code class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>Keyword<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>scope<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>keyword.control,keyword.other,variable.language,storage.type,storage.modifier,keyword.function<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>settings<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>foreground<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>#0808D1<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>Invalid<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>scope<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>invalid<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>settings<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>foreground<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>#cd3131<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+</code></pre>
+<p>从上面的代码可以看出，其实这个<code>tmTheme</code>格式的文件似乎也挺简单的，然而初学者而言，难的是<strong>不知道<code>scope</code>怎么写</strong>，下文会循序渐进地对此进行说明。</p>
+<h2><a id="_94"></a>创建颜色主题项目</h2>
+<p>根据官方文档，我们先执行以下命令安装<a href="http://yeoman.io/">Yeoman</a>代码生成工具来创建一个默认的颜色主题项目：</p>
+<pre><code class="language-bash">$ npm install -g yo generator-code
+</code></pre>
+<p>安装完毕之后，进入<code>~/.vscode/extensions</code>目录执行以下命令启动生成器：</p>
+<pre><code class="language-bash">$ yo code
+</code></pre>
+<p>说明：<code>~/.vscode/extensions</code>表示用户根目录下的<code>.vscode/extensions</code>目录，之所以在此处新建项目主要是为了不用发布到扩展商店也可以在本地进行使用，并且方便调试。</p>
+<p>选择<code>New Color Theme</code>创建颜色主题项目：</p>
+<pre><code>     _-----_     ╭──────────────────────────╮
+    |       |    │   Welcome to the Visual  │
+    |--(o)--|    │   Studio Code Extension  │
+   `---------´   │        generator!        │
+    ( _´U`_ )    ╰──────────────────────────╯
+    /___A___\   /
+     |  ~  |
+   __'.___.'__
+ ´   `  |° ´ Y `
+
+? What type of extension do you want to create?
+  New Extension (TypeScript)
+  New Extension (JavaScript)
+❯ New Color Theme
+  New Language Support
+  New Code Snippets
+</code></pre>
+<p>接着需要在命令行下交互式地填写一些问题，以下是我在执行过程中填写的内容：</p>
+<pre><code>? What type of extension do you want to create? New Color Theme
+URL (http, https) or file name of the tmTheme file, e.g., http://www.monokai.nl/blog/wp-content/asdev/Monokai.tmTheme.
+? URL or file name: http://www.monokai.nl/blog/wp-content/asdev/Monokai.tmTheme
+? What's the name of your extension? my-theme
+? What's the identifier of your extension? my-theme
+? What's the description of your extension?
+? What's your publisher name? leizongmin
+? What's the name of your theme shown to the user? my-theme
+? Select a base theme: Dark
+</code></pre>
+<p>需要说明的是，第一个问题<code>URL (http, https) or file name of the tmTheme file</code>需要提供一个已有的<code>tmTheme</code>文件作为基础，此处可直接复制示例中的<code>URL</code>。</p>
+<p>稍等片刻，工具自动生成了项目之后，会提示我们执行以下命令开始编辑代该项目：</p>
+<pre><code>$ cd my-theme
+$ code .
+</code></pre>
+<p>以下是生成的项目的文件结构：</p>
+<pre><code>.
+├── README.md
+├── package.json （扩展信息文件）
+├── themes
+│   └── Monokai.tmTheme （颜色主题定义文件）
+└── vsc-extension-quickstart.md （帮助文件，上面详细说明操作步骤）
+</code></pre>
+<p>首先看看<code>package.json</code>文件：</p>
+<pre><code class="language-json">{
+  <span class="hljs-attr">"name"</span>: <span class="hljs-string">"my-theme"</span>,
+  <span class="hljs-attr">"displayName"</span>: <span class="hljs-string">"my-theme"</span>,
+  <span class="hljs-attr">"description"</span>: <span class="hljs-string">""</span>,
+  <span class="hljs-attr">"version"</span>: <span class="hljs-string">"0.0.1"</span>,
+  <span class="hljs-attr">"publisher"</span>: <span class="hljs-string">"leizongmin"</span>,
+  <span class="hljs-attr">"engines"</span>: {
+    <span class="hljs-attr">"vscode"</span>: <span class="hljs-string">"^1.5.0"</span>
+  },
+  <span class="hljs-attr">"categories"</span>: [
+    <span class="hljs-string">"Themes"</span>
+  ],
+  <span class="hljs-attr">"contributes"</span>: {
+    <span class="hljs-attr">"themes"</span>: [
+      {
+        <span class="hljs-attr">"label"</span>: <span class="hljs-string">"my-theme"</span>,
+        <span class="hljs-attr">"uiTheme"</span>: <span class="hljs-string">"vs-dark"</span>,
+        <span class="hljs-attr">"path"</span>: <span class="hljs-string">"./themes/Monokai.tmTheme"</span>
+      }
+    ]
+  }
+}
+</code></pre>
+<p><code>contributes</code>中定义了此扩展项目包含的内容，其中<code>themes</code>表示颜色主题，是一个数组，我们可在此处放入多个颜色主题。以下是<code>themes</code>中每个元素的定义：</p>
+<ul>
+<li><code>label</code>表示颜色主题的名称，即在<code>Preferences: Color Theme</code>列表中显示的名称</li>
+<li><code>uiTheme</code>是指编辑器 UI 的颜色，可选为<code>vs-light</code>和<code>vs-dark</code>，如果我们的颜色主题是深色系的，就选<code>vs-dark</code></li>
+<li><code>path</code>是<code>tmTheme</code>文件的位置</li>
+</ul>
+<p>为了避免混淆，我们可以将文件<code>./themes/Monokai.tmTheme</code>改名为<code>./themes/my-theme.tmTheme</code>，并修改<code>package.json</code>相应的位置。</p>
+<p>现在在 Visual Studio Code 中按快捷键<code>⌘Command + Shift + P</code>打开命令面板（Windows / Linux 系统应为<code>Ctrl + Shift + P</code>），输入<code>Color Theme</code>并按回车，再中列表中选择<code>my-theme</code>按回车即可使用刚刚创建的新颜色主题：</p>
+<p><img src="../../images/2016-11/my-theme-1.png" alt="my-theme"></p>
+<p>从上图可以看出，这其实就是一个标准的<code>Monokai</code>主题。</p>
+<h2><a id="tmTheme__207"></a>tmTheme 编辑器</h2>
+<p>从生成的<code>vsc-extension-quickstart.md</code>文件中我们得知有一款 Web 版的在线 <a href="https://tmtheme-editor.herokuapp.com">tmTheme 编辑器</a>，通过该编辑器可以进行可视化地编辑 tmTheme 文件。比如以下视频是更改<code>String</code>和<code>Keyword</code>颜色的示例：</p>
+<p><video src="../../images/2016-11/tmtheme-editor-change-color.mp4" controls width="100%" loop="loop">你的浏览器不支持 <code>video</code> 标签.</video></p>
+<p>主要的操作方法为：</p>
+<ul>
+<li>在左侧<code>Scope Name</code>列表中选中一项，然后双击<code>FG</code>列上的颜色（FG 表示 foreground，即前景颜色），然后选择要更改的颜色即可，可以看到代码预览区域的颜色会实时改变</li>
+<li>点击顶部栏的【Download】按钮即可下载编辑后的<code>tmTheme</code>文件，直接将其覆盖项目中的<code>./themes/my-theme.tmTheme</code>文件即可</li>
+<li>在 Visual Studio Code 中按快捷键<code>⌘Command + Shift + P</code>打开命令面板，输入<code>Reload Window</code>并按回车即可看到修改后的颜色主题</li>
+</ul>
+<p>但是，在一些实现细节上，Visual Studio Code 并不与该 tmTheme 编辑器一致，所以我们在该在线编辑器上看到的效果可能与 Visual Studio Code 上稍有不同，所以我们可能还需要直接编辑<code>tmTheme</code>文件。</p>
+<h2><a id="_scope__222"></a>如何知道 scope 是什么</h2>
+<p>下面是这款主题中，模板字符串的渲染效果：</p>
+<p><img src="../../images/2016-11/my-theme-2.png" alt="template-string"></p>
+<p>从图中可以看到，模板字符串中的字符串和变量的颜色都是一样的，而假如我想改变模板字符串中变量的颜色，却是无从下手，因为即使翻遍 TextMate 官方文档中关于 tmTheme 的介绍也找不到模板字符串的<code>scope</code>是什么。</p>
+<p>其实我们可以借助 Visual Studio Code 的开发者工具来找到任意元素的<code>scope</code>，以下是演示视频：</p>
+<p><video src="../../images/2016-11/vscode-developer-tools.mp4" controls width="100%" loop="loop">你的浏览器不支持 <code>video</code> 标签.</video></p>
+<p>从开发者工具中我们可以看到模板字符串中<code>${</code>的样式是：</p>
+<pre><code>token block ts punctuation definition meta string begin function arrow new expr template expression template-expression
+</code></pre>
+<p>而模板变量<code>file</code>的样式是：</p>
+<pre><code>token block ts meta variable other readwrite string function arrow new expr template expression
+</code></pre>
+<p>再结合文首对于<code>scope</code>介绍的文章，我们假设我们要的<code>scope</code>名为<code>template.expression</code>。接着打开文件<code>./themes/my-theme.tmTheme</code>，仿照该文件的格式，我们添加以下代码在对应位置：</p>
+<pre><code class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>Template Expression<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>scope<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>template.expression<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>settings<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>foreground<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>#23C4FA<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+</code></pre>
+<p>再按快捷键<code>⌘Command + Shift + P</code>打开命令面板，执行<code>Reload Window</code>，此时可以看到模板字符串中的变量颜色跟字符串的颜色不一样了：</p>
+<p><img src="../../images/2016-11/my-theme-3.png" alt="template-string"></p>
+<h2><a id="tmTheme__267"></a>tmTheme 文件处理规则</h2>
+<p>尽管已经实现了我们想要的效果，相信阅读到这里的时候很多人还是一头雾水，并不知道为何<code>scope</code>是<code>template.expression</code>。我在刚开始时虽然也猜想到是像 CSS 的类选择器一样，但还是不太确定，直到阅读到 Visual Studio Code 的源码后才得以印证。</p>
+<p>以下是<a href="https://github.com/Microsoft/vscode">Visual Studio Code</a>源码中负责处理<code>tmTheme</code>的<code>scope</code>的程序文件<code>src/vs/workbench/services/themes/electron-browser/stylesContributions.ts</code>（<a href="https://github.com/Microsoft/vscode/blob/master/src/vs/workbench/services/themes/electron-browser/stylesContributions.ts#L93">点此查看完整文件</a>）:</p>
+<pre><code class="language-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> TokenStylesContribution {
+
+  <span class="hljs-keyword">public</span> contributeStyles(themeId: <span class="hljs-built_in">string</span>, themeDocument: IThemeDocument, cssRules: <span class="hljs-built_in">string</span>[]): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">let</span> theme = <span class="hljs-keyword">new</span> Theme(themeId, themeDocument);
+    theme.getSettings().forEach((s: IThemeSetting, index, arr) =&gt; {
+      <span class="hljs-comment">// @martin TS(2.0.2) - s.scope is already a string[] so no need for all this checking.</span>
+      <span class="hljs-comment">// However will add a cast at split to keep semantic in case s.scope is wrongly typed.</span>
+      <span class="hljs-keyword">let</span> scope: <span class="hljs-built_in">string</span> | <span class="hljs-built_in">string</span>[] = s.scope;
+      <span class="hljs-keyword">let</span> settings = s.settings;
+      <span class="hljs-keyword">if</span> (scope &amp;&amp; settings) {
+        <span class="hljs-keyword">let</span> rules = <span class="hljs-built_in">Array</span>.isArray(scope) ? &lt;<span class="hljs-built_in">string</span>[]&gt;scope : (scope as <span class="hljs-built_in">string</span>).split(<span class="hljs-string">','</span>);
+        <span class="hljs-keyword">let</span> statements = <span class="hljs-keyword">this</span>._settingsToStatements(settings);
+        rules.forEach(rule =&gt; {
+          rule = rule.trim().replace(<span class="hljs-regexp">/ /g</span>, <span class="hljs-string">'.'</span>); <span class="hljs-comment">// until we have scope hierarchy in the editor dom: replace spaces with .</span>
+
+          cssRules.push(<span class="hljs-string">`.monaco-editor.<span class="hljs-subst">${theme.getSelector()}</span> .token.<span class="hljs-subst">${rule}</span> { <span class="hljs-subst">${statements}</span> }`</span>);
+        });
+      }
+    });
+  }
+
+  <span class="hljs-keyword">private</span> _settingsToStatements(settings: IThemeSettingStyle): <span class="hljs-built_in">string</span> {
+    <span class="hljs-keyword">let</span> statements: <span class="hljs-built_in">string</span>[] = [];
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> settingName <span class="hljs-keyword">in</span> settings) {
+      <span class="hljs-keyword">const</span> value = settings[settingName];
+      <span class="hljs-keyword">switch</span> (settingName) {
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'foreground'</span>:
+          <span class="hljs-keyword">let</span> foreground = <span class="hljs-keyword">new</span> Color(value);
+          statements.push(<span class="hljs-string">`color: <span class="hljs-subst">${foreground}</span>;`</span>);
+          <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'background'</span>:
+          <span class="hljs-comment">// do not support background color for now, see bug 18924</span>
+          <span class="hljs-comment">//let background = new Color(value);</span>
+          <span class="hljs-comment">//statements.push(`background-color: ${background};`);</span>
+          <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'fontStyle'</span>:
+          <span class="hljs-keyword">let</span> segments = value.split(<span class="hljs-string">' '</span>);
+          segments.forEach(s =&gt; {
+            <span class="hljs-keyword">switch</span> (s) {
+              <span class="hljs-keyword">case</span> <span class="hljs-string">'italic'</span>:
+                statements.push(<span class="hljs-string">`font-style: italic;`</span>);
+                <span class="hljs-keyword">break</span>;
+              <span class="hljs-keyword">case</span> <span class="hljs-string">'bold'</span>:
+                statements.push(<span class="hljs-string">`font-weight: bold;`</span>);
+                <span class="hljs-keyword">break</span>;
+              <span class="hljs-keyword">case</span> <span class="hljs-string">'underline'</span>:
+                statements.push(<span class="hljs-string">`text-decoration: underline;`</span>);
+                <span class="hljs-keyword">break</span>;
+            }
+          });
+      }
+    }
+    <span class="hljs-keyword">return</span> statements.join(<span class="hljs-string">' '</span>);
+  }
+}
+</code></pre>
+<p>我们再来回顾一下上文<code>tmTheme</code>文件每一项<code>scope</code>的配置内容：</p>
+<pre><code class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>name<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>Template Expression<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>scope<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>template.expression<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>settings<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>foreground<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>#23C4FA<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+</code></pre>
+<p>其中第一项<code>name</code>表示的是我们给该规则起的名称；<code>scope</code>则是适用的<code>scope</code>，如果多个可以用逗号分隔，比如<code>User-defined constant</code>的<code>scope</code>值就为<code>constant.character, constant.other</code>；<code>settings</code>则是具体的样式信息，比如颜色值。</p>
+<p>从源码中可以看出，支持的样式只有<code>foreground</code>和<code>fontStyle</code>，而<code>background</code>则从注释中可以看出由于某原因导致 Visual Studio Code 暂时不支持。</p>
+<p><code>scope</code>值为<code>template.expression</code>则可被认为是 CSS 类选择器<code>token.template.expression</code>，在前文的 Developer Tools 的演示视频中，模板字符串的变量名在渲染时其 HTML 为<code>&lt;span class=&quot;token block ts meta variable other readwrite string function arrow new expr template expression&quot;&gt;...&lt;/span&gt;</code>，如果我们熟悉 CSS 的话应该能一眼就看出来<code>.token.template.expression</code>是会匹配到该标签的。所以，我们可以简单地把<code>scope</code>当作是 CSS 的类选择器。</p>
+<p>需要注意的是，如果我们在定义<code>scope</code>时写得不够详细，可能会错误地匹配到其他元素，致使调好了一部分，另一部分却被调坏了，所以要做得完美也并非易事。</p>
+<h2><a id="_357"></a>发布到扩展商店</h2>
+<p>要将扩展发布到扩展商店以便让更多人可以使用到，我们需要借助<code>vsce</code>命令行工具，可以参考文档<a href="https://code.visualstudio.com/docs/tools/vscecli">vsce - Publishing Tool Reference</a>。以下是其基本步骤：</p>
+<ul>
+<li>安装 vsce 命令行工具。执行命令<code>npm install -g vsce</code></li>
+<li>注册 Visual Studio Team Services 账号，并获取到 Access Token</li>
+<li>创建 Publisher。执行命令<code>vsce create-publisher</code></li>
+<li>登录到 Publisher。执行命令<code>vsce login</code></li>
+<li>发布扩展。执行命令<code>vsce publish</code></li>
+</ul>
+<p>详细操作步骤建议参考相应的官方文档。</p>
+<h2><a id="_370"></a>后记</h2>
+<p>本文并没有详细到手把手教地去讲解如何打造一款 Visual Studio Code 颜色主题，仅仅是提到了几个我在折腾过程中认为比较关键，而又很难通过文档去查到的要点。爱折腾是程序员的天性，希望本文能让爱折腾的你少走一些弯路，把喜爱的 Visual Studio Code 玩出花来。</p>
+<h2><a id="_375"></a>相关链接</h2>
+<ul>
+<li><a href="https://code.visualstudio.com/docs/customization/themes#_adding-a-new-theme">Visual Studio Code Themes - Adding a new Theme</a></li>
+<li><a href="http://www.apeth.com/nonblog/stories/textmatebundle.html">Writing a TextMate Grammar: Some Lessons Learned</a></li>
+<li><a href="https://code.visualstudio.com/docs/tools/vscecli">vsce - Publishing Tool Reference</a></li>
+<li><a href="https://github.com/leizongmin/lei-theme-vscode">Lei Theme for Visual Studio Code</a></li>
+</ul>
+
+  </article>
+
+
+  <!-- Chinese Version -->
+  <div id="about">
+    <h3>关于作者</h3>
+    <div class="author">
+      <div class="avatar"><img src="/images/logo_lei.jpg"></div>
+      <div class="description">          <a href="http://ucdok.com" title="
+        Web开发者、
+        &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
+        &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
+        个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
+        GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
+      " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      ：
+        Web开发者、
+        <a href="http://www.superid.me/">一登</a>后端架构师、
+        <a href="http://nodejs.ucdok.com/">《Node.js实战》</a>作者之一<br>
+        个人主页: <a href="http://ucdok.com">http://ucdok.com</a><br>
+        GitHub: <a href="https://github.com/leizongmin">https://github.com/leizongmin</a><br>
+      </div>
+    </div>
+  </div>
+  <div id="license">
+    <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh"><img alt="知识共享许可协议" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />本作品由           <a href="http://ucdok.com" title="
+        Web开发者、
+        &lt;a href=&quot;http://www.superid.me/&quot;&gt;一登&lt;/a&gt;后端架构师、
+        &lt;a href=&quot;http://nodejs.ucdok.com/&quot;&gt;《Node.js实战》&lt;/a&gt;作者之一&lt;br&gt;
+        个人主页: &lt;a href=&quot;http://ucdok.com&quot;&gt;http://ucdok.com&lt;/a&gt;&lt;br&gt;
+        GitHub: &lt;a href=&quot;https://github.com/leizongmin&quot;&gt;https://github.com/leizongmin&lt;/a&gt;&lt;br&gt;
+      " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>       创作，采用 <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.zh">知识共享署名-非商业性使用-禁止演绎 4.0 国际许可协议</a> 进行许可。
+  </div>
+
+
+</body>
+</html>
+
