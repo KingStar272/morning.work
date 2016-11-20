@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" >
-<title>如何用 Node.js 编写一个 API 客户端 - 早起搬砖 morning.work</title>
+<title>如何用 Node.js 编写一个 RESTful API 客户端 - 早起搬砖 morning.work</title>
 <link rel="stylesheet" href="/styles/github.css" />
 <link rel="stylesheet" href="/article.css" />
 <style>
@@ -106,7 +106,7 @@ a:hover {
   </nav>
 
 
-  <h1 id="title">如何用 Node.js 编写一个 API 客户端</h1>
+  <h1 id="title">如何用 Node.js 编写一个 RESTful API 客户端</h1>
 
   <div id="date">
               <a href="http://ucdok.com" title="
@@ -118,12 +118,12 @@ a:hover {
       " xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName" rel="cc:attributionURL">老雷</a>      
     创作于 2016-05-07      ,    2016-08-03 第 1 次更新   </div>
   <div id="remaining-time">
-    全文约 4729 字，预计阅读时间为 0 时 24 分钟
+    全文约 4736 字，预计阅读时间为 0 时 24 分钟
   </div>
 
   <article class="article">
     <h2><a id="_2"></a>说几句无关主题的话</h2>
-<p>尽管这几年来 Node.js 已经得到越来越多的关注，连市场卖菜的老太婆都能分别得出哪个是写 Node.js 的，哪个是写 PHP 的。然而，终究是不能跟老大哥 Java 比的。我们在使用一些第三方服务时常常会碰到一时半会还没有官方的 Node.js SDK 的问题，所以能自己随手撸一个刚好够用的 API 客户端来应急成了必备技能。</p>
+<p>尽管这几年来 Node.js 已经得到越来越多的关注，连市场卖菜的老太婆都能分别得出哪个是写 Node.js 的，哪个是写 PHP 的。然而，终究是不能跟老大哥 Java 比的。我们在使用一些第三方服务时常常会碰到一时半会还没有官方的 Node.js SDK 的问题，所以能自己随手撸一个刚好够用的 RESTful API 客户端来应急成了必备技能。</p>
 <p>说到这里，我忍不住要先吐槽一下：</p>
 <blockquote>
 <p>前几天在 CNodeJS 上看到一个帖子<a href="https://cnodejs.org/topic/56ab1c0526d02fc6626bb383">《拥抱 ES6——阿里云 OSS 推出 JavaScript SDK》</a>，对其中的滥用<code>generator</code>还<strong>洋洋自得</strong>的行为有点不满，之前也遇到过该厂的 SDK 强行返回<code>generator</code>而放弃使用，我想说我<strong>已经忍了很久</strong>了。</p>

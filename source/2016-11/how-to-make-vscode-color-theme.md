@@ -1,6 +1,6 @@
 ```
 title: 如何打造一款属于自己的 Visual Studio Code 颜色主题
-date: 2016-11-15
+date: 2016-11-20
 author: 老雷
 link: https://github.com/leizongmin/lei-theme-vscode
 ```
