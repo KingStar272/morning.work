@@ -1,5 +1,5 @@
 ::selection {
-  background-color: rgba(251, 220, 114, 0.5);
+  background-color: antiquewhite;
 }
 
 .article {
@@ -27,6 +27,7 @@
 .article b,
 .article strong {
   font-weight: 600;
+  border-bottom: 1px dashed #000;
 }
 
 .article blockquote b,
@@ -56,7 +57,7 @@
 
 .article code {
   padding: 0 0.25em;
-  font-size: 0.875em;
+  /*font-size: 0.875em;*/
   word-break: break-word;
   font-family: Consolas, Menlo, Monaco, "Courier New", monospace;
   text-rendering: optimizeSpeed;
@@ -99,7 +100,11 @@
 
 .article a {
   display: inline;
-  border-bottom: 1px solid #008E59;
+  border-bottom: 1px dashed #008E59;
+  padding: 0 0.25em;
+}
+.article a:hover {
+  background-color: #dcdcdc;
 }
 
 .article h1 a,
